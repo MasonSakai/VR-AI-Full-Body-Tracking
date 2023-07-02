@@ -29,9 +29,9 @@ const float handDownHeight = .71f;
 const float shoulderHeight = .9f;
 
 float shoulderToShoulder,
-	  shoulderToHip, hipWidth,
-	  upperArmLen, lowerArmLen,
-	  upperLegLen, lowerLegLen;
+shoulderToHip, hipWidth,
+upperArmLen, lowerArmLen,
+upperLegLen, lowerLegLen;
 
 float degPerPixelX, degPerPixelY;
 
@@ -493,7 +493,7 @@ int main()
 		if (c == 27)
 			break;
 	}
-	
+
 	active = false;
 
 	loopThread.join();
