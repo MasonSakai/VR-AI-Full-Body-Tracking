@@ -430,8 +430,8 @@ void UpdateTrackers() {
 	hipPos = headPos / 2.0f;
 	hipRot = headPos;
 
-	leftFootPos = leftHandPos;
-	rightFootPos = rightHandPos;
+	leftFootPos = leftHandPos + handOffset;
+	rightFootPos = rightHandPos + handOffset;
 	leftFootRot = leftHandRot;
 	rightFootRot = rightHandRot;
 

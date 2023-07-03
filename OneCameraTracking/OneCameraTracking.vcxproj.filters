@@ -19,4 +19,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="One Camera Tracking Host.py" />
+  </ItemGroup>
 </Project>

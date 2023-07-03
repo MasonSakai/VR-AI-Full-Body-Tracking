@@ -1,6 +1,10 @@
 // Initial OVR and Input Emulator Interface.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
+#define BOOST_USE_WINDOWS_H
+
+#include <windows.h>
+#include <stdio.h>
 #include <conio.h>
 #include <iostream>
 #include <algorithm>
@@ -16,6 +20,7 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <csignal>
+
 
 static vr::IVRSystem* m_VRSystem;
 static vrinputemulator::VRInputEmulator inputEmulator;
@@ -47,19 +52,24 @@ glm::quat hipRot, leftFootRot, rightFootRot;
 glm::vec3 handOffset;
 
 bool active = true;
-std::thread loopThread;
+std::thread TrackerUpdateLoopThread;
+
+bool IOTest = false;
 
 bool findTrackers() {
 	if (inputEmulator.getVirtualDeviceCount() == 3) {
 		for (int i = 0; i < 3; i++) {
 			vr::DriverPose_t pose = inputEmulator.getVirtualDevicePose(i);
+			std::cout << "Found Tracker " << inputEmulator.getVirtualDeviceInfo(i).deviceSerial << "\n" << std::flush;
 			if (pose.deviceIsConnected == true || pose.result != vr::TrackingResult_Uninitialized || pose.poseIsValid == true) {
+				std::cout << "Rejected: " << pose.deviceIsConnected << pose.result << pose.poseIsValid << std::endl << std::flush;
 				return false;
 			}
 		}
 		hipID = 0;
 		leftFootID = 1;
 		rightFootID = 2;
+		std::cout << "Found Trackers\n" << std::flush;
 		return true;
 	}
 	return false;
@@ -412,7 +422,7 @@ void UpdateHardwarePositions() {
 void UpdateTrackers() {
 	UpdateHardwarePositions();
 
-	/*glm::vec3 down(0, -1, 0);
+	glm::vec3 down(0, -1, 0);
 	glm::vec3 headRight = headRot * glm::vec3(1, 0, 0);
 	headRight.y = 0;
 	glm::quat trackersRot = glm::quatLookAt(glm::normalize(headRight), glm::vec3(0, 1, 0));
@@ -425,15 +435,7 @@ void UpdateTrackers() {
 	leftFootPos = (footForward - footRight) * 0.17f;
 	rightFootPos = (footForward + footRight) * 0.17f;
 	leftFootRot = trackersRot;
-	rightFootRot = leftFootRot;*/
-
-	hipPos = headPos / 2.0f;
-	hipRot = headPos;
-
-	leftFootPos = leftHandPos;
-	rightFootPos = rightHandPos;
-	leftFootRot = leftHandRot;
-	rightFootRot = rightHandRot;
+	rightFootRot = leftFootRot;
 
 	setVirtualDevicePosition(hipID, hipPos, hipRot);
 	setVirtualDevicePosition(leftFootID, leftFootPos, leftFootRot);
@@ -441,60 +443,131 @@ void UpdateTrackers() {
 
 }
 
-void UpdateLoop() {
+void TrackerUpdateLoop() {
 	while (active) {
 		UpdateTrackers();
 	}
 	onClose();
 }
 
-int main()
-{
-	vr::EVRInitError error = vr::VRInitError_Compositor_Failed;
-	std::cout << "Looking for SteamVR..." << std::flush;
-	while (error != vr::VRInitError_None) {
-		m_VRSystem = vr::VR_Init(&error, vr::VRApplication_Overlay); //Change to vr::VRApplication_Background later
-		if (error != vr::VRInitError_None) {
-			std::cout << "\nFailed due to reason " << VR_GetVRInitErrorAsSymbol(error) << "\n" << std::flush;
-			std::cout << "Trying again in a few seconds...\n" << std::flush;
-			std::this_thread::sleep_for(std::chrono::seconds(4));
+
+int32_t ReceiveInt32_t() {
+	uint8_t c;
+	int32_t v = 0;
+	for (int i = 0; i < 4; i++) {
+		c = std::cin.get();
+		v = v << 8;
+		v += c;
+	}
+	std::cin.get();
+	return v;
+}
+
+
+void HandleArgs(int argc, char* argv[]) {
+	if (argc < 2) return;
+	for (int i = 0; i < argc; i++) {
+		std::cout << argv[i];
+		if (!strcmp(argv[i], "HideConsole")) {
+			std::cout << std::endl << " - Hiding Console";
+			ShowWindow(GetConsoleWindow(), SW_HIDE);
 		}
-	}
-	std::cout << "Success!\n";
-	std::cout << "Looking for VR Input Emulator..." << std::flush;
-	while (true) {
-		try {
-			inputEmulator.connect();
-			break;
+		else if (!strcmp(argv[i], "NoVR")) {
+			std::cout << std::endl << " - Running in No VR mode (IO Testing Only)";
+			IOTest = true;
 		}
-		catch (vrinputemulator::vrinputemulator_connectionerror e) {
-			std::cout << "\nFailed to connect to open vr input emulator, ensure you've installed it. If you have, try running this fix: https://drive.google.com/open?id=1Gn3IOm6GbkINplbEenu0zTr3DkB1E8Hc \n" << std::flush;
-			std::this_thread::sleep_for(std::chrono::seconds(4));
-			continue;
-		}
+		std::cout << std::endl << std::flush;
 	}
-	std::cout << "Success!\n";
+}
 
-	if (!findTrackers()) {
-		hipID = createTracker("Hip");
-		leftFootID = createTracker("Left Foot");
-		rightFootID = createTracker("Right Foot");
-	}
-
-
-	handOffset.y = -handDownHeight;
-
-	loopThread = std::thread(UpdateLoop);
-
-	char c;
-	while (true)
-	{
-		c = _getch();
-		if (c == 27)
-			break;
-	}
+void endProgram() {
 
 	active = false;
 
-	loopThread.join();
+	if (!IOTest) {
+		TrackerUpdateLoopThread.join();
+	}
+}
+
+static bool EndProgram(DWORD signal) {
+	switch (signal)
+	{
+	case CTRL_C_EVENT:
+	case CTRL_BREAK_EVENT:
+	case CTRL_CLOSE_EVENT:
+	case CTRL_LOGOFF_EVENT:
+	case CTRL_SHUTDOWN_EVENT:
+		std::cout << "Closing..." << std::endl;
+		endProgram();
+		return false;
+
+	default:
+		return false;
+	}
+}
+
+int main(int argc, char* argv[])
+{
+	SetConsoleCtrlHandler((PHANDLER_ROUTINE)EndProgram, true);
+
+	HandleArgs(argc, argv);
+
+	if (!IOTest) {
+		vr::EVRInitError error = vr::VRInitError_Compositor_Failed;
+		std::cout << "Looking for SteamVR..." << std::flush;
+		while (error != vr::VRInitError_None) {
+			m_VRSystem = vr::VR_Init(&error, vr::VRApplication_Overlay); //Change to vr::VRApplication_Background later
+			if (error != vr::VRInitError_None) {
+				std::cout << "\nFailed due to reason " << VR_GetVRInitErrorAsSymbol(error) << "\n" << std::flush;
+				std::cout << "Trying again in a few seconds...\n" << std::flush;
+				std::this_thread::sleep_for(std::chrono::seconds(4));
+			}
+		}
+		std::cout << "Success!\n" << std::flush;
+		std::cout << "Looking for VR Input Emulator..." << std::flush;
+		while (true) {
+			try {
+				inputEmulator.connect();
+				break;
+			}
+			catch (vrinputemulator::vrinputemulator_connectionerror e) {
+				std::cout << "\nFailed to connect to open vr input emulator, ensure you've installed it. If you have, try running this fix: https://drive.google.com/open?id=1Gn3IOm6GbkINplbEenu0zTr3DkB1E8Hc \n" << std::flush;
+				std::this_thread::sleep_for(std::chrono::seconds(4));
+				continue;
+			}
+		}
+		std::cout << "Success!\n" << std::flush;
+
+		if (!findTrackers()) {
+			hipID = createTracker("Hip");
+			leftFootID = createTracker("Left Foot");
+			rightFootID = createTracker("Right Foot");
+		}
+
+
+		handOffset.y = -handDownHeight;
+
+		TrackerUpdateLoopThread = std::thread(TrackerUpdateLoop);
+	}
+
+	uint8_t c;
+	int32_t v = 0;
+	while (true)
+	{
+		c = std::cin.get();
+		switch (c)
+		{
+		case 5:
+			v = ReceiveInt32_t();
+			std::cout << std::endl << v << std::endl << std::flush;
+		case 27:
+			endProgram();
+			return 0;
+		default:
+			std::cout << c << std::flush;
+			break;
+		}
+	}
+
+	
 }
