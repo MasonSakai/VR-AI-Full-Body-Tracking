@@ -3,9 +3,9 @@ import time
 import threading
 import struct
 
-active = False
+Active = False
 
-p = None
+Process = None
 
 def outputLoop(stdout):
     print("Starting Thread...")
@@ -18,34 +18,34 @@ def outputLoop(stdout):
     print("Thread Ending")
 
 def SendPreCode(v):
-    p.stdin.write(chr(v).encode('latin1'))
+    Process.stdin.write(chr(v).encode('latin1'))
 def SendInt32_t(v):
-    p.stdin.write(v.to_bytes(4, 'big'))
-    p.stdin.write(b'\n')
-    p.stdin.flush()
+    Process.stdin.write(v.to_bytes(4, 'big'))
+    Process.stdin.write(b'\n')
+    Process.stdin.flush()
 def SendInt16_t(v):
-    p.stdin.write(v.to_bytes(2, 'big'))
-    p.stdin.write(b'\n')
-    p.stdin.flush()
+    Process.stdin.write(v.to_bytes(2, 'big'))
+    Process.stdin.write(b'\n')
+    Process.stdin.flush()
 def SendInt8_t(v):
-    p.stdin.write(chr(v).encode('latin1'))
-    p.stdin.write(b'\n')
-    p.stdin.flush()
+    Process.stdin.write(chr(v).encode('latin1'))
+    Process.stdin.write(b'\n')
+    Process.stdin.flush()
 def SendFloat(v):
-    p.stdin.write(bytearray(struct.pack("f", 5.1)))
-    p.stdin.write(b'\n')
-    p.stdin.flush()
+    Process.stdin.write(bytearray(struct.pack("f", 5.1)))
+    Process.stdin.write(b'\n')
+    Process.stdin.flush()
 
 def StartSubprocess(fileName):
-    global p
-    p = Popen([fileName, "HideConsole", "NoVR"], stdout=PIPE, stdin=PIPE, bufsize=-1)
+    global Process
+    Process = Popen([fileName, "HideConsole", "NoVR"], stdout=PIPE, stdin=PIPE, bufsize=-1)
     active = True
 def StopProgram():
     active = False
-    p.communicate(chr(127).encode() + b'\n')
+    Process.communicate(chr(127).encode() + b'\n')
 
 def BeginTest(fileName):
-    threading.Thread(target=outputLoop, args=(p.stdout,)).start()
+    threading.Thread(target=outputLoop, args=(Process.stdout,)).start()
     time.sleep(2)
     SendPreCode(136)
     SendInt32_t(27)
