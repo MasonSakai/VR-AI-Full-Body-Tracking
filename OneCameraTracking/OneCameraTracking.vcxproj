@@ -144,9 +144,6 @@
   <ItemGroup>
     <ClCompile Include="OneCameraTracking.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="One Camera Tracking Host.py" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

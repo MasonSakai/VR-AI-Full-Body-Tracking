@@ -29,16 +29,16 @@ static uint32_t hipID;
 static uint32_t leftFootID;
 static uint32_t rightFootID;
 
-const float headsetHeight = 1.65f;
-const float handDownHeight = .71f;
-const float shoulderHeight = .9f;
+const float _headsetHeight = 1.65f;
+const float _handDownHeight = .71f;
+const float _shoulderHeight = .9f;
 
 float shoulderToShoulder,
 shoulderToHip, hipWidth,
 upperArmLen, lowerArmLen,
 upperLegLen, lowerLegLen;
 
-float degPerPixelX, degPerPixelY;
+float degPerPixel;
 
 glm::vec3 cameraPos;
 glm::quat cameraRot;
@@ -450,7 +450,6 @@ void TrackerUpdateLoop() {
 	onClose();
 }
 
-
 int32_t ReceiveInt32_t() {
 	uint8_t c;
 	int32_t v = 0;
@@ -462,11 +461,38 @@ int32_t ReceiveInt32_t() {
 	std::cin.get();
 	return v;
 }
+int16_t ReceiveInt16_t() {
+	uint8_t c;
+	int16_t v = 0;
+	for (int i = 0; i < 2; i++) {
+		c = std::cin.get();
+		v = v << 8;
+		v += c;
+	}
+	std::cin.get();
+	return v;
+}
+int32_t ReceiveInt8_t() {
+	uint8_t v = std::cin.get();
+	std::cin.get();
+	return v;
+}
+float ReceiveFloat() {
+	float f;
+	uint8_t b[4];
+	uint8_t c;
+	for (int i = 0; i < 4; i++) {
+		b[i] = std::cin.get();
+	}
+	std::cin.get();
+	memcpy(&f, &b, sizeof(f));
+	return f;
+}
 
 
 void HandleArgs(int argc, char* argv[]) {
 	if (argc < 2) return;
-	for (int i = 0; i < argc; i++) {
+	for (int i = 1; i < argc; i++) {
 		std::cout << argv[i];
 		if (!strcmp(argv[i], "HideConsole")) {
 			std::cout << std::endl << " - Hiding Console";
@@ -545,22 +571,36 @@ int main(int argc, char* argv[])
 		}
 
 
-		handOffset.y = -handDownHeight;
+		handOffset.y = -_handDownHeight;
 
 		TrackerUpdateLoopThread = std::thread(TrackerUpdateLoop);
 	}
 
 	uint8_t c;
-	int32_t v = 0;
+	int32_t i;
+	float f;
 	while (true)
 	{
 		c = std::cin.get();
 		switch (c)
 		{
-		case 5:
-			v = ReceiveInt32_t();
-			std::cout << std::endl << v << std::endl << std::flush;
-		case 27:
+		case 0b10001000:
+			i = ReceiveInt32_t();
+			std::cout << i << std::endl << std::flush;
+			break;
+		case 0b10001001:
+			i = ReceiveInt16_t();
+			std::cout << i << std::endl << std::flush;
+			break;
+		case 0b10001010:
+			c = ReceiveInt8_t();
+			std::cout << (int)c << std::endl << std::flush;
+			break;
+		case 0b10001011:
+			f = ReceiveFloat();
+			std::cout << f << std::endl << std::flush;
+			break;
+		case 0b01111111:
 			endProgram();
 			return 0;
 		default:
