@@ -1,4 +1,12 @@
 'use strict';
+
+
+const tfgpu = require('@tensorflow/tfjs-node-gpu');
+const tf = require('@tensorflow/tfjs-core');
+const posedetection = require('@tensorflow-models/pose-detection');
+
+//var Camera = require('./camera');
+
 var path = require('path');
 var express = require('express');
 
@@ -14,7 +22,7 @@ var server = app.listen(app.get('port'), function () {
     console.log('listening yeet');
 });
 
-const model = poseDetection.SupportedModels.MoveNet;
-const detector = await poseDetection.createDetector(model);
+//const model = poseDetection.SupportedModels.MoveNet;
+//const detector = await poseDetection.createDetector(model);
 
 //const poses = await detector.estimatePoses(image);
