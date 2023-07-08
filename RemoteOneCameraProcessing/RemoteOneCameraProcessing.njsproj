@@ -12,8 +12,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>f290c9d8-58bf-4a35-8581-953806ca1d94</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>
-    </StartupFile>
+    <StartupFile>server.js</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -32,7 +31,7 @@
   <ItemGroup>
     <Content Include=".babelrc" />
     <Content Include="dist\index.html" />
-    <Content Include="package-lock.json-no" />
+    <Content Include="package-lock.json" />
     <Content Include="server.js" />
     <Content Include="package.json" />
     <Content Include="README.md" />
@@ -41,7 +40,6 @@
     <Content Include="src\index_copy.js" />
     <Content Include="src\params.js" />
     <Content Include="src\util.js" />
-    <Content Include="yarn.lock" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="dist\" />
