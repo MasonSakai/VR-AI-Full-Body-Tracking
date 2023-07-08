@@ -17,7 +17,10 @@ with open(folder+r"\out.txt", 'r') as fp:
             maxLines.append(line)
     print("Base Directory Length:", len(folder))
     print("Max Length:",maxLen)
-    print("Delta:", maxLen - len(folder))
+    print("Raw Length Without Directory:", maxLen - len(folder))
+    print("With Reserved:",maxLen+80)
+    if(maxLen+80 > 260):
+        print("Path is too long (with reserve > 260)")
     print("File(s) are: ")
     for line in maxLines:
         print(line)
