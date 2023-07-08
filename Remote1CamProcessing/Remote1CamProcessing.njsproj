@@ -3,16 +3,15 @@
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">14.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <Name>Remote1CamProcessing</Name>
-    <RootNamespace>RemoteOneCameraProcessing</RootNamespace>
+    <RootNamespace>Remote1CamProcessing</RootNamespace>
     <SaveNodeJsSettingsInProjectFile>True</SaveNodeJsSettingsInProjectFile>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>f290c9d8-58bf-4a35-8581-953806ca1d94</ProjectGuid>
-    <ProjectHome>
-    </ProjectHome>
+    <ProjectGuid>0b9832ea-4285-46e5-a4aa-5404e83f367c</ProjectGuid>
+    <ProjectHome>.</ProjectHome>
     <StartupFile>server.js</StartupFile>
     <SearchPath>
     </SearchPath>
@@ -31,9 +30,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include=".babelrc" />
-    <Content Include="dist\pose-detection.tflite" />
     <Content Include="dist\lite-model_movenet_singlepose_thunder_tflite_float16_4.tflite" />
-    <Content Include="index.html" />
+    <Content Include="dist\main.js" />
+    <Content Include="dist\pose-detection.tflite" />
+    <Content Include="dist\index.html" />
     <Content Include="package-lock.json" />
     <Content Include="server.js" />
     <Content Include="package.json" />

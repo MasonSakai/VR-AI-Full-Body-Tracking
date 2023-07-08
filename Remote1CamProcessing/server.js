@@ -13,11 +13,10 @@ const ContentTypes = {
 const server = http.createServer((req, res) => {
 	try {
 		var url = req.url;
-		url = url.substring(1);
 		console.log(`URL: ${url}`);
-		if (url == "") url = "index.html";
+		if (url == "/") url = "dist/index.html";
+		else url = "dist" + url;
 		var data = fs.readFileSync(url, 'utf8');
-		console.log(data);
 
 		var splits = url.split('.');
 		var contentType = ContentTypes[splits[splits.length - 1]];

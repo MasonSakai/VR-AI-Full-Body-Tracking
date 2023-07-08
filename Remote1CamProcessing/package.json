@@ -7,18 +7,15 @@
         "node": ">=8.9.0"
     },
     "dependencies": {
-        "@mediapipe/pose": "~0.4.0",
-        "@tensorflow-models/pose-detection": "file:../../dist",
+        "@mediapipe/pose": "~0.5.0",
         "@tensorflow/tfjs-backend-webgl": "^4.2.0",
-        "@tensorflow/tfjs-backend-webgpu": "^0.0.1-alpha.17",
         "@tensorflow/tfjs-converter": "^4.2.0",
         "@tensorflow/tfjs-core": "^4.2.0",
-        "npm-flatten": "^0.0.1",
-        "webpack": "^5.88.1"
+        "npm-flatten": "^0.0.1"
     },
     "scripts": {
-        "watch": "cross-env NODE_ENV=development parcel index.html --no-hmr --open",
-        "build": "cross-env NODE_ENV=production parcel build index.html --public-url ./",
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "build": "npx webpack",
         "lint": "eslint .",
         "build-dep": "cd ../../ && yarn && yarn build",
         "link-core": "yalc link @tensorflow/tfjs-core",
@@ -26,6 +23,10 @@
     },
     "browser": {
         "crypto": false
+    },
+    "devDependencies": {
+        "webpack": "^5.88.1",
+        "webpack-cli": "^5.1.4"
     },
     "devDependencies-ignore": {
         "@babel/core": "^7.7.5",
