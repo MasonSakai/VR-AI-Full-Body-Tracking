@@ -30,7 +30,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include=".babelrc" />
-    <Content Include="dist\index.html" />
+    <Content Include="dist\pose-detection.tflite" />
+    <Content Include="dist\lite-model_movenet_singlepose_thunder_tflite_float16_4.tflite" />
+    <Content Include="index.html" />
     <Content Include="package-lock.json" />
     <Content Include="server.js" />
     <Content Include="package.json" />

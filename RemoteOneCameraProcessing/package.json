@@ -14,13 +14,12 @@
         "@tensorflow/tfjs-backend-webgpu": "^0.0.1-alpha.17",
         "@tensorflow/tfjs-converter": "^4.2.0",
         "@tensorflow/tfjs-core": "^4.2.0",
-        "scatter-gl": "0.0.8",
+        "npm-flatten": "^0.0.1",
         "webpack": "^5.88.1"
     },
     "scripts": {
         "watch": "cross-env NODE_ENV=development parcel index.html --no-hmr --open",
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "build": "webpack",
+        "build": "cross-env NODE_ENV=production parcel build index.html --public-url ./",
         "lint": "eslint .",
         "build-dep": "cd ../../ && yarn && yarn build",
         "link-core": "yalc link @tensorflow/tfjs-core",
