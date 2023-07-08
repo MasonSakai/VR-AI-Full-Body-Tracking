@@ -1,4 +1,6 @@
-folder = r"C:\Users\Mason Sakai\source\repos\VR AI Full Body Tracking\RemoteOneCameraProcessing"
+import os
+
+folder = os.getcwd()
 
 with open(folder+r"\out.txt", 'r') as fp:
     maxLen = 0
