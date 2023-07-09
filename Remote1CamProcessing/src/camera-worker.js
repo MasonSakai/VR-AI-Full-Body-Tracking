@@ -9,8 +9,12 @@ async function getCamera(deviceID = null) {
     if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
         let properties = {
             video: {
-                width: 640,
-                height: 480
+                width: {
+                    ideal: 640
+                },
+                height: {
+                    ideal: 480
+                }
             }
         }
         if (deviceID) properties.video.deviceID = deviceID;
