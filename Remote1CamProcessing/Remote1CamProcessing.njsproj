@@ -30,19 +30,31 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include=".babelrc" />
+    <Content Include="dist\341.js" />
+    <Content Include="dist\540.js" />
+    <Content Include="dist\540.js.LICENSE.txt" />
+    <Content Include="dist\959.js" />
     <Content Include="dist\lite-model_movenet_singlepose_thunder_tflite_float16_4.tflite" />
     <Content Include="dist\main.js" />
-    <Content Include="dist\pose-detection.tflite" />
     <Content Include="dist\index.html" />
+    <Content Include="dist\main.js.LICENSE.txt" />
+    <Content Include="dist\script.js">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="dist\style.css">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="package-lock.json" />
     <Content Include="server.js" />
     <Content Include="package.json" />
     <Content Include="README.md" />
-    <Content Include="src\camera.js" />
+    <Content Include="src\ai-worker.js">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="src\camera-worker.js">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="src\index.js" />
-    <Content Include="src\index_copy.js" />
-    <Content Include="src\params.js" />
-    <Content Include="src\util.js" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="dist\" />
