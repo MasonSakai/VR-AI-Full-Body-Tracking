@@ -7,7 +7,8 @@ const port = 1337;
 
 const ContentTypes = {
 	"html": "text/html",
-	"js": "application/javascript"
+	"js": "application/javascript",
+	"css": "text/css"
 }
 
 const server = http.createServer((req, res) => {
