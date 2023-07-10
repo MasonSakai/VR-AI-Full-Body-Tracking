@@ -12,14 +12,14 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>0b9832ea-4285-46e5-a4aa-5404e83f367c</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>server.js</StartupFile>
+    <StartupFile>server.mjs</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <ProjectTypeGuids>{3AF33F2E-1136-4D97-BBB7-1795711AC8B8};{349c5851-65df-11da-9384-00065b846f21};{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}</ProjectTypeGuids>
-    <NodejsPort>1337</NodejsPort>
+    <NodejsPort>2674</NodejsPort>
     <StartWebBrowser>False</StartWebBrowser>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -30,10 +30,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include=".babelrc" />
-    <Content Include="dist\341.js" />
-    <Content Include="dist\540.js" />
-    <Content Include="dist\540.js.LICENSE.txt" />
-    <Content Include="dist\959.js" />
+    <Content Include="config.json">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="dist\lite-model_movenet_singlepose_thunder_tflite_float16_4.tflite" />
     <Content Include="dist\main.js" />
     <Content Include="dist\index.html" />
@@ -45,13 +44,13 @@
       <SubType>Code</SubType>
     </Content>
     <Content Include="package-lock.json" />
-    <Content Include="server.js" />
+    <Content Include="server.mjs" />
     <Content Include="package.json" />
     <Content Include="README.md" />
     <Content Include="src\ai-worker.js">
       <SubType>Code</SubType>
     </Content>
-    <Content Include="src\camera-worker.js">
+    <Content Include="src\camera-manager.js">
       <SubType>Code</SubType>
     </Content>
     <Content Include="src\index.js" />

@@ -9,23 +9,25 @@
 </head>
 <body>
 
-    <div class="display-cover">
+    <div class="camera-display">
         <video autoplay></video>
         <canvas class="d-none"></canvas>
-
-        <div class="video-options">
-            <select name="" id="" class="custom-select">
-                <option value="">Select camera</option>
-            </select>
-        </div>
-
-        <div class="controls">
-            <button class="btn btn-danger play" title="Start"><i data-feather="play-circle"></i></button>
-            <button class="btn btn-info pause d-none" title="Stop"><i data-feather="pause"></i></button>
-            <button class="btn btn-outline-success screenshot d-none" title="Config"><i data-feather="image"></i></button>
-        </div>
     </div>
-    <script src="https://unpkg.com/feather-icons"></script>
+	<div class="control-panel">
+		<div class="video-options">
+			<select name="" id="camera-select">
+				<option value="">Select camera</option>
+			</select>
+		</div>
+
+		<div class="controls">
+			<button class="btn btn-danger play" title="Start"><i data-feather="play-circle"></i></button>
+			<button class="btn btn-info pause d-none" title="Stop"><i data-feather="pause"></i></button>
+			<button class="btn btn-outline-success screenshot" title="Config"><i data-feather="image"></i></button>
+		</div>
+	</div>
+	
+<!--    <script src="https://unpkg.com/feather-icons"></script>-->
     <script src="main.js"></script>
 </body>
 
