@@ -4,12 +4,13 @@ import fs from 'fs';
 import { Server } from 'socket.io';
 import open, { apps }  from 'open';
 
-const openBrowsers = false;
-const openCount = 5;
+let config = JSON.parse(fs.readFileSync("config.json"));
+let openBrowsers = config.autostart;
+let openCount = config.autostartCount;
 let opened = 0;
 
-const hostname = '127.0.0.1';
-const port = 2674;
+let hostname = config.hostname;
+let port = config.port;
 
 const ContentTypes = {
 	"html": "text/html",

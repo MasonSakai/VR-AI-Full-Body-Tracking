@@ -1,4 +1,8 @@
 {
+	"autostart": false,
+	"autostartCount": 5,
+	"hostname": "127.0.0.1",
+	"port": 2674,
 	"windowConfigs": [
 		{
 			"url": "",
