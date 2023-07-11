@@ -1,13 +1,13 @@
 {
 	"autostart": false,
-	"autostartCount": 5,
 	"hostname": "127.0.0.1",
 	"port": 2674,
 	"windowConfigs": [
 		{
 			"url": "",
 			"cameraName": "USB2.0 HD UVC WebCam (13d3:5666)",
-			"autostart": true
+			"autostart": true,
+			"confidenceThreshold": 0.3
 		}
 	]
 }

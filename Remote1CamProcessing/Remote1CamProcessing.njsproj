@@ -33,13 +33,9 @@
     <Content Include="config.json">
       <SubType>Code</SubType>
     </Content>
-    <Content Include="dist\lite-model_movenet_singlepose_thunder_tflite_float16_4.tflite" />
     <Content Include="dist\main.js" />
     <Content Include="dist\index.html" />
     <Content Include="dist\main.js.LICENSE.txt" />
-    <Content Include="dist\script.js">
-      <SubType>Code</SubType>
-    </Content>
     <Content Include="dist\style.css">
       <SubType>Code</SubType>
     </Content>

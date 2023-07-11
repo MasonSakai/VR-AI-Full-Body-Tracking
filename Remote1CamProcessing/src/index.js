@@ -2,7 +2,7 @@
 const { io } = require("socket.io-client");
 
 const { Camera } = require("./camera-manager");
-const { PoseDetector } = require("./ai-manager")
+const { PoseDetector } = require("./ai-manager");
 
 const canvas = document.getElementsByTagName("canvas")[0];
 
@@ -25,19 +25,19 @@ const btnReset = document.getElementById("btn-reset");
 const lblPutState = document.getElementById("lbl-put-state");
 var lblPutStateTimeout;
 
-var 
+const width = video.clientWidth;
+console.log(width);
 
 lblState.innerHTML = "<i>Loading Camera...</i>";
 
 const camera = new Camera();
-const poseDetector = new PoseDetector();
+const poseDetector = new PoseDetector(true, width);
 
 lblState.innerHTML = "<i>Loading Socket...</i>";
 
-//const nodeSocket = io();
-const nodeSocket = {};
-nodeSocket.on = () => { };
-nodeSocket.emit = () => { };
+const nodeSocket = io();
+
+var hostSocket
 
 lblState.innerHTML = "<i>Loading...</i>";
 
@@ -45,12 +45,14 @@ const DefaultConfig = {
 	"id": -1,
 	"url": "",
 	"cameraName": "",
-	"autostart": false
+	"autostart": false,
+	"confidenceThreshold": 0.3,
+	"closeOnDisconnect": true
 };
-let currentConfig = DefaultConfig;
+let config = DefaultConfig;
 let configUpdate = {};
 
-let activeState = true;
+var activeState = true;
 
 async function fetchAsync(url) {
 	let response = await fetch(url);
@@ -86,7 +88,7 @@ function hidePutState() {
 }
 function setPutState(text, timeout) {
 	lblPutState.innerHTML = text;
-	if(lblPutStateTimeout) clearTimeout(lblPutStateTimeout);
+	if (lblPutStateTimeout) clearTimeout(lblPutStateTimeout);
 	lblPutState.classList.remove("d-none");
 	lblPutStateTimeout = setTimeout(hidePutState, timeout);
 }
@@ -96,12 +98,12 @@ function applyConfigChage() {
 	let hadError = false;
 	if ("autostart" in configUpdate) {
 		madeChange = true;
-		currentConfig.autostart = configUpdate.autostart;
-		cbxAutostart.checked = currentConfig.autostart;
+		config.autostart = configUpdate.autostart;
+		cbxAutostart.checked = config.autostart;
 	}
 	if ("cameraName" in configUpdate) {
 		madeChange = true;
-		currentConfig.cameraName = configUpdate.cameraName;
+		config.cameraName = configUpdate.cameraName;
 		if (configUpdate.cameraName != "") {
 			camSelect.value = configUpdate.cameraID;
 			if (activeState) {
@@ -116,15 +118,15 @@ function applyConfigChage() {
 	}
 	if ("url" in configUpdate) {
 		madeChange = true;
-		currentConfig.url = configUpdate.url;
-		txtIP.value = currentConfig.url;
+		config.url = configUpdate.url;
+		txtIP.value = config.url;
 	}
 }
 
 btnApply.onclick = () => {
 	try {
 		applyConfigChage();
-		putAsync("config.json", currentConfig)
+		putAsync("config.json", config)
 			.then((e) => {
 				switch (e.status) {
 					case 200:
@@ -148,7 +150,7 @@ btnReset.onclick = () => {
 	try {
 		configUpdate = DefaultConfig;
 		if (applyConfigChage()) {
-			putAsync("config.json", currentConfig)
+			putAsync("config.json", config)
 				.then((e) => {
 					switch (e.status) {
 						case 200:
@@ -171,9 +173,9 @@ btnReset.onclick = () => {
 };
 btnCancel.onclick = () => {
 	configUpdate = {};
-	cbxAutostart.checked = currentConfig.autostart;
-	camera.getCameraIDByName(currentConfig.cameraName).then((id) => { camSelect.value = id; });
-	txtIP.value = currentConfig.url;
+	cbxAutostart.checked = config.autostart;
+	camera.getCameraIDByName(config.cameraName).then((id) => { camSelect.value = id; });
+	txtIP.value = config.url;
 };
 
 camera.updateCameraSelector(camSelect);
@@ -206,17 +208,29 @@ txtIP.onchange = () => {
 	configUpdate.url = txtIP.value;
 };
 
-function disconnect() {
-	nodeSocket.disconnect();
+async function drawPose(pose) {
+	let ctx = canvas.getContext("2d");
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	Object.keys(pose).forEach((key) => {
+		let spl = key.split("_");
+		if (spl[0] == "right") ctx.fillStyle = "red";
+		else if (spl[0] == "left") ctx.fillStyle = "green";
+		else ctx.fillStyle = "blue";
+		let point = pose[key];
+		ctx.beginPath();
+		ctx.arc(point.x, point.y, 5, 0, 2 * Math.PI);
+		ctx.fill();
+	});
 }
 
-nodeSocket.on("message", (data) => {
-	console.log("Got Message: " + data);
-	nodeSocket.send(data);
+nodeSocket.on("disconnect", () => {
+	console.log("disconnected");
 });
-nodeSocket.on("text message", (data) => {
-	console.log("Got text message: " + data);
-});
+
+window.onclose = () => {
+	nodeSocket.emit("message", "Closing...");
+}
+
 function debounce(func, wait, immediate) {
 	var timeout;
 	return function () {
@@ -236,10 +250,44 @@ function resizeCanvas() {
 	let rect = video.getBoundingClientRect();
 	canvas.width = rect.width;
 	canvas.height = rect.height;
+	poseDetector.width = rect.width;
 }
 resizeCanvas();
 
 window.addEventListener("resize", debounce(resizeCanvas, 250, false));
+
+function sleep(ms) {
+	return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function sendPose(pose) {
+	
+}
+
+async function AILoop() {
+	let pose = await poseDetector.getFilteredPose(video, config.confidenceThreshold);
+	drawPose(pose);
+	sendPose(pose);
+}
+
+
+async function startAILoop() {
+	activeState = true;
+
+	resizeCanvas();
+	canvas.classList.remove("d-none");
+	let start, end, delta;
+
+	while (activeState) {
+		start = startInferenceTime = (performance || Date).now();
+		AILoop();
+		end = startInferenceTime = (performance || Date).now();
+		delta = end - start;
+		if (delta < 16.66) {
+			await sleep(16.66 - delta);
+		}
+	}
+}
 
 
 async function GetConfig() {
@@ -261,7 +309,7 @@ async function GetConfig() {
 		lblState.innerHTML = `Loaded Error/Status:<br>${status}`;
 	} else {
 		lblState.innerHTML = "Loaded Config, reading...";
-		currentConfig = data;
+		config = data;
 		let camid = await camera.getCameraIDByName(data.cameraName);
 		camSelect.value = camid;
 		//camSelect.dispatchEvent(new Event('change'));
@@ -272,13 +320,8 @@ async function GetConfig() {
 		if (data.autostart) {
 			lblState.innerHTML = "Autostarting...";
 			video.srcObject = await camera.getCameraStream(camid);
-			resizeCanvas();
-			poseDetector.createDetector().then(() => {
-				poseDetector.estimatePose(video).then((pose) => {
-					console.log(pose);
-				});
-			});
-			//start();
+			await poseDetector.createDetector()
+			startAILoop();
 		}
 		lblState.innerHTML = "Loaded!";
 	}

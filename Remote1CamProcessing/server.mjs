@@ -6,8 +6,8 @@ import open, { apps }  from 'open';
 
 let config = JSON.parse(fs.readFileSync("config.json"));
 let openBrowsers = config.autostart;
-let openCount = config.autostartCount;
 let opened = 0;
+let openedHandles = [];
 
 let hostname = config.hostname;
 let port = config.port;
@@ -141,7 +141,9 @@ const server = http.createServer((req, res) => {
 const socketServer = new Server(server);
 
 function startBrowser() {
-	open(hostname + ":" + port, { app: { name: apps.browser } });
+	let args = { app: { name: apps.browser } };
+	if (opened == 0) args.app.arguments = ["--new-window", "/new-window"];
+	open(hostname + ":" + port, args);
 }
 
 function onBrowserInit(msg) {
@@ -149,7 +151,7 @@ function onBrowserInit(msg) {
 		if (msg == "successful") {
 			opened++;
 			console.log(`Successfully opened ${opened} windows`)
-			if (openCount > opened) {
+			if (config.windowConfigs.length > opened) {
 				startBrowser();
 			} else {
 				console.log("Successfully opened all windows");
@@ -183,6 +185,15 @@ server.listen(port, hostname, () => {
 	console.log(`Server running at http://${hostname}:${port}/`);
 });
 
+async function onClose() {
+	console.log('Closing');
+
+	process.exit();
+}
+
+process.on('SIGHUP', onClose);
+process.on('SIGINT', onClose);
+process.on('SIGBREAK', onClose);
 
 if (openBrowsers) {
 	console.log("Starting browser");
