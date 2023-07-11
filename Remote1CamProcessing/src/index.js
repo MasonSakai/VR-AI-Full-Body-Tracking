@@ -25,9 +25,12 @@ const btnReset = document.getElementById("btn-reset");
 const lblPutState = document.getElementById("lbl-put-state");
 var lblPutStateTimeout;
 
+var 
+
 lblState.innerHTML = "<i>Loading Camera...</i>";
 
 const camera = new Camera();
+const poseDetector = new PoseDetector();
 
 lblState.innerHTML = "<i>Loading Socket...</i>";
 
@@ -104,6 +107,7 @@ function applyConfigChage() {
 			if (activeState) {
 				camera.getCameraStream(camSelect.value).then((camera) => {
 					video.srcObject = camera;
+					resizeCanvas();
 				});
 			}
 		} else {
@@ -267,8 +271,12 @@ async function GetConfig() {
 
 		if (data.autostart) {
 			lblState.innerHTML = "Autostarting...";
-			camera.getCameraStream(camid).then((camera) => {
-				video.srcObject = camera;
+			video.srcObject = await camera.getCameraStream(camid);
+			resizeCanvas();
+			poseDetector.createDetector().then(() => {
+				poseDetector.estimatePose(video).then((pose) => {
+					console.log(pose);
+				});
 			});
 			//start();
 		}

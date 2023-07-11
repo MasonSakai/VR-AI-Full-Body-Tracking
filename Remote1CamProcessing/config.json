@@ -7,7 +7,7 @@
 		{
 			"url": "",
 			"cameraName": "USB2.0 HD UVC WebCam (13d3:5666)",
-			"autostart": false
+			"autostart": true
 		}
 	]
 }

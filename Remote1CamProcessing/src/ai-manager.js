@@ -1,7 +1,5 @@
 import '@tensorflow/tfjs-backend-webgl';
-import '@tensorflow/tfjs-backend-webgpu';
 
-import * as mpPose from '@mediapipe/pose';
 import * as tf from '@tensorflow/tfjs-core';
 
 import * as posedetection from '@tensorflow-models/pose-detection';
@@ -14,29 +12,22 @@ export class PoseDetector {
 	let renderer = null;
 	let useGpuRenderer = false;*/
 
-	constructor(useGpu, flipHorizontal) {
-		this.useGpu = useGpu;
-		this.flipHorizontal = flipHorizontal;
+	constructor() {
+		tf.setBackend("webgl");
 	}
 
-	createDetector() {
+	async createDetector() {
+		await tf.ready();
 		let modelType = posedetection.movenet.modelType.SINGLEPOSE_THUNDER;
-		this.detector = posedetection.createDetector(posedetection.SupportedModels.MoveNet, { modelType });
+		this.detector = await posedetection.createDetector(posedetection.SupportedModels.MoveNet, { modelType });
 	}
 
 	async estimatePose(video) {
-		let poses = []
-		if (this.useGpu) {
-			const [posesTemp, canvasInfoTemp] = await detector.estimatePosesGPU(
-				video, { maxPoses: 1, flipHorizontal: false },
-				true);
-			poses = posesTemp;
-			canvasInfo = canvasInfoTemp;
-		} else {
-			poses = await detector.estimatePoses(
-				video, { maxPoses: 1, flipHorizontal: false });
-		}
-		return poses;
+		return await this.detector.estimatePoses(video);
+	}
+
+	tfReady() {
+		return tf.ready();
 	}
 
 	/*async checkGuiUpdate() {
