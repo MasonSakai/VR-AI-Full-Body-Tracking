@@ -19,7 +19,20 @@ const ContentTypes = {
 	"json": "application/json"
 }
 
-const server = http.createServer((req, res) => {
+async function readRequest(req) {
+	return new Promise((resolve, reject) => {
+		var body = "";
+		req.on("data", function (chunk) {
+			body += chunk;
+		});
+
+		req.on("end", function () {
+			resolve(body);
+		});
+	})
+}
+
+function serverGet(req, res) {
 	try {
 		var url = req.url;
 		if (url == "/config.json") {
@@ -66,12 +79,69 @@ const server = http.createServer((req, res) => {
 		res.setHeader('Content-Type', 'text/plain');
 		res.end("File Not Found");
 	}
+}
+function serverPUT(req, res) {
+	var url = req.url;
+	try {
+		if (url == "/config.json") {
+			readRequest(req).then((body) => {
+				let data = JSON.parse(body);
+				let id = data.id;
+				try {
+					data.id = undefined;
+					data.status = undefined;
+					config.windowConfigs[id] = data;
+					fs.writeFile("config.json", JSON.stringify(config, null, '\t'), (err) => {
+						if (err) {
+							console.log(err);
+							res.statusCode = 400;
+							res.setHeader('Content-Type', 'text/plain');
+							res.end(`error (is ID ${id} invalid?)`);
+						} else {
+							res.statusCode = 200;
+							res.end();
+						}
+					});
+				} catch (err) {
+					console.log(err);
+					res.statusCode = 400;
+					res.setHeader('Content-Type', 'text/plain');
+					res.end(`error (is ID ${id} invalid?)`);
+				}
+			});
+			return;
+		}
+
+
+		res.statusCode = 405;
+		res.setHeader('Content-Type', 'text/plain');
+		res.end(`Action Not Allowed (cannot edit ${url})`);
+	} catch (err) {
+		console.log(err)
+		res.statusCode = 404;
+		res.setHeader('Content-Type', 'text/plain');
+		res.end("File Not Found");
+	}
+}
+
+const server = http.createServer((req, res) => {
+	switch (req.method) {
+		case "GET":
+			serverGet(req,res);
+			break;
+		case "PUT":
+			serverPUT(req, res);
+			break;
+		default:
+			console.log("Defaulted on http method: " + req.method);
+			break;
+	}
 });
 
 const socketServer = new Server(server);
 
 function startBrowser() {
-	open(hostname + ":" + port, { app: { name: apps.browserPrivate } });
+	open(hostname + ":" + port, { app: { name: apps.browser } });
 }
 
 function onBrowserInit(msg) {
@@ -146,6 +216,10 @@ if (openBrowsers) {
  *	Send to Host:
  *		AI results
  *		status
- *	Receive from Host: (figure out how to do, pure sockets?)
+ *		camera snapshot (on request)
+ *	Receive from Host:
  *		config changes
+ *	
+ *	incorperate playspace mover into main (or figure out compatability)
+ *	in calibration get camera position first, and maybe calculate a general percentage between controller (tracking) and wrist (ai tracking) positions in t-pose
  */

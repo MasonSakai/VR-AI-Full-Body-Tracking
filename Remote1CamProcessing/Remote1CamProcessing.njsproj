@@ -47,7 +47,7 @@
     <Content Include="server.mjs" />
     <Content Include="package.json" />
     <Content Include="README.md" />
-    <Content Include="src\ai-worker.js">
+    <Content Include="src\ai-manager.js">
       <SubType>Code</SubType>
     </Content>
     <Content Include="src\camera-manager.js">
