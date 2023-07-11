@@ -22,10 +22,7 @@ const ContentTypes = {
 const server = http.createServer((req, res) => {
 	try {
 		var url = req.url;
-		//console.log(`URL: ${url}`);
-		
 		if (url == "/config.json") {
-			//console.log("Config.json requested");
 			let doc = "";
 			try {
 				doc = fs.readFileSync("config.json");
@@ -41,9 +38,7 @@ const server = http.createServer((req, res) => {
 				data = data.windowConfigs[opened];
 				data.id = opened;
 				data.status = "ok";
-				//console.log(data);
 			} catch (err) {
-				//console.log("no-config");
 				data = {
 					id: opened,
 					status: "no-config"
@@ -61,7 +56,6 @@ const server = http.createServer((req, res) => {
 
 		var splits = url.split('.');
 		var contentType = ContentTypes[splits[splits.length - 1]];
-		//console.log(contentType);
 
 		res.statusCode = 200;
 		res.setHeader('Content-Type', contentType);
