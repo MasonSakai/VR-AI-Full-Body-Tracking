@@ -37,7 +37,7 @@ lblState.innerHTML = "<i>Loading Socket...</i>";
 
 const nodeSocket = io();
 
-var hostSocket
+var hostSocket;// = io();
 
 lblState.innerHTML = "<i>Loading...</i>";
 
@@ -52,7 +52,7 @@ const DefaultConfig = {
 let config = DefaultConfig;
 let configUpdate = {};
 
-var activeState = true;
+var activeState = false;
 
 async function fetchAsync(url) {
 	let response = await fetch(url);
@@ -178,6 +178,14 @@ btnCancel.onclick = () => {
 	txtIP.value = config.url;
 };
 
+btnStart.onclick = () => {
+	startAILoop();
+};
+btnStop.onclick = () => {
+	activeState = false;
+	//Stop();
+};
+
 camera.updateCameraSelector(camSelect);
 
 btnCamRef.onclick = () => {
@@ -223,13 +231,13 @@ async function drawPose(pose) {
 	});
 }
 
+nodeSocket.on("closing", () => {
+	console.log("Node.js Closing");
+	nodeSocket.disconnect();
+})
 nodeSocket.on("disconnect", () => {
 	console.log("disconnected");
 });
-
-window.onclose = () => {
-	nodeSocket.emit("message", "Closing...");
-}
 
 function debounce(func, wait, immediate) {
 	var timeout;
@@ -261,31 +269,77 @@ function sleep(ms) {
 }
 
 async function sendPose(pose) {
-	
+	if (hostSocket && hostSocket.connected) {
+		hostSocket.emit("pose", pose);
+	}
 }
 
 async function AILoop() {
 	let pose = await poseDetector.getFilteredPose(video, config.confidenceThreshold);
+	await sendPose(pose);
 	drawPose(pose);
-	sendPose(pose);
 }
 
+// Will return true if successfully connected, will return false if:
+//     already connected, url is empty, or error occurs (see console for details)
+async function tryConnectHost() {
+	if (hostSocket && hostSocket.connected) return false;
+	if (config.url == "") return false;
+	try {
+		hostSocket = io(config.url);
+		let waiting = true;
+		let timeout = setTimeout(() => { waiting = false; }, 30000);
+		while (waiting) {
+			if (hostSocket.connected) {
+				clearTimeout(timeout);
+				return true;
+			}
+		}
+		console.error("Couldn't connect");
+		hostSocket = undefined;
+	} catch (err) {
+		console.error(err);
+		hostSocket = undefined;
+	}
+	return false;
+
+}
+async function tryReconnectHost() {
+	if (hostSocket && hostSocket.connected) hostSocket.disconnect();
+	return await tryConnectHost();
+}
 
 async function startAILoop() {
-	activeState = true;
+	try {
+		activeState = true;
 
-	resizeCanvas();
-	canvas.classList.remove("d-none");
-	let start, end, delta;
-
-	while (activeState) {
-		start = startInferenceTime = (performance || Date).now();
-		AILoop();
-		end = startInferenceTime = (performance || Date).now();
-		delta = end - start;
-		if (delta < 16.66) {
-			await sleep(16.66 - delta);
+		if (!video.srcObject) {
+			let camid = await camera.getCameraIDByName(config.cameraName);
+			video.srcObject = await camera.getCameraStream(camid);
 		}
+		if (!poseDetector.detector) await poseDetector.createDetector();
+		if (!(hostSocket && hostSocket.connected)) await tryConnectHost();
+
+		resizeCanvas();
+		canvas.classList.remove("d-none");
+		let start, end, delta;
+
+		lblState.innerHTML = "Started Successfully"
+		if (!(hostSocket && hostSocket.connected)) lblState.innerHTML += "<br>Without connection to host"
+
+		while (activeState) {
+			start = (performance || Date).now();
+			await AILoop();
+			end = (performance || Date).now();
+			delta = end - start;
+			if (delta < 16.66) {
+				await sleep(16.66 - delta);
+			}
+		}
+	} catch (err) {
+		console.error(err);
+		activeState = false;
+		lblState.innerHTML = "Failed To Start..."
 	}
 }
 
@@ -319,8 +373,6 @@ async function GetConfig() {
 
 		if (data.autostart) {
 			lblState.innerHTML = "Autostarting...";
-			video.srcObject = await camera.getCameraStream(camid);
-			await poseDetector.createDetector()
 			startAILoop();
 		}
 		lblState.innerHTML = "Loaded!";

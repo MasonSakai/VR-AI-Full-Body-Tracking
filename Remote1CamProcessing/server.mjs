@@ -7,7 +7,6 @@ import open, { apps }  from 'open';
 let config = JSON.parse(fs.readFileSync("config.json"));
 let openBrowsers = config.autostart;
 let opened = 0;
-let openedHandles = [];
 
 let hostname = config.hostname;
 let port = config.port;
@@ -151,10 +150,11 @@ function onBrowserInit(msg) {
 		if (msg == "successful") {
 			opened++;
 			console.log(`Successfully opened ${opened} windows`)
-			if (config.windowConfigs.length > opened) {
+			if (opened < config.windowConfigs.length) {
 				startBrowser();
 			} else {
 				console.log("Successfully opened all windows");
+				openBrowsers = false;
 			}
 		} else {
 			console.log("Stopping browser open, latest failed to initialize")
@@ -188,7 +188,11 @@ server.listen(port, hostname, () => {
 async function onClose() {
 	console.log('Closing');
 
+	socketServer.emit("closing");
+
 	process.exit();
+	return;
+
 }
 
 process.on('SIGHUP', onClose);
