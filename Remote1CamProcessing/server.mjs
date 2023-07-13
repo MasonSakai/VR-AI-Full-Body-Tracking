@@ -140,8 +140,13 @@ const server = http.createServer((req, res) => {
 const socketServer = new Server(server);
 
 function startBrowser() {
-	let args = { app: { name: apps.browser } };
-	if (opened == 0) args.app.arguments = ["--new-window", "/new-window"];
+	let args = {
+		app:
+		{
+			name: apps.browserPrivate,
+			arguments: ["--new-window", "/new-window"]
+		}
+	};
 	open(hostname + ":" + port, args);
 }
 
@@ -155,6 +160,7 @@ function onBrowserInit(msg) {
 			} else {
 				console.log("Successfully opened all windows");
 				openBrowsers = false;
+				opened = 0;
 			}
 		} else {
 			console.log("Stopping browser open, latest failed to initialize")

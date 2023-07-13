@@ -22,11 +22,6 @@
 .control-panel td:first-child {
 	text-align: right;
 }
-tr .space-below {
-	margin-bottom: 5px;
-	border-bottom: thin solid grey;
-	padding-bottom: 5px;
-}
 
 
 

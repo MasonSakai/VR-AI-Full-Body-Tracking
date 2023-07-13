@@ -55,6 +55,7 @@ bool active = true;
 std::thread TrackerUpdateLoopThread;
 
 bool IOTest = false;
+bool NoBreak = false;
 
 bool findTrackers() {
 	if (inputEmulator.getVirtualDeviceCount() == 3) {
@@ -454,27 +455,24 @@ int32_t ReceiveInt32_t() {
 	uint8_t c;
 	int32_t v = 0;
 	for (int i = 0; i < 4; i++) {
-		c = std::cin.get();
+		c = getchar();
 		v = v << 8;
 		v += c;
 	}
-	std::cin.get();
 	return v;
 }
 int16_t ReceiveInt16_t() {
 	uint8_t c;
 	int16_t v = 0;
 	for (int i = 0; i < 2; i++) {
-		c = std::cin.get();
+		c = getchar();
 		v = v << 8;
 		v += c;
 	}
-	std::cin.get();
 	return v;
 }
-int32_t ReceiveInt8_t() {
-	uint8_t v = std::cin.get();
-	std::cin.get();
+int8_t ReceiveInt8_t() {
+	uint8_t v = getchar();
 	return v;
 }
 float ReceiveFloat() {
@@ -482,13 +480,39 @@ float ReceiveFloat() {
 	uint8_t b[4];
 	uint8_t c;
 	for (int i = 0; i < 4; i++) {
-		b[i] = std::cin.get();
+		b[i] = getchar();
 	}
-	std::cin.get();
 	memcpy(&f, &b, sizeof(f));
 	return f;
 }
 
+void ReceivePose() {
+	//0b1xxxxxxx socket disconnected
+	//0b-xxxxxxx socket index
+	uint8_t socket = ReceiveInt8_t();
+	std::cout << socket << std::endl;
+	if (socket & 0b10000000) {
+		std::cout << "Disconnected" << std::endl;
+		//Clear data
+		return;
+	}
+
+	//0b1xxxxxxx empty point
+	uint8_t flags;
+	for (int i = 0; i < 17; i++) {
+		flags = ReceiveInt8_t();
+		if (flags & 0b10000000) {
+			//Set Empty Data
+		}
+		else
+		{
+			ReceiveFloat();
+			ReceiveFloat();
+			ReceiveFloat();
+		}
+	}
+
+}
 
 void HandleArgs(int argc, char* argv[]) {
 	if (argc < 2) return;
@@ -501,6 +525,10 @@ void HandleArgs(int argc, char* argv[]) {
 		else if (!strcmp(argv[i], "NoVR")) {
 			std::cout << std::endl << " - Running in No VR mode (IO Testing Only)";
 			IOTest = true;
+		}
+		else if (!strcmp(argv[i], "NoBreak")) {
+			std::cout << std::endl << " - Removing Close Protection";
+			NoBreak = true;
 		}
 		std::cout << std::endl << std::flush;
 	}
@@ -534,9 +562,9 @@ static bool EndProgram(DWORD signal) {
 
 int main(int argc, char* argv[])
 {
-	SetConsoleCtrlHandler((PHANDLER_ROUTINE)EndProgram, true);
 
 	HandleArgs(argc, argv);
+	if(!NoBreak) SetConsoleCtrlHandler((PHANDLER_ROUTINE)EndProgram, true);
 
 	if (!IOTest) {
 		vr::EVRInitError error = vr::VRInitError_Compositor_Failed;
@@ -576,12 +604,17 @@ int main(int argc, char* argv[])
 		TrackerUpdateLoopThread = std::thread(TrackerUpdateLoop);
 	}
 
+	std::cout << (byte)0 << std::flush;
+
+	// 0b1xxxxxxx test variables
+	// 0b01111111 close program
+	// 0b01000000 pose data
 	uint8_t c;
 	int32_t i;
 	float f;
 	while (true)
 	{
-		c = std::cin.get();
+		c = ReceiveInt8_t();
 		switch (c)
 		{
 		case 0b10001000:
@@ -600,7 +633,10 @@ int main(int argc, char* argv[])
 			f = ReceiveFloat();
 			std::cout << f << std::endl << std::flush;
 			break;
-		case 0b01111111:
+		case 0b01000000:
+			ReceivePose();
+			break;
+		case 0b01111111: //127; close program
 			endProgram();
 			return 0;
 		default:

@@ -4,7 +4,8 @@ const { io } = require("socket.io-client");
 const { Camera } = require("./camera-manager");
 const { PoseDetector } = require("./ai-manager");
 
-const canvas = document.getElementsByTagName("canvas")[0];
+
+const controlPanel = document.getElementsByClassName("control-panel")[0];
 
 const lblState = document.getElementById("lbl-state");
 
@@ -15,6 +16,7 @@ const cbxAutostart = document.getElementById("cbx-autostart");
 const camSelect = document.getElementById("camera-select");
 const btnCamRef = document.getElementById("btn-camref");
 const video = document.getElementsByTagName("video")[0];
+const canvas = document.getElementsByTagName("canvas")[0];
 
 const txtIP = document.getElementById("txt-ip");
 const ipSelect = document.getElementById("ip-select");
@@ -46,8 +48,7 @@ const DefaultConfig = {
 	"url": "",
 	"cameraName": "",
 	"autostart": false,
-	"confidenceThreshold": 0.3,
-	"closeOnDisconnect": true
+	"confidenceThreshold": 0.3
 };
 let config = DefaultConfig;
 let configUpdate = {};
@@ -234,9 +235,14 @@ async function drawPose(pose) {
 nodeSocket.on("closing", () => {
 	console.log("Node.js Closing");
 	nodeSocket.disconnect();
+
 })
 nodeSocket.on("disconnect", () => {
 	console.log("disconnected");
+	controlPanel.classList.add("d-none");
+});
+nodeSocket.on("connect", () => {
+	controlPanel.classList.remove("d-none");
 });
 
 function debounce(func, wait, immediate) {
@@ -259,6 +265,7 @@ function resizeCanvas() {
 	canvas.width = rect.width;
 	canvas.height = rect.height;
 	poseDetector.width = rect.width;
+	if (poseDetector) poseDetector.width = rect.width;
 }
 resizeCanvas();
 
@@ -288,14 +295,16 @@ async function tryConnectHost() {
 	try {
 		hostSocket = io(config.url);
 		let waiting = true;
-		let timeout = setTimeout(() => { waiting = false; }, 30000);
+		let timeout = setTimeout(() => { waiting = false; }, 10000);
 		while (waiting) {
+			await sleep(100);
 			if (hostSocket.connected) {
 				clearTimeout(timeout);
 				return true;
 			}
 		}
 		console.error("Couldn't connect");
+		hostSocket.disconnect();
 		hostSocket = undefined;
 	} catch (err) {
 		console.error(err);
@@ -318,11 +327,16 @@ async function startAILoop() {
 			video.srcObject = await camera.getCameraStream(camid);
 		}
 		if (!poseDetector.detector) await poseDetector.createDetector();
-		if (!(hostSocket && hostSocket.connected)) await tryConnectHost();
+		if (!(hostSocket && hostSocket.connected)) tryConnectHost();
 
 		resizeCanvas();
 		canvas.classList.remove("d-none");
 		let start, end, delta;
+
+		/*poseDetector.estimatePose(video).then((data) => {
+			console.log(data[0].keypoints.map((d) => {
+				return d.name;
+			}))});*/
 
 		lblState.innerHTML = "Started Successfully"
 		if (!(hostSocket && hostSocket.connected)) lblState.innerHTML += "<br>Without connection to host"

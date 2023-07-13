@@ -22,7 +22,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="OneCameraTrackingHost.py" />
-    <Compile Include="OneCameraTrackingSubprocess.py" />
+    <Compile Include="OCTSubprocess.py" />
+    <Compile Include="SocketManager.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

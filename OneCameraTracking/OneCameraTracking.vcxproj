@@ -88,10 +88,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\VSProjects\OpenVR-InputEmulator\third-party\boost_1_63_0;C:\VSProjects\OpenVR-InputEmulator\openvr\headers;C:\VSProjects\OpenVR-InputEmulator\lib_vrinputemulator\include;C:\VSProjects\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\VSProjects\OpenVR-InputEmulator\Debug\lib\x64;C:\VSProjects\OpenVR-InputEmulator\third-party\boost_1_63_0\stage\lib;C:\VSProjects\OpenVR-InputEmulator\openvr\lib\win64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>openvr_api.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -116,12 +119,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Mason Sakai\source\repos\glm;C:\Users\Mason Sakai\source\repos\OpenVR-InputEmulator\third-party\boost_1_63_0;C:\Users\Mason Sakai\source\repos\OpenVR-InputEmulator\openvr\headers;C:\Users\Mason Sakai\source\repos\OpenVR-InputEmulator\lib_vrinputemulator\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VSProjects\glm;C:\VSProjects\OpenVR-InputEmulator\third-party\boost_1_63_0;C:\VSProjects\OpenVR-InputEmulator\openvr\headers;C:\VSProjects\OpenVR-InputEmulator\lib_vrinputemulator\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\Mason Sakai\source\repos\OpenVR-InputEmulator\openvr\lib\win64;C:\Users\Mason Sakai\source\repos\OpenVR-InputEmulator\Debug\lib\x64;C:\Users\Mason Sakai\source\repos\OpenVR-InputEmulator\third-party\boost_1_63_0\stage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\VSProjects\OpenVR-InputEmulator\openvr\lib\win64;C:\VSProjects\OpenVR-InputEmulator\Debug\lib\x64;C:\VSProjects\OpenVR-InputEmulator\third-party\boost_1_63_0\stage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>libvrinputemulator.lib;openvr_api.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
