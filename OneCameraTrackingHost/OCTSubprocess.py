@@ -1,6 +1,7 @@
 from subprocess import Popen, PIPE
 import threading
 import struct
+import sys
 
 Active = False
 
@@ -16,19 +17,30 @@ def SendInt8_t(v):
     Process.stdin.write(chr(v).encode('latin1'))
     Process.stdin.flush()
 def SendFloat(v):
-    Process.stdin.write(bytearray(struct.pack("f", 5.1)))
+    Process.stdin.write(bytearray(struct.pack("f", v)))
     Process.stdin.flush()
 def SendCode(v):
     SendInt8_t(v);
 
+def errorOutputLoop():
+    stderr = Process.stderr;
+    print("Starting Error Thread...")
+    while(True):
+        try:
+            text = stderr.read1();
+            print(text.decode('latin1'), end='', file=sys.stderr)
+        except Exception as e:
+            break
+    print("Error Thread Ending")
+
 def StartSubprocess(fileName):
     global Process
-    Process = Popen([fileName, "NoVR", "NoBreak"], stdout=PIPE, stdin=PIPE)
+    Process = Popen([fileName, "NoBreak", "NoVR"], stdout=PIPE, stdin=PIPE, stderr=PIPE) #"NoVR", 
     active = True
+    threading.Thread(target=errorOutputLoop).start()
 def StopProgram():
     active = False
-    Process.communicate(chr(127).encode())
-   
+    Process.communicate(chr(255).encode('latin1'))
 
 def WaitForInit():
     stdout = Process.stdout
@@ -39,29 +51,3 @@ def WaitForInit():
             elif(text == b'\x01'):
                 return False
             print(text.decode('latin1'), end='')
-
-def outputLoop(stdout):
-    print("Starting Thread...")
-    while(True):
-        try:
-            text = stdout.read1().decode('latin1')
-            print(text, end='')
-        except Exception as e:
-            break
-    print("Thread Ending")
-
-def BeginPrint():
-    threading.Thread(target=outputLoop, args=(Process.stdout,)).start()
-
-def BeginTest():
-    BeginPrint()
-    time.sleep(2)
-    SendCode(136)
-    SendInt32_t(27)
-    SendCode(137)
-    SendInt16_t(68)
-    SendCode(138)
-    SendInt8_t(100)
-    SendCode(139)
-    SendFloat(5.1)
-    time.sleep(2)

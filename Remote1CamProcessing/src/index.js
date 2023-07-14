@@ -287,6 +287,18 @@ async function AILoop() {
 	drawPose(pose);
 }
 
+
+function InitHost() {
+	hostSocket.on("request size", () => {
+		console.log("Request Size");
+		let rect = video.getBoundingClientRect();
+		hostSocket.emit("request size", {
+			width: rect.width,
+			height: rect.height
+		});
+	});
+}
+
 // Will return true if successfully connected, will return false if:
 //     already connected, url is empty, or error occurs (see console for details)
 async function tryConnectHost() {
@@ -297,9 +309,9 @@ async function tryConnectHost() {
 		let waiting = true;
 		let timeout = setTimeout(() => { waiting = false; }, 10000);
 		while (waiting) {
-			await sleep(100);
 			if (hostSocket.connected) {
 				clearTimeout(timeout);
+				InitHost();
 				return true;
 			}
 		}
@@ -327,7 +339,13 @@ async function startAILoop() {
 			video.srcObject = await camera.getCameraStream(camid);
 		}
 		if (!poseDetector.detector) await poseDetector.createDetector();
-		if (!(hostSocket && hostSocket.connected)) tryConnectHost();
+		if (!(hostSocket && hostSocket.connected)) {
+			//tryConnectHost();
+			if (config.url != "") {
+				hostSocket = io(config.url);
+				InitHost();
+			}
+		}
 
 		resizeCanvas();
 		canvas.classList.remove("d-none");

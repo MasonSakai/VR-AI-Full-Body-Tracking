@@ -38,8 +38,15 @@ class Client:
                 OCTSubprocess.SendFloat(data[name]['score']);
             else:
                 OCTSubprocess.SendCode(128);
+
+    def onSize(self, data):
+        OCTSubprocess.SendCode(68)
+        OCTSubprocess.SendInt8_t(self.index)
+        OCTSubprocess.SendInt16_t(data["width"])
+        OCTSubprocess.SendInt16_t(data["height"])
+
     def onDisconnect(self):
-        OCTSubprocess.SendCode(64)
-        OCTSubprocess.SendCode(self.index + 128);
+        OCTSubprocess.SendCode(66)
+        OCTSubprocess.SendCode(self.index);
 
 
