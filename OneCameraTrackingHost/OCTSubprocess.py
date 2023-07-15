@@ -7,18 +7,25 @@ Active = False
 
 Process = None
 
+def SendBytes(bytes):
+    #print(bytes)
+    for b in bytes:
+        #split, xxxx---- then ----xxxx
+        b1 = (192 + (b >> 4)).to_bytes(1)
+        b2 = (192 + (b & 15)).to_bytes(1)
+        Process.stdin.write(b1)
+        Process.stdin.write(b2)
+        #print(b1,b2,sep='',end='');
+    #print()
+    Process.stdin.flush()
 def SendInt32_t(v):
-    Process.stdin.write(v.to_bytes(4, 'big'))
-    Process.stdin.flush()
+    SendBytes(v.to_bytes(4, 'big'))
 def SendInt16_t(v):
-    Process.stdin.write(v.to_bytes(2, 'big'))
-    Process.stdin.flush()
+    SendBytes(v.to_bytes(2, 'big'))
 def SendInt8_t(v):
-    Process.stdin.write(chr(v).encode('latin1'))
-    Process.stdin.flush()
+    SendBytes(chr(v).encode('latin1'))
 def SendFloat(v):
-    Process.stdin.write(bytearray(struct.pack("f", v)))
-    Process.stdin.flush()
+    SendBytes(bytearray(struct.pack("f", v)))
 def SendCode(v):
     SendInt8_t(v);
 

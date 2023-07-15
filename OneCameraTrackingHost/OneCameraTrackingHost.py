@@ -17,11 +17,13 @@ sio = socketio.Server(cors_allowed_origins='*')
 app = socketio.WSGIApp(sio)
 
 indexQueue = queue.Queue()
-#  0 reserved
-# 10 reserved
-# 13 reserved
+#  0 reserved (for empty bytes)
+#  4 reserved (eof indicator)
+# 10 reserved (\n)
+# 13 reserved (\r)
 # 17 Request Index Return
 # 18 Request Size
+# 26 reserved (eof indicator)
 def OnSpecial(code):
     if(code == 17):
         sid = indexQueue.get()
@@ -88,7 +90,10 @@ def outputLoop():
 threading.Thread(target=outputLoop).start()
 print("Started")
 
-wsgi.server(eventlet.listen(('', 2673)), app, log=open(os.devnull,"w"))
+try:
+    wsgi.server(eventlet.listen(('', 2673)), app, log=open(os.devnull,"w"))
+except Exception as e:
+    print(e, file=sys.stderr)
 
 print("Stopping...")
 time.sleep(5)

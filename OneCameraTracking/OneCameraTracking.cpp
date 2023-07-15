@@ -415,36 +415,41 @@ void TrackerUpdateLoop() {
 	onClose();
 }
 
+// add eof protection/checks?
+int8_t ReceiveInt8_t() {
+	int8_t v = 0;
+	int8_t c = getchar();
+	v = c << 4;
+	c = getchar();
+	v += (c & 0x0f);
+	return v;
+}
+int16_t ReceiveInt16_t() {
+	int c;
+	int16_t v = 0;
+	for (int i = 0; i < 2; i++) {
+		c = ReceiveInt8_t();
+		v = v << 8;
+		v += c;
+	}
+	return v;
+}
 int32_t ReceiveInt32_t() {
 	uint8_t c;
 	int32_t v = 0;
 	for (int i = 0; i < 4; i++) {
-		c = getchar();
+		c = ReceiveInt8_t();
 		v = v << 8;
 		v += c;
 	}
-	return v;
-}
-int16_t ReceiveInt16_t() {
-	uint8_t c;
-	int16_t v = 0;
-	for (int i = 0; i < 2; i++) {
-		c = getchar();
-		v = v << 8;
-		v += c;
-	}
-	return v;
-}
-int8_t ReceiveInt8_t() {
-	uint8_t v = getchar();
 	return v;
 }
 float ReceiveFloat() {
 	float f;
 	uint8_t b[4];
-	uint8_t c;
+	int c;
 	for (int i = 0; i < 4; i++) {
-		b[i] = getchar();
+		b[i] = ReceiveInt8_t();;
 	}
 	memcpy(&f, &b, sizeof(f));
 	return f;
@@ -458,12 +463,10 @@ void ReceivePose() {
 	for (int i = 0; i < 17; i++) {
 		flags = ReceiveInt8_t();
 		if (flags & 0b10000000) {
-			//Set Empty Data
 			trackers[i].ClearPose(socket);
 		}
 		else
 		{
-			//set data
 			float x = ReceiveFloat();
 			float y = ReceiveFloat();
 			float s = ReceiveFloat();
@@ -475,6 +478,7 @@ void ReceivePose() {
 }
 
 void RequestCameraSize(byte camera) {
+	cameras[camera].waitingForSize = true;
 	std::cout << (byte)18 << camera << std::flush;
 }
 
@@ -488,7 +492,6 @@ void CalibrationThreadFunct() {
 	calibrating = true;
 	while (!calibrationQueue.empty()) {
 		camera = calibrationQueue.front();
-		cameras[camera].waitingForSize = true;
 		RequestCameraSize(camera);
 		std::cout << "Begining Calibration of camera " << (int)camera << std::endl;
 
@@ -660,7 +663,7 @@ void endProgram() {
 	active = false;
 
 	if (!IOTest) {
-		TrackerUpdateLoopThread.join();
+		//TrackerUpdateLoopThread.join();
 	}
 }
 
@@ -677,7 +680,7 @@ static bool EndProgram(DWORD signal) {
 			endProgram();
 			return true;
 		}
-		return false;
+		return true;
 
 	default:
 		return false;
@@ -725,7 +728,7 @@ int main(int argc, char* argv[])
 
 		handOffset.y = -_handDownHeight;
 
-		TrackerUpdateLoopThread = std::thread(TrackerUpdateLoop);
+		//TrackerUpdateLoopThread = std::thread(TrackerUpdateLoop);
 	}
 
 	for (uint8_t i = 0; i < 17; i++) {
@@ -767,7 +770,7 @@ int main(int argc, char* argv[])
 			endProgram();
 			return 0;
 		default:
-			std::cout << c << std::flush;
+			std::cout << "Defaulted on " << (int)c << std::endl << std::flush;
 			break;
 		}
 	}

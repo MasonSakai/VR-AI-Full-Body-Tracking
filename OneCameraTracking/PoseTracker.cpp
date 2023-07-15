@@ -110,7 +110,7 @@ void Camera::Calibrate(glm::vec3 position, glm::quat qp,
 	glm::vec3 v2, glm::vec2 p2, glm::quat q2,
 	glm::vec3 v3, glm::vec2 p3, glm::quat q3) {
 
-	/*std::cout << "pos: {" << position.x << ", " << position.y << ", " << position.z << "}\n";
+	std::cout << "pos: {" << position.x << ", " << position.y << ", " << position.z << "}\n";
 	std::cout << "v1: {" << v1.x << ", " << v1.y << ", " << v1.z << "}\n";
 	std::cout << "p1: {" << p1.x << ", " << p1.y << "}\n";
 	std::cout << "v2: {" << v2.x << ", " << v2.y << ", " << v2.z << "}\n";
