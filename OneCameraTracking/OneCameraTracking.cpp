@@ -616,9 +616,25 @@ void RequestAddCamera() {
 	for (int i = 0; i < 17; i++) {
 		trackers[i].InitCamera(n);
 	}
-	CalibrateCamera(n);
 }
 
+void OnCameraStart() {
+	uint8_t socket = ReceiveInt8_t();
+	std::cout << (int)socket << " Start" << std::endl;
+
+	cameras[socket].active = true;
+	cameras[socket].connected = true;
+}
+void OnCameraStop() {
+	uint8_t socket = ReceiveInt8_t();
+	std::cout << (int)socket << " Stopped" << std::endl;
+
+	cameras[socket].active = false;
+	cameras[socket].connected = true;
+	for (uint8_t i = 0; i < 17; i++) {
+		trackers[i].ClearPose(socket);
+	}
+}
 void OnCameraDisconnect() {
 	uint8_t socket = ReceiveInt8_t();
 	std::cout << (int)socket << " Disconnected" << std::endl;
@@ -663,7 +679,7 @@ void endProgram() {
 	active = false;
 
 	if (!IOTest) {
-		//TrackerUpdateLoopThread.join();
+		TrackerUpdateLoopThread.join();
 	}
 }
 
@@ -678,7 +694,8 @@ static bool EndProgram(DWORD signal) {
 		if (!NoBreak) {
 			std::cout << "Closing..." << std::endl;
 			endProgram();
-			return true;
+			exit(0);
+			return false;
 		}
 		return true;
 
@@ -728,7 +745,7 @@ int main(int argc, char* argv[])
 
 		handOffset.y = -_handDownHeight;
 
-		//TrackerUpdateLoopThread = std::thread(TrackerUpdateLoop);
+		TrackerUpdateLoopThread = std::thread(TrackerUpdateLoop);
 	}
 
 	for (uint8_t i = 0; i < 17; i++) {
@@ -743,6 +760,8 @@ int main(int argc, char* argv[])
 	// 0b01000010 Camera Disconnected
 	// 0b01000011 Begin Calibration
 	// 0b01000100 Camera Size Return
+	// 0b01000101 Camera Start
+	// 0b01000110 Camera Stop
 	uint8_t c;
 	int32_t i;
 	float f;
@@ -765,6 +784,12 @@ int main(int argc, char* argv[])
 			break;
 		case 0b01000100:
 			OnCalibrationSizeReturn();
+			break;
+		case 0b01000101:
+			OnCameraStart();
+			break;
+		case 0b01000110:
+			OnCameraStop();
 			break;
 		case 0b11111111: //255; close program
 			endProgram();

@@ -130,16 +130,28 @@ void Camera::Calibrate(glm::vec3 position, glm::quat qp,
 	glm::vec3 handToHandCenter = (v1 + v2) / 2.0f;
 	glm::vec3 wristLeftReal = handToHandCenter - handToHandDelta * handToWristRatio * .5f;
 	glm::vec3 wristRightReal = handToHandCenter + handToHandDelta * handToWristRatio * .5f;
-	glm::vec3 wLRDel = wristLeftReal - position;
-	glm::vec3 wRRDel = wristRightReal - position;
+
+	//correct wrist position with hand to wrist ratio
+	glm::vec3 handToWristLeft = wristLeftReal - v1;
+	glm::vec3 handToWristRight = wristRightReal - v2;
+	std::cout << "handToWristLeft:  {" << handToWristLeft.x << ", " << handToWristLeft.y << ", " << handToWristLeft.z << "}\n";
+	std::cout << "handToWristRight: {" << handToWristRight.x << ", " << handToWristRight.y << ", " << handToWristRight.z << "}\n";
+	handToWristLeft = glm::rotate(glm::inverse(q1), handToWristLeft);
+	handToWristRight = glm::rotate(glm::inverse(q2), handToWristRight);
+	handToWrist = (handToWristLeft + handToWristRight) / 2.0f;
+	std::cout << "handToWristLeft:  {" << handToWristLeft.x << ", " << handToWristLeft.y << ", " << handToWristLeft.z << "}\n";
+	std::cout << "handToWristRight: {" << handToWristRight.x << ", " << handToWristRight.y << ", " << handToWristRight.z << "}\n";
+	std::cout << "handToWrist:      {" << handToWrist.x << ", " << handToWrist.y << ", " << handToWrist.z << "}\n\n" << std::flush;
 
 	//get radPerPixel
+	glm::vec3 wLRDel = wristLeftReal - position;
+	glm::vec3 wRRDel = wristRightReal - position;
 	float wtwRad = acosf(glm::dot(wLRDel, wRRDel) / (glm::length(wLRDel) * glm::length(wRRDel)));
 	float wtwPix = glm::length(p2 - p1);
 	radPerPixel = wtwRad / wtwPix;
 	std::cout << "radPerPixel: " << radPerPixel << "\n\n" << std::flush;
 
-	/* * correct wrist position with hand to wrist ratio
+	/* * 
 	*  * get wrist offsets using q1 and q2
 	*  * ankle is slightly off ground in calibration, correct for it
 	*  * get orientation

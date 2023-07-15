@@ -8,13 +8,19 @@ import threading
 import queue
 import os
 import sys
+import json
 
 FileName = r"..\x64\Debug\OneCameraTracking.exe"
+StaticFiles = {
+    '/': '../Remote1CamProcessing/dist/index.html',
+    '/main.js': '../Remote1CamProcessing/dist/main.js',
+    '/style.css': '../Remote1CamProcessing/dist/style.css',
+}
 
 sockets = {}
 
 sio = socketio.Server(cors_allowed_origins='*')
-app = socketio.WSGIApp(sio)
+app = socketio.WSGIApp(sio, static_files=StaticFiles)
 
 indexQueue = queue.Queue()
 #  0 reserved (for empty bytes)
@@ -29,6 +35,7 @@ def OnSpecial(code):
         sid = indexQueue.get()
         index = int.from_bytes(OCTSubprocess.Process.stdout.read(1), 'big')
         sockets[sid] = SocketManager.Client(index);
+        sio.emit("config", {}, to=sid);
     elif(code == 18):
         i = int.from_bytes(OCTSubprocess.Process.stdout.read(1), 'big')
         for k in sockets:
@@ -44,6 +51,29 @@ def connect(sid, environ):
     print('connect ', sid)
     indexQueue.put(sid)
     OCTSubprocess.SendCode(65)
+@sio.event
+def disconnect(sid):
+    print('disconnect ', sid)
+    global sockets
+    sockets[sid].onDisconnect()
+    
+@sio.on("config")
+def on_config(sid, data):
+    if(data == "get"):
+        #get
+        pass
+    else: #check if dict?
+        #tryset
+        pass
+    
+@sio.on("initialized")
+def on_initialized(sid, data):
+    if(data == "successful"):
+        #open next
+        pass
+    else:
+        #tryset
+        pass
 
 @sio.on("pose")
 def on_pose(sid, data):
@@ -57,11 +87,6 @@ def on_pose(sid, data):
     if(sid in sockets):
         sockets[sid].onSize(data);
 
-@sio.event
-def disconnect(sid):
-    print('disconnect ', sid)
-    global sockets
-    sockets[sid].onDisconnect()
 
 print("Starting...")
 OCTSubprocess.StartSubprocess(FileName)

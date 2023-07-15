@@ -4,7 +4,6 @@
 	"port": 2674,
 	"windowConfigs": [
 		{
-			"url": "127.0.0.1:2673",
 			"cameraName": "USB2.0 HD UVC WebCam (13d3:5666)",
 			"autostart": false,
 			"confidenceThreshold": 0.3
