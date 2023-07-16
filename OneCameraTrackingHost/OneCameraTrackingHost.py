@@ -28,7 +28,6 @@ sockets = {}
 sio = socketio.Server(cors_allowed_origins='*', logger=True, engineio_logger=True)
 app = socketio.WSGIApp(sio, static_files=StaticFiles)
 
-
 def RequestCalibration(index):
     OCTSubprocess.SendCode(67)
     OCTSubprocess.SendInt8_t(index)
@@ -41,13 +40,13 @@ indexQueue = queue.Queue()
 # 17 Request Index Return
 # 18 Request Size
 # 26 reserved (eof indicator)
-def OnSpecial(code):
+def OnSpecial(code): #figure out why this doesn't work
     global sio
     if(code == 17):
         sid = indexQueue.get()
         index = int.from_bytes(OCTSubprocess.Process.stdout.read(1), 'big')
         sockets[sid] = SocketManager.Client(index);
-        sio.emit("config", config["windowConfigs"][index], to=sid)
+        sio.emit("config", config["windowConfigs"][0], to=sid)
     elif(code == 18):
         i = int.from_bytes(OCTSubprocess.Process.stdout.read(1), 'big')
         for k in sockets:

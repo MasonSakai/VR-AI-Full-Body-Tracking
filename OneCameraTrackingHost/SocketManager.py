@@ -1,5 +1,10 @@
 import OCTSubprocess
 
+#Move all socketio processes here
+#separate socketio and webhosting components, it may work again
+#figure out how to close the server without ctrl+c
+#For the time being, revert it; I will deal with this later
+
 PoseDict = [
     "nose",
     "left_eye",
