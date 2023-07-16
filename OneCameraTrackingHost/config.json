@@ -1,0 +1,11 @@
+{
+	"autostart": true,
+	"port": 2674,
+	"windowConfigs": [
+		{
+			"cameraName": "USB2.0 HD UVC WebCam (13d3:5666)",
+			"autostart": false,
+			"confidenceThreshold": 0.3
+		}
+	]
+}

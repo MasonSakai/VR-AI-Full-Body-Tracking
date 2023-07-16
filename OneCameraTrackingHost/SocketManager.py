@@ -27,6 +27,7 @@ class Client:
         self.index = index
 
     def onPose(self, data):
+        print(self.index, "onPose")
         OCTSubprocess.SendCode(64)
         OCTSubprocess.SendCode(self.index)
         for i in range(0, len(PoseDict)):
@@ -40,6 +41,7 @@ class Client:
                 OCTSubprocess.SendCode(128);
 
     def onSize(self, data):
+        print(self.index, "onSize")
         OCTSubprocess.SendCode(68)
         OCTSubprocess.SendInt8_t(self.index)
         OCTSubprocess.SendInt16_t(data["width"])
@@ -48,5 +50,14 @@ class Client:
     def onDisconnect(self):
         OCTSubprocess.SendCode(66)
         OCTSubprocess.SendCode(self.index);
+
+    def onStart(self):
+        print(self.index, "onStart")
+        OCTSubprocess.SendCode(69)
+        OCTSubprocess.SendInt8_t(self.index)
+    def onStop(self):
+        print(self.index, "onStop")
+        OCTSubprocess.SendCode(70)
+        OCTSubprocess.SendInt8_t(self.index)
 
 

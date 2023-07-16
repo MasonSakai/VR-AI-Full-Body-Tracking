@@ -11,16 +11,27 @@ import sys
 import json
 
 FileName = r"..\x64\Debug\OneCameraTracking.exe"
+ConfigFile = r"./config.json"
 StaticFiles = {
     '/': '../Remote1CamProcessing/dist/index.html',
     '/main.js': '../Remote1CamProcessing/dist/main.js',
     '/style.css': '../Remote1CamProcessing/dist/style.css',
 }
 
+config = {
+	"autostart": False,
+	"port": 2674,
+	"windowConfigs": []
+}
 sockets = {}
 
-sio = socketio.Server(cors_allowed_origins='*')
+sio = socketio.Server(cors_allowed_origins='*', logger=True, engineio_logger=True)
 app = socketio.WSGIApp(sio, static_files=StaticFiles)
+
+
+def RequestCalibration(index):
+    OCTSubprocess.SendCode(67)
+    OCTSubprocess.SendInt8_t(index)
 
 indexQueue = queue.Queue()
 #  0 reserved (for empty bytes)
@@ -31,67 +42,82 @@ indexQueue = queue.Queue()
 # 18 Request Size
 # 26 reserved (eof indicator)
 def OnSpecial(code):
+    global sio
     if(code == 17):
         sid = indexQueue.get()
         index = int.from_bytes(OCTSubprocess.Process.stdout.read(1), 'big')
         sockets[sid] = SocketManager.Client(index);
-        sio.emit("config", {}, to=sid);
+        sio.emit("config", config["windowConfigs"][index], to=sid)
     elif(code == 18):
         i = int.from_bytes(OCTSubprocess.Process.stdout.read(1), 'big')
         for k in sockets:
             if(sockets[k].index == i):
-                sio.emit("request size", to=k)
-                return
+                sio.emit("requestSize", to=k)
+                break
     else:
         print("recieved:",code)
 
 
 @sio.event
 def connect(sid, environ):
-    print('connect ', sid)
+    print('connect', sid)
     indexQueue.put(sid)
     OCTSubprocess.SendCode(65)
 @sio.event
 def disconnect(sid):
-    print('disconnect ', sid)
-    global sockets
+    print('disconnect', sid)
     sockets[sid].onDisconnect()
     
 @sio.on("config")
 def on_config(sid, data):
     if(data == "get"):
-        #get
-        pass
+        sio.emit("config", config["windowConfigs"][sockets[sid].index], to=sid);
     else: #check if dict?
-        #tryset
-        pass
-    
+        print(data)
+        config["windowConfigs"][sockets[sid].index] = data
+        SaveConfig()
+   
+@sio.on("start")
+def on_start(sid):
+    sockets[sid].onStart()
+@sio.on("stopped")
+def on_stopped(sid):
+    sockets[sid].onStop()
+
 @sio.on("initialized")
 def on_initialized(sid, data):
-    if(data == "successful"):
-        #open next
-        pass
-    else:
-        #tryset
-        pass
+    print(sid, "onInitialized", data)
+    #if(data == "successful"):
+    #    #open next
+    #    pass
+    #else:
+    #    pass
 
 @sio.on("pose")
 def on_pose(sid, data):
-    global sockets
     if(sid in sockets):
         sockets[sid].onPose(data);
 
-@sio.on("request size")
+@sio.on("requestSize")
 def on_pose(sid, data):
-    global sockets
     if(sid in sockets):
         sockets[sid].onSize(data);
 
-
-print("Starting...")
-OCTSubprocess.StartSubprocess(FileName)
-OCTSubprocess.WaitForInit()
-
+def LoadConfig():
+    global config
+    try:
+        with open(ConfigFile, "r") as openfile:
+            config = json.load(openfile);
+            print(config)
+            openfile.close()
+    except Exception as e:
+        print(e)
+def SaveConfig():
+    print(config)
+    jObj = json.dumps(config, indent=4)
+    with open(ConfigFile, "w") as outfile:
+        outfile.write(jObj)
+        outfile.close()
 
 def outputLoop():
     print("Starting stdout Thread...")
@@ -112,15 +138,20 @@ def outputLoop():
         print(e, file=sys.stderr)
     print("stdout Thread Ending")
 
+
+print("Starting...")
+LoadConfig()
+OCTSubprocess.StartSubprocess(FileName)
+OCTSubprocess.WaitForInit()
 threading.Thread(target=outputLoop).start()
 print("Started")
 
 try:
-    wsgi.server(eventlet.listen(('', 2673)), app, log=open(os.devnull,"w"))
+    wsgi.server(eventlet.listen(('', config["port"])), app, log=open(os.devnull,"w"))
 except Exception as e:
     print(e, file=sys.stderr)
 
 print("Stopping...")
-time.sleep(5)
+time.sleep(1)
 OCTSubprocess.StopProgram()
 print("Stopped")

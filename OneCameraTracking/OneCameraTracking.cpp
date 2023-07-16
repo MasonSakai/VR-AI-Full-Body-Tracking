@@ -545,7 +545,7 @@ void CalibrationThreadFunct() {
 
 		std::cout << "Stay in the same place, T-Pose, and hold X/A\n";
 		std::cout << "Preferably have your hands level and facing outwards,\n";
-		std::cout << "This will be used to calibrate your hands from your wrists" << std::flush;
+		std::cout << "This will be used to calibrate your hands from your wrists\n" << std::flush;
 		std::this_thread::sleep_for(std::chrono::seconds(5));
 		while (!IOTest) {
 			uint64_t buttons = GetControllerState(vr::TrackedControllerRole_LeftHand).ulButtonPressed;
@@ -621,9 +621,7 @@ void RequestAddCamera() {
 void OnCameraStart() {
 	uint8_t socket = ReceiveInt8_t();
 	std::cout << (int)socket << " Start" << std::endl;
-
-	cameras[socket].active = true;
-	cameras[socket].connected = true;
+	CalibrateCamera(socket);
 }
 void OnCameraStop() {
 	uint8_t socket = ReceiveInt8_t();

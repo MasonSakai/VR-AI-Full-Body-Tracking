@@ -109,11 +109,11 @@ btnCancel.onclick = () => {
 	configUpdate = {};
 	cbxAutostart.checked = config.autostart;
 	camera.getCameraIDByName(config.cameraName).then((id) => { camSelect.value = id; });
-	txtIP.value = config.url;
 };
 
 btnStart.onclick = () => {
-	startAILoop();
+	//startAILoop();
+	hostSocket.emit("start");
 };
 btnStop.onclick = () => {
 	activeState = false;
@@ -146,9 +146,6 @@ camSelect.onchange = () => {
 cbxAutostart.onchange = () => {
 	configUpdate.autostart = cbxAutostart.checked;
 };
-txtIP.onchange = () => {
-	configUpdate.url = txtIP.value;
-};
 
 async function drawPose(pose) {
 	let ctx = canvas.getContext("2d");
@@ -178,14 +175,24 @@ hostSocket.on("connect", () => {
 	//hostSocket.emit("config", "get");
 });
 
-hostSocket.on("request size", () => {
+hostSocket.on("requestSize", () => {
 	console.log("Request Size");
 	let rect = video.getBoundingClientRect();
-	hostSocket.emit("request size", {
+	hostSocket.emit("requestSize", {
 		width: rect.width,
 		height: rect.height
 	});
 });
+
+hostSocket.on("config", (data) => {
+	console.log("On Config");
+	OnConfig(data);
+});
+
+hostSocket.onAny((data) => {
+	console.log("onAny");
+	console.log(data);
+})
 
 function debounce(func, wait, immediate) {
 	var timeout;
@@ -238,7 +245,9 @@ async function startAILoop() {
 			video.srcObject = await camera.getCameraStream(camid);
 		}
 		if (!poseDetector.detector) await poseDetector.createDetector();
+		await AILoop();
 		hostSocket.emit("start");
+		return;
 
 		resizeCanvas();
 		canvas.classList.remove("d-none");
@@ -268,7 +277,7 @@ async function startAILoop() {
 async function OnConfig(data) {
 
 	//console.log(data);
-	let status = data.status;
+	let status = "ok";//data.status;
 	if (status != "ok") {
 		console.log(`Error: ${status}`);
 		lblState.innerHTML = `Loaded Error/Status:<br>${status}`;
@@ -277,9 +286,7 @@ async function OnConfig(data) {
 		config = data;
 		let camid = await camera.getCameraIDByName(data.cameraName);
 		camSelect.value = camid;
-		//camSelect.dispatchEvent(new Event('change'));
 
-		txtIP.value = data.url;
 		cbxAutostart.checked = data.autostart;
 
 		if (data.autostart) {
