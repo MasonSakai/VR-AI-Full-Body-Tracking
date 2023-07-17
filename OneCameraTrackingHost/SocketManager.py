@@ -1,4 +1,5 @@
 import OCTSubprocess
+import __main__
 
 #Move all socketio processes here
 #separate socketio and webhosting components, it may work again

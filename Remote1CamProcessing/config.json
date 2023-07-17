@@ -1,7 +1,8 @@
 {
-	"autostart": true,
-	"hostname": "127.0.0.1",
+	"autostart": false,
 	"port": 2674,
+	"hostname": "127.0.0.1",
+	"hostport": 2673,
 	"windowConfigs": [
 		{
 			"cameraName": "USB2.0 HD UVC WebCam (13d3:5666)",

@@ -50,6 +50,7 @@ function serverGet(req, res) {
 				data = data.windowConfigs[opened];
 				data.id = opened;
 				data.status = "ok";
+				data.port = config.hostport
 			} catch (err) {
 				data = {
 					id: opened,
@@ -89,6 +90,7 @@ function serverPUT(req, res) {
 				try {
 					data.id = undefined;
 					data.status = undefined;
+					data.port = undefined;
 					config.windowConfigs[id] = data;
 					fs.writeFile("config.json", JSON.stringify(config, null, '\t'), (err) => {
 						if (err) {

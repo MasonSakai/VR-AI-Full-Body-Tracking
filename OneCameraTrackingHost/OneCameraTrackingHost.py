@@ -11,7 +11,7 @@ import sys
 import json
 
 FileName = r"..\x64\Debug\OneCameraTracking.exe"
-ConfigFile = r"./config.json"
+ConfigFile = r"../Remote1CamProcessing/config.json"
 StaticFiles = {
     '/': '../Remote1CamProcessing/dist/index.html',
     '/main.js': '../Remote1CamProcessing/dist/main.js',
@@ -21,11 +21,12 @@ StaticFiles = {
 config = {
 	"autostart": False,
 	"port": 2674,
+	"hostport": 2673,
 	"windowConfigs": []
 }
 sockets = {}
 
-sio = socketio.Server(cors_allowed_origins='*', logger=True, engineio_logger=True)
+sio = socketio.Server(cors_allowed_origins='*')#, logger=True, engineio_logger=True)
 app = socketio.WSGIApp(sio, static_files=StaticFiles)
 
 def RequestCalibration(index):
@@ -45,8 +46,9 @@ def OnSpecial(code): #figure out why this doesn't work
     if(code == 17):
         sid = indexQueue.get()
         index = int.from_bytes(OCTSubprocess.Process.stdout.read(1), 'big')
-        sockets[sid] = SocketManager.Client(index);
-        sio.emit("config", config["windowConfigs"][0], to=sid)
+        sockets[sid] = SocketManager.Client(index)
+        sockets[sid].onStart()
+        #sio.emit("config", config["windowConfigs"][0], to=sid)
     elif(code == 18):
         i = int.from_bytes(OCTSubprocess.Process.stdout.read(1), 'big')
         for k in sockets:
@@ -146,11 +148,11 @@ threading.Thread(target=outputLoop).start()
 print("Started")
 
 try:
-    wsgi.server(eventlet.listen(('', config["port"])), app, log=open(os.devnull,"w"))
+    wsgi.server(eventlet.listen(('', config["hostport"])), app, log=open(os.devnull,"w"))
 except Exception as e:
     print(e, file=sys.stderr)
 
 print("Stopping...")
 time.sleep(1)
-OCTSubprocess.StopProgram()
+OCTSubprocess.StopProgram() #Figure out why this calls abort
 print("Stopped")

@@ -34,13 +34,17 @@ const poseDetector = new PoseDetector(true, width);
 
 lblState.innerHTML = "<i>Loading Socket...</i>";
 
-const hostSocket = io();
+const nodeSocket = io();
+
+var hostSocket;// = io();
 
 lblState.innerHTML = "<i>Loading...</i>";
 
+var HostName = window.location.hostname;
+
 const DefaultConfig = {
 	"id": -1,
-	"url": "",
+	"port": -1,
 	"cameraName": "",
 	"autostart": false,
 	"confidenceThreshold": 0.3
@@ -49,6 +53,35 @@ let config = DefaultConfig;
 let configUpdate = {};
 
 var activeState = false;
+
+async function fetchAsync(port) {
+	let response = await fetch(port);
+	let data = await response.json();
+	return data;
+}
+async function fetchAsyncText(port) {
+	let response = await fetch(port);
+	let data = await response.text();
+	return data;
+}
+async function putAsync(port, data) {
+	return await fetch(port, {
+		method: 'PUT',
+		headers: {
+			'Content-type': 'application/json'
+		},
+		body: JSON.stringify(data)
+	});
+}
+async function putAsyncText(port, data) {
+	return await fetch(port, {
+		method: 'PUT',
+		headers: {
+			'Content-type': 'text/text'
+		},
+		body: data
+	});
+}
 
 function hidePutState() {
 	lblPutState.classList.add("d-none");
@@ -88,7 +121,21 @@ function applyConfigChage() {
 btnApply.onclick = () => {
 	try {
 		applyConfigChage();
-		hostSocket.emit("config", config);
+		putAsync("config.json", config)
+			.then((e) => {
+				switch (e.status) {
+					case 200:
+						setPutState("Successfully Applied Settings", 1000);
+						break;
+					case 400:
+					case 404:
+					case 405:
+					default:
+						console.log(e);
+						setPutState("Failed to Apply Settings", 5000);
+						break;
+				}
+			})
 	} catch (err) {
 		console.error(err);
 		setPutState("Failed to Apply Settings", 5000);
@@ -98,7 +145,21 @@ btnReset.onclick = () => {
 	try {
 		configUpdate = DefaultConfig;
 		if (applyConfigChage()) {
-			hostSocket.emit("config", config);
+			putAsync("config.json", config)
+				.then((e) => {
+					switch (e.status) {
+						case 200:
+							setPutState("Successfully Reset Settings", 1000);
+							break;
+						case 400:
+						case 404:
+						case 405:
+						default:
+							console.log(e);
+							setPutState("Failed to Reset Settings", 5000);
+							break;
+					}
+				})
 		}
 	} catch (err) {
 		console.error(err);
@@ -112,8 +173,7 @@ btnCancel.onclick = () => {
 };
 
 btnStart.onclick = () => {
-	//startAILoop();
-	hostSocket.emit("start");
+	startAILoop();
 };
 btnStop.onclick = () => {
 	activeState = false;
@@ -162,37 +222,18 @@ async function drawPose(pose) {
 	});
 }
 
-hostSocket.on("disconnect", () => {
+nodeSocket.on("closing", () => {
+	console.log("Node.js Closing");
+	nodeSocket.disconnect();
+
+})
+nodeSocket.on("disconnect", () => {
 	console.log("disconnected");
-	hostSocket.disconnect();
 	controlPanel.classList.add("d-none");
 });
-hostSocket.on("connect", () => {
+nodeSocket.on("connect", () => {
 	controlPanel.classList.remove("d-none");
-
-	lblState.innerHTML = "<i>Getting Config...</i>";
-
-	//hostSocket.emit("config", "get");
 });
-
-hostSocket.on("requestSize", () => {
-	console.log("Request Size");
-	let rect = video.getBoundingClientRect();
-	hostSocket.emit("requestSize", {
-		width: rect.width,
-		height: rect.height
-	});
-});
-
-hostSocket.on("config", (data) => {
-	console.log("On Config");
-	OnConfig(data);
-});
-
-hostSocket.onAny((data) => {
-	console.log("onAny");
-	console.log(data);
-})
 
 function debounce(func, wait, immediate) {
 	var timeout;
@@ -225,7 +266,7 @@ function sleep(ms) {
 }
 
 async function sendPose(pose) {
-	if (hostSocket.connected) {
+	if (hostSocket && hostSocket.connected) {
 		hostSocket.emit("pose", pose);
 	}
 }
@@ -234,6 +275,52 @@ async function AILoop() {
 	let pose = await poseDetector.getFilteredPose(video, config.confidenceThreshold);
 	await sendPose(pose);
 	drawPose(pose);
+}
+
+
+function InitHost() {
+	hostSocket.on("requestSize", () => {
+		console.log("Request Size");
+		let rect = video.getBoundingClientRect();
+		hostSocket.emit("requestSize", {
+			width: rect.width,
+			height: rect.height
+		});
+	});
+	hostSocket.onAny((data) => {
+		console.log(data);
+	});
+}
+
+// Will return true if successfully connected, will return false if:
+//     already connected, port is empty, or error occurs (see console for details)
+async function tryConnectHost() {
+	if (hostSocket && hostSocket.connected) return false;
+	if (config.port == "") return false;
+	try {
+		hostSocket = io(config.port);
+		let waiting = true;
+		let timeout = setTimeout(() => { waiting = false; }, 10000);
+		while (waiting) {
+			if (hostSocket.connected) {
+				clearTimeout(timeout);
+				InitHost();
+				return true;
+			}
+		}
+		console.error("Couldn't connect");
+		hostSocket.disconnect();
+		hostSocket = undefined;
+	} catch (err) {
+		console.error(err);
+		hostSocket = undefined;
+	}
+	return false;
+
+}
+async function tryReconnectHost() {
+	if (hostSocket && hostSocket.connected) hostSocket.disconnect();
+	return await tryConnectHost();
 }
 
 async function startAILoop() {
@@ -245,15 +332,25 @@ async function startAILoop() {
 			video.srcObject = await camera.getCameraStream(camid);
 		}
 		if (!poseDetector.detector) await poseDetector.createDetector();
-		await AILoop();
-		hostSocket.emit("start");
-		return;
+		if (!(hostSocket && hostSocket.connected)) {
+			//tryConnectHost();
+			if (config.port > 0) {
+				hostSocket = io(HostName + ":" + config.port);
+				InitHost();
+			}
+		}
 
 		resizeCanvas();
 		canvas.classList.remove("d-none");
 		let start, end, delta;
 
+		/*poseDetector.estimatePose(video).then((data) => {
+			console.log(data[0].keypoints.map((d) => {
+				return d.name;
+			}))});*/
+
 		lblState.innerHTML = "Started Successfully"
+		if (!(hostSocket && hostSocket.connected)) lblState.innerHTML += "<br>Without connection to host"
 
 		while (activeState) {
 			start = (performance || Date).now();
@@ -269,15 +366,23 @@ async function startAILoop() {
 		activeState = false;
 		lblState.innerHTML = "Failed To Start..."
 	}
-	if (hostSocket.connected)
-		hostSocket.emit("stopped");
 }
 
 
-async function OnConfig(data) {
+async function GetConfig() {
+	var response;
+	try {
+		response = await fetch("config.json");
+	} catch (err) {
+		console.error(err);
+		nodeSocket.emit("initialized", "no-config-404");
+		return;
+	}
 
+	//console.log(response);
+	let data = await response.json();
 	//console.log(data);
-	let status = "ok";//data.status;
+	let status = data.status;
 	if (status != "ok") {
 		console.log(`Error: ${status}`);
 		lblState.innerHTML = `Loaded Error/Status:<br>${status}`;
@@ -286,6 +391,7 @@ async function OnConfig(data) {
 		config = data;
 		let camid = await camera.getCameraIDByName(data.cameraName);
 		camSelect.value = camid;
+		//camSelect.dispatchEvent(new Event('change'));
 
 		cbxAutostart.checked = data.autostart;
 
@@ -299,10 +405,13 @@ async function OnConfig(data) {
 
 	switch (status) {
 		case "ok":
-			hostSocket.emit("initialized", "successful");
+			nodeSocket.emit("initialized", "successful");
 			break;
-		default:
-			hostSocket.emit("initialized", "failed");
+		case "no-config":
+			nodeSocket.emit("initialized", "no-config");
 			break;
 	}
 }
+
+lblState.innerHTML = "<i>Getting Config...</i>";
+GetConfig();
