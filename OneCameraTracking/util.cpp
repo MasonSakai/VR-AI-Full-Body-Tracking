@@ -78,9 +78,9 @@ glm::vec3 Intersection(glm::vec3 p1, glm::vec3 v1, glm::vec3 p2, glm::vec3 v2) {
 	mat[1][2] = p1.y - p2.y;
 	mat[2][2] = p1.z - p2.z;
 
-	std::cout << "{" << mat[0][0] << ", " << mat[0][1] << ", " << mat[0][2] << "}\n";
+	/*std::cout << "{" << mat[0][0] << ", " << mat[0][1] << ", " << mat[0][2] << "}\n";
 	std::cout << "{" << mat[1][0] << ", " << mat[1][1] << ", " << mat[1][2] << "}\n";
-	std::cout << "{" << mat[2][0] << ", " << mat[2][1] << ", " << mat[2][2] << "}\n\n" << std::flush;
+	std::cout << "{" << mat[2][0] << ", " << mat[2][1] << ", " << mat[2][2] << "}\n\n" << std::flush;*/
 
 	float s = mat[0][0];
 	mat[0][0] /= s;
@@ -105,9 +105,9 @@ glm::vec3 Intersection(glm::vec3 p1, glm::vec3 v1, glm::vec3 p2, glm::vec3 v2) {
 		if (fabsf(mat[2][j]) < 0.001f) mat[2][j] = 0;
 	}
 
-	std::cout << "{" << mat[0][0] << ", " << mat[0][1] << ", " << mat[0][2] << "}\n";
+	/*std::cout << "{" << mat[0][0] << ", " << mat[0][1] << ", " << mat[0][2] << "}\n";
 	std::cout << "{" << mat[1][0] << ", " << mat[1][1] << ", " << mat[1][2] << "}\n";
-	std::cout << "{" << mat[2][0] << ", " << mat[2][1] << ", " << mat[2][2] << "}\n\n" << std::flush;
+	std::cout << "{" << mat[2][0] << ", " << mat[2][1] << ", " << mat[2][2] << "}\n\n" << std::flush;*/
 
 	if (mat[2][2] != 0) return glm::vec3(INFINITY);
 

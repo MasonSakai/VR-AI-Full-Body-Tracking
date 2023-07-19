@@ -29,19 +29,12 @@
 extern vr::IVRSystem* m_VRSystem;
 extern vrinputemulator::VRInputEmulator inputEmulator;
 
-extern uint32_t hipID;
-extern uint32_t leftFootID;
-extern uint32_t rightFootID;
-
 extern const float _headsetHeight;
 extern const float _handDownHeight;
 extern const float _shoulderHeight;
 
 extern glm::vec3 headPos, leftHandPos, rightHandPos;
 extern glm::quat headRot, leftHandRot, rightHandRot;
-
-extern glm::vec3 hipPos, leftFootPos, rightFootPos;
-extern glm::quat hipRot, leftFootRot, rightFootRot;
 
 extern bool active;
 extern std::thread TrackerUpdateLoopThread;

@@ -6,9 +6,7 @@
 vr::IVRSystem* m_VRSystem;
 vrinputemulator::VRInputEmulator inputEmulator;
 
-uint32_t hipID;
-uint32_t leftFootID;
-uint32_t rightFootID;
+uint32_t trackerIDs[17];
 
 const float _headsetHeight = 1.65f;
 const float _handDownHeight = .71f;
@@ -16,9 +14,6 @@ const float _shoulderHeight = .9f;
 
 glm::vec3 headPos, leftHandPos, rightHandPos;
 glm::quat headRot, leftHandRot, rightHandRot;
-
-glm::vec3 hipPos, leftFootPos, rightFootPos;
-glm::quat hipRot, leftFootRot, rightFootRot;
 
 bool active = true;
 std::thread TrackerUpdateLoopThread;
@@ -41,9 +36,12 @@ bool findTrackers() {
 				return false;
 			}
 		}
-		hipID = 0;
+		trackerIDs[Poses::right_hip] = 0;
+		trackerIDs[Poses::left_ankle] = 1;
+		trackerIDs[Poses::right_ankle] = 2;
+		/*hipID = 0;
 		leftFootID = 1;
-		rightFootID = 2;
+		rightFootID = 2;*/
 		std::cout << "Found Trackers\n" << std::flush;
 		return true;
 	}
@@ -123,9 +121,11 @@ void deleteVirtualDevice(int id) {
 
 //Add
 void onClose() {
-	deleteVirtualDevice(hipID);
-	deleteVirtualDevice(leftFootID);
-	deleteVirtualDevice(rightFootID);
+	for (int i = 0; i < 17; i++) {
+		if (PoseTrackers[i]) {
+			deleteVirtualDevice(trackerIDs[i]);
+		}
+	}
 	//offset = glm::mat4x4(1);
 	//velocity = glm::vec3(0);
 	//move();
@@ -134,17 +134,17 @@ void onClose() {
 
 void setVirtualDevicePosition(uint32_t id, glm::vec3 pos, glm::quat rot) {
 	vr::DriverPose_t pose = inputEmulator.getVirtualDevicePose(id);
-	pose.vecPosition[0] = pos.x;
-	pose.vecPosition[1] = pos.y;
-	pose.vecPosition[2] = pos.z;
 	pose.poseIsValid = true;
 	pose.deviceIsConnected = true;
 	pose.result = vr::TrackingResult_Running_OK;
-	pose.qRotation.w = rot.w;
+	pose.vecPosition[0] = pos.x;
+	pose.vecPosition[1] = pos.y;
+	pose.vecPosition[2] = pos.z;
 	pose.qRotation.x = rot.x;
 	pose.qRotation.y = rot.y;
 	pose.qRotation.z = rot.z;
-	inputEmulator.setVirtualDevicePose(id, pose, false);
+	pose.qRotation.w = rot.w;
+	inputEmulator.setVirtualDevicePose(id, pose); //Why is this offset?/by quest coords not oculus coords
 }
 
 /*void updateTrackers() {
@@ -372,24 +372,13 @@ vr::VRControllerState_t GetControllerState(vr::ETrackedControllerRole controller
 void UpdateTrackers() {
 	UpdateHardwarePositions();
 
-	glm::vec3 down(0, -1, 0);
-	glm::vec3 headRight = headRot * glm::vec3(1, 0, 0);
-	headRight.y = 0;
-	glm::quat trackersRot = glm::quatLookAt(glm::normalize(headRight), glm::vec3(0, 1, 0));
-	glm::vec3 footRight = trackersRot * glm::vec3(0, 0, 1);
-	glm::vec3 footForward = trackersRot * glm::vec3(-1, 0, 0);
+	//Do Math
 
-	hipPos = headPos / 2.0f;
-	hipRot = trackersRot;
-
-	leftFootPos = (footForward - footRight) * 0.17f;
-	rightFootPos = (footForward + footRight) * 0.17f;
-	leftFootRot = trackersRot;
-	rightFootRot = leftFootRot;
-
-	setVirtualDevicePosition(hipID, hipPos, hipRot);
-	setVirtualDevicePosition(leftFootID, leftFootPos, leftFootRot);
-	setVirtualDevicePosition(rightFootID, rightFootPos, rightFootRot);
+	for (int i = 0; i < 17; i++) {
+		if (PoseTrackers[i]) {
+			setVirtualDevicePosition(trackerIDs[i], trackers[i].position, trackers[i].rotation);
+		}
+	}
 
 }
 
@@ -591,13 +580,17 @@ void CalibrationThreadFunct() {
 			v3, p3, q3);
 
 		if (!IOTest) {
-			SetCameraOverlay(camera);
-			VROverlay->ShowOverlay(cameraOverlays[camera]);
+			ShowCameraOverlay(camera);
 		}
 
-		//if first run, get joint dimentions
+		cameras[camera].CalibrateDistances(v1, q1, v2, q2, v3);
+		//get joint dimentions
 		//Everything is on a plane made by v1, v2, and v3; use that fact
 		//project/reject starting position to get dist, dot normal and dir, use to get intersect position
+
+		/* * ankle is slightly off ground in calibration, correct for it?
+		*		Do in full body measurements
+		*/
 
 		std::cout << "Done Calibrating Camera " << (int)camera << std::endl << std::flush;
 		calibrationQueue.pop();
@@ -639,7 +632,7 @@ void OnCameraStart() {
 	uint8_t socket = ReceiveInt8_t();
 	std::cout << (int)socket << " Start" << std::endl;
 	CalibrateCamera(socket);
-	if(!IOTest) VROverlay->ShowOverlay(cameraOverlays[socket]);
+	if(!IOTest) CreateCameraOverlay(socket);
 }
 void OnCameraStop() {
 	uint8_t socket = ReceiveInt8_t();
@@ -669,6 +662,12 @@ void OnCalibrationSizeReturn() {
 	cameras[socket].waitingForSize = false;
 }
 
+void OnRecenter() {
+	//record position and orientation of one camera
+	//recalibrate said camera
+	//use delta position and orientation to adjust the rest of the cameras
+	//can only be used to recenter
+}
 
 
 void HandleArgs(int argc, char* argv[]) {
@@ -696,7 +695,7 @@ void endProgram() {
 	active = false;
 
 	if (!IOTest) {
-		DestroyOverlays();
+		OverlayOnClose();
 		TrackerUpdateLoopThread.join();
 	}
 	CalibrationThread.join();
@@ -759,9 +758,14 @@ int main(int argc, char* argv[])
 
 
 		if (!findTrackers()) {
-			hipID = createTracker("Hip");
-			leftFootID = createTracker("Left Foot");
-			rightFootID = createTracker("Right Foot");
+			for (int i = 0; i < 17; i++) {
+				if (PoseTrackers[i]) {
+					trackerIDs[i] = createTracker(PoseNames[i].c_str());
+				}
+			}
+			//hipID = createTracker("Hip");
+			//leftFootID = createTracker("Left Foot");
+			//rightFootID = createTracker("Right Foot");
 		}
 
 		TrackerUpdateLoopThread = std::thread(TrackerUpdateLoop);
@@ -781,6 +785,7 @@ int main(int argc, char* argv[])
 	// 0b01000100 Camera Size Return
 	// 0b01000101 Camera Start
 	// 0b01000110 Camera Stop
+	// 0b01000111 Recenter
 	uint8_t c;
 	int32_t i;
 	float f;
@@ -809,6 +814,9 @@ int main(int argc, char* argv[])
 			break;
 		case 0b01000110:
 			OnCameraStop();
+			break;
+		case 0b01000111:
+			OnRecenter();
 			break;
 		case 0b11111111: //255; close program
 			endProgram();

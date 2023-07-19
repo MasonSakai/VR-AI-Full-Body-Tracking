@@ -7,6 +7,7 @@
 #include <iostream>
 
 #include "Overlay.h"
+#include "OneCameraTracking.h"
 
 class PoseTracker {
 public:
@@ -53,14 +54,13 @@ struct Camera {
 		glm::vec3 v1, glm::vec2 p1, glm::quat q1,
 		glm::vec3 v2, glm::vec2 p2, glm::quat q2,
 		glm::vec3 v3, glm::vec2 p3, glm::quat q3);
+	void CalibrateDistances(glm::vec3 v1, glm::quat q1, glm::vec3 v2, glm::quat q2, glm::vec3 v3);
 
 	glm::vec3 GetVector(glm::vec2 coords);
 };
 
 extern Camera cameras[];
 extern PoseTracker trackers[];
-
-extern glm::vec3 handToWrist;
 
 const std::string PoseNames[17] = {
 	"nose",
@@ -80,6 +80,26 @@ const std::string PoseNames[17] = {
 	"right_knee",
 	"left_ankle",
 	"right_ankle"
+};
+
+enum Poses {
+	nose,
+	left_eye,
+	right_eye,
+	left_ear,
+	right_ear,
+	left_shoulder,
+	right_shoulder,
+	left_elbow,
+	right_elbow,
+	left_wrist,
+	right_wrist,
+	left_hip,
+	right_hip,
+	left_knee,
+	right_knee,
+	left_ankle,
+	right_ankle
 };
 
 const bool PoseTrackers[17] = {
@@ -102,7 +122,8 @@ const bool PoseTrackers[17] = {
 	true	// right ankle
 };
 
-extern bool distancesRecorded;
+
+extern glm::vec3 handToWrist;
 extern float shoulderToShoulder,
 shoulderToHip, hipWidth,
 upperArmLen, lowerArmLen,
