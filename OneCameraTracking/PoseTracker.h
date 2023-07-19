@@ -6,6 +6,8 @@
 #include <string>
 #include <iostream>
 
+#include "Overlay.h"
+
 class PoseTracker {
 public:
 
@@ -41,6 +43,7 @@ struct Camera {
 	float radPerPixel;
 	glm::vec3 position;
 	glm::quat rotation;
+	glm::mat4x4 transform;
 	bool active = false;
 	bool connected = false;
 	bool waitingForSize = false;
@@ -54,10 +57,10 @@ struct Camera {
 	glm::vec3 GetVector(glm::vec2 coords);
 };
 
-static Camera cameras[16];
-static PoseTracker trackers[17];
+extern Camera cameras[];
+extern PoseTracker trackers[];
 
-static glm::vec3 handToWrist;
+extern glm::vec3 handToWrist;
 
 const std::string PoseNames[17] = {
 	"nose",
@@ -98,3 +101,9 @@ const bool PoseTrackers[17] = {
 	true,	// left  ankle
 	true	// right ankle
 };
+
+extern bool distancesRecorded;
+extern float shoulderToShoulder,
+shoulderToHip, hipWidth,
+upperArmLen, lowerArmLen,
+upperLegLen, lowerLegLen;

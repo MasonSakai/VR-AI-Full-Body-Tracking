@@ -3,6 +3,33 @@
 
 #include "OneCameraTracking.h"
 
+vr::IVRSystem* m_VRSystem;
+vrinputemulator::VRInputEmulator inputEmulator;
+
+uint32_t hipID;
+uint32_t leftFootID;
+uint32_t rightFootID;
+
+const float _headsetHeight = 1.65f;
+const float _handDownHeight = .71f;
+const float _shoulderHeight = .9f;
+
+glm::vec3 headPos, leftHandPos, rightHandPos;
+glm::quat headRot, leftHandRot, rightHandRot;
+
+glm::vec3 hipPos, leftFootPos, rightFootPos;
+glm::quat hipRot, leftFootRot, rightFootRot;
+
+bool active = true;
+std::thread TrackerUpdateLoopThread;
+
+bool IOTest = false;
+bool NoBreak = false;
+
+bool calibrating = false;
+std::queue<uint8_t> calibrationQueue;
+std::thread CalibrationThread;
+
 //update
 bool findTrackers() {
 	if (inputEmulator.getVirtualDeviceCount() == 3) {
@@ -171,49 +198,6 @@ void setVirtualDevicePosition(uint32_t id, glm::vec3 pos, glm::quat rot) {
 	}
 }*/
 
-vr::HmdQuaternion_t GetRotation(vr::HmdMatrix34_t matrix) {
-	vr::HmdQuaternion_t q;
-
-	q.w = sqrt(fmax(0, 1 + matrix.m[0][0] + matrix.m[1][1] + matrix.m[2][2])) / 2;
-	q.x = sqrt(fmax(0, 1 + matrix.m[0][0] - matrix.m[1][1] - matrix.m[2][2])) / 2;
-	q.y = sqrt(fmax(0, 1 - matrix.m[0][0] + matrix.m[1][1] - matrix.m[2][2])) / 2;
-	q.z = sqrt(fmax(0, 1 - matrix.m[0][0] - matrix.m[1][1] + matrix.m[2][2])) / 2;
-	q.x = copysign(q.x, matrix.m[2][1] - matrix.m[1][2]);
-	q.y = copysign(q.y, matrix.m[0][2] - matrix.m[2][0]);
-	q.z = copysign(q.z, matrix.m[1][0] - matrix.m[0][1]);
-	return q;
-}
-glm::quat GetRotationGLM(vr::HmdMatrix34_t matrix) {
-	glm::quat q;
-
-	q.w = sqrt(fmax(0, 1 + matrix.m[0][0] + matrix.m[1][1] + matrix.m[2][2])) / 2;
-	q.x = sqrt(fmax(0, 1 + matrix.m[0][0] - matrix.m[1][1] - matrix.m[2][2])) / 2;
-	q.y = sqrt(fmax(0, 1 - matrix.m[0][0] + matrix.m[1][1] - matrix.m[2][2])) / 2;
-	q.z = sqrt(fmax(0, 1 - matrix.m[0][0] - matrix.m[1][1] + matrix.m[2][2])) / 2;
-	q.x = copysign(q.x, matrix.m[2][1] - matrix.m[1][2]);
-	q.y = copysign(q.y, matrix.m[0][2] - matrix.m[2][0]);
-	q.z = copysign(q.z, matrix.m[1][0] - matrix.m[0][1]);
-	return q;
-}
-
-vr::HmdVector3_t GetPosition(vr::HmdMatrix34_t matrix) {
-	vr::HmdVector3_t vector;
-
-	vector.v[0] = matrix.m[0][3];
-	vector.v[1] = matrix.m[1][3];
-	vector.v[2] = matrix.m[2][3];
-
-	return vector;
-}
-glm::vec3 GetPositionGLM(vr::HmdMatrix34_t matrix) {
-	glm::vec3 vector;
-
-	vector.x = matrix.m[0][3];
-	vector.y = matrix.m[1][3];
-	vector.z = matrix.m[2][3];
-
-	return vector;
-}
 /*
 void printDevicePositionalData(const char* deviceName, vr::HmdMatrix34_t posMatrix, vr::HmdVector3_t position, vr::HmdQuaternion_t quaternion)
 {
@@ -313,6 +297,7 @@ void printPositionalData()
 */
 void UpdateHardwarePositions() {
 	if (IOTest) return;
+	if (!active) return;
 	for (vr::TrackedDeviceIndex_t unDevice = 0; unDevice < vr::k_unMaxTrackedDeviceCount; unDevice++)
 	{
 		if (!m_VRSystem->IsTrackedDeviceConnected(unDevice))
@@ -495,9 +480,10 @@ void CalibrationThreadFunct() {
 		RequestCameraSize(camera);
 		std::cout << "Begining Calibration of camera " << (int)camera << std::endl;
 
+		std::this_thread::sleep_for(std::chrono::seconds(1));
 		std::cout << "Put top of controller against the camera and hold X/A\n" << std::flush;
-
 		while (!IOTest) {
+			if (!active) return;
 			uint64_t buttons = GetControllerState(vr::TrackedControllerRole_LeftHand).ulButtonPressed;
 			if (buttons & ButtonMasks::OculusAX) {
 				captureSide = false;
@@ -519,35 +505,22 @@ void CalibrationThreadFunct() {
 			position = leftHandPos;
 			qp = leftHandRot;
 		}
+		while (!IOTest) {
+			if (!active) return;
+			uint64_t buttons = GetControllerState(vr::TrackedControllerRole_LeftHand).ulButtonPressed;
+			if ((buttons & ButtonMasks::OculusAX) == 0) break;
+			buttons = GetControllerState(vr::TrackedControllerRole_RightHand).ulButtonPressed;
+			if ((buttons & ButtonMasks::OculusAX) == 0) break;
+		}
 
 
+		std::this_thread::sleep_for(std::chrono::seconds(1));
 		std::cout << "Go where you are entirely within frame\n";
 		std::cout << "Put a controller against the ground the\n";
 		std::cout << "same way you did for the camera and hold X/A\n" << std::flush;
-		std::this_thread::sleep_for(std::chrono::seconds(5));
-
 		while (!IOTest) {
-			uint64_t buttons = GetControllerState(vr::TrackedControllerRole_LeftHand).ulButtonPressed;
-			if (buttons & ButtonMasks::OculusAX) break;
-			buttons = GetControllerState(vr::TrackedControllerRole_RightHand).ulButtonPressed;
-			if (buttons & ButtonMasks::OculusAX) break;
-		}
-		std::cout << "Release X/A\n" << std::flush;
-		UpdateHardwarePositions();
-		p1 = trackers[9].GetPose(camera);
-		v1 = leftHandPos;
-		q1 = leftHandRot;
 
-		p2 = trackers[10].GetPose(camera);
-		v2 = rightHandPos;
-		q2 = rightHandRot;
-
-
-		std::cout << "Stay in the same place, T-Pose, and hold X/A\n";
-		std::cout << "Preferably have your hands level and facing outwards,\n";
-		std::cout << "This will be used to calibrate your hands from your wrists\n" << std::flush;
-		std::this_thread::sleep_for(std::chrono::seconds(5));
-		while (!IOTest) {
+			if (!active) return;
 			uint64_t buttons = GetControllerState(vr::TrackedControllerRole_LeftHand).ulButtonPressed;
 			if (buttons & ButtonMasks::OculusAX) {
 				captureSide = false;
@@ -571,17 +544,60 @@ void CalibrationThreadFunct() {
 			v3 = leftHandPos;
 			q3 = leftHandRot;
 		}
+		while (!IOTest) {
+			if (!active) return;
+			uint64_t buttons = GetControllerState(vr::TrackedControllerRole_LeftHand).ulButtonPressed;
+			if ((buttons & ButtonMasks::OculusAX) == 0) break;
+			buttons = GetControllerState(vr::TrackedControllerRole_RightHand).ulButtonPressed;
+			if ((buttons & ButtonMasks::OculusAX) == 0) break;
+		}
+
+
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+		std::cout << "Stay in the same place, T-Pose, and hold X/A\n";
+		std::cout << "Preferably have your hands level and facing outwards,\n";
+		std::cout << "This will be used to calibrate your hands from your wrists\n" << std::flush;
+		while (!IOTest) {
+			if (!active) return;
+			uint64_t buttons = GetControllerState(vr::TrackedControllerRole_LeftHand).ulButtonPressed;
+			if (buttons & ButtonMasks::OculusAX) break;
+			buttons = GetControllerState(vr::TrackedControllerRole_RightHand).ulButtonPressed;
+			if (buttons & ButtonMasks::OculusAX) break;
+		}
+		std::cout << "Release X/A\n" << std::flush;
+		UpdateHardwarePositions();
+		p1 = trackers[9].GetPose(camera);
+		v1 = leftHandPos;
+		q1 = leftHandRot;
+
+		p2 = trackers[10].GetPose(camera);
+		v2 = rightHandPos;
+		q2 = rightHandRot;
+
+		while (!IOTest) {
+			if (!active) return;
+			uint64_t buttons = GetControllerState(vr::TrackedControllerRole_LeftHand).ulButtonPressed;
+			if ((buttons & ButtonMasks::OculusAX) == 0) break;
+			buttons = GetControllerState(vr::TrackedControllerRole_RightHand).ulButtonPressed;
+			if ((buttons & ButtonMasks::OculusAX) == 0) break;
+		}
 
 		std::cout << "Hold a moment...\n" << std::flush;
 
-		while (cameras[camera].waitingForSize) {}
+		while (cameras[camera].waitingForSize) { if (!active) return; }
 		cameras[camera].Calibrate(position, qp,
 			v1, p1, q1,
 			v2, p2, q2,
 			v3, p3, q3);
 
+		if (!IOTest) {
+			SetCameraOverlay(camera);
+			VROverlay->ShowOverlay(cameraOverlays[camera]);
+		}
+
 		//if first run, get joint dimentions
 		//Everything is on a plane made by v1, v2, and v3; use that fact
+		//project/reject starting position to get dist, dot normal and dir, use to get intersect position
 
 		std::cout << "Done Calibrating Camera " << (int)camera << std::endl << std::flush;
 		calibrationQueue.pop();
@@ -616,12 +632,14 @@ void RequestAddCamera() {
 	for (int i = 0; i < 17; i++) {
 		trackers[i].InitCamera(n);
 	}
+	if (!IOTest) CreateCameraOverlay(n);
 }
 
 void OnCameraStart() {
 	uint8_t socket = ReceiveInt8_t();
 	std::cout << (int)socket << " Start" << std::endl;
 	CalibrateCamera(socket);
+	if(!IOTest) VROverlay->ShowOverlay(cameraOverlays[socket]);
 }
 void OnCameraStop() {
 	uint8_t socket = ReceiveInt8_t();
@@ -632,6 +650,7 @@ void OnCameraStop() {
 	for (uint8_t i = 0; i < 17; i++) {
 		trackers[i].ClearPose(socket);
 	}
+	if (!IOTest) VROverlay->HideOverlay(cameraOverlays[socket]);
 }
 void OnCameraDisconnect() {
 	uint8_t socket = ReceiveInt8_t();
@@ -673,12 +692,15 @@ void HandleArgs(int argc, char* argv[]) {
 }
 
 void endProgram() {
-
+	std::cout << "Driver Stopping...\n" << std::flush;
 	active = false;
 
 	if (!IOTest) {
+		DestroyOverlays();
 		TrackerUpdateLoopThread.join();
 	}
+	CalibrationThread.join();
+	std::cout << "Driver Stopped\n" << std::flush;
 }
 
 static bool EndProgram(DWORD signal) {
@@ -692,10 +714,10 @@ static bool EndProgram(DWORD signal) {
 		if (!NoBreak) {
 			std::cout << "Closing..." << std::endl;
 			endProgram();
-			exit(0);
+			//exit(0);
 			return false;
 		}
-		return true;
+		return true; //true? figure out what this means
 
 	default:
 		return false;
@@ -733,15 +755,14 @@ int main(int argc, char* argv[])
 			}
 		}
 		std::cout << "Success!\n" << std::flush;
+		GetOverlays();
+
 
 		if (!findTrackers()) {
 			hipID = createTracker("Hip");
 			leftFootID = createTracker("Left Foot");
 			rightFootID = createTracker("Right Foot");
 		}
-
-
-		handOffset.y = -_handDownHeight;
 
 		TrackerUpdateLoopThread = std::thread(TrackerUpdateLoop);
 	}

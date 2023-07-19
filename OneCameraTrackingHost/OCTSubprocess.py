@@ -42,7 +42,7 @@ def errorOutputLoop():
 
 def StartSubprocess(fileName):
     global Process
-    Process = Popen([fileName, "NoBreak", "NoVR"], stdout=PIPE, stdin=PIPE, stderr=PIPE) #"NoVR", 
+    Process = Popen([fileName, "NoBreak"], stdout=PIPE, stdin=PIPE, stderr=PIPE) #"NoVR", 
     active = True
     threading.Thread(target=errorOutputLoop).start()
 def StopProgram():

@@ -1,6 +1,16 @@
 #include "PoseTracker.h"
 
 const float handToWristRatio = .88;
+bool distancesRecorded = false;
+float shoulderToShoulder,
+shoulderToHip, hipWidth,
+upperArmLen, lowerArmLen,
+upperLegLen, lowerLegLen;
+
+Camera cameras[16];
+PoseTracker trackers[17];
+
+glm::vec3 handToWrist;
 
 void PoseTracker::Init(uint8_t trackerIndex) {
 	tracker = trackerIndex;
@@ -119,11 +129,11 @@ void Camera::Calibrate(glm::vec3 position, glm::quat qp,
 	std::cout << "p3: {" << p3.x << ", " << p3.y << "}\n\n" << std::flush;
 
 	//correct camera position
-	glm::vec3 cameraPosOffset = glm::rotate(glm::inverse(q3), glm::vec3(0, v3.y, 0));
+	glm::vec3 cameraPosOffset = glm::rotate(glm::inverse(q3), glm::vec3(0, -v3.y, 0));
 	position += glm::rotate(qp, cameraPosOffset);
 	this->position = position;
-	std::cout << "pos: {" << position.x << ", " << position.y << ", " << position.z << "}\n";
-	std::cout << "cameraPosOffset: {" << cameraPosOffset.x << ", " << cameraPosOffset.y << ", " << cameraPosOffset.z << "}\n\n" << std::flush;
+	std::cout << "cameraPosOffset: {" << cameraPosOffset.x << ", " << cameraPosOffset.y << ", " << cameraPosOffset.z << "}\n";
+	std::cout << "pos: {" << position.x << ", " << position.y << ", " << position.z << "}\n\n" << std::flush;
 
 	//Get wrist real positions
 	glm::vec3 handToHandDelta = v2 - v1;
@@ -136,12 +146,18 @@ void Camera::Calibrate(glm::vec3 position, glm::quat qp,
 	glm::vec3 handToWristRight = wristRightReal - v2;
 	std::cout << "handToWristLeft:  {" << handToWristLeft.x << ", " << handToWristLeft.y << ", " << handToWristLeft.z << "}\n";
 	std::cout << "handToWristRight: {" << handToWristRight.x << ", " << handToWristRight.y << ", " << handToWristRight.z << "}\n";
+	//get wrist offsets using q1 and q2
 	handToWristLeft = glm::rotate(glm::inverse(q1), handToWristLeft);
 	handToWristRight = glm::rotate(glm::inverse(q2), handToWristRight);
 	handToWrist = (handToWristLeft + handToWristRight) / 2.0f;
 	std::cout << "handToWristLeft:  {" << handToWristLeft.x << ", " << handToWristLeft.y << ", " << handToWristLeft.z << "}\n";
 	std::cout << "handToWristRight: {" << handToWristRight.x << ", " << handToWristRight.y << ", " << handToWristRight.z << "}\n";
 	std::cout << "handToWrist:      {" << handToWrist.x << ", " << handToWrist.y << ", " << handToWrist.z << "}\n\n" << std::flush;
+
+	//get wrist3 position
+	glm::vec3 wrist3Real = v3 + glm::rotate(q3, handToWrist);
+	std::cout << "v3:         {" << v3.x << ", " << v3.y << ", " << v3.z << "}\n";
+	std::cout << "wrist3Real: {" << wrist3Real.x << ", " << wrist3Real.y << ", " << wrist3Real.z << "}\n\n" << std::flush;
 
 	//get radPerPixel
 	glm::vec3 wLRDel = wristLeftReal - position;
@@ -151,13 +167,38 @@ void Camera::Calibrate(glm::vec3 position, glm::quat qp,
 	radPerPixel = wtwRad / wtwPix;
 	std::cout << "radPerPixel: " << radPerPixel << "\n\n" << std::flush;
 
-	/* * 
-	*  * get wrist offsets using q1 and q2
-	*  * ankle is slightly off ground in calibration, correct for it
+	//get center in 3d space
+	glm::vec2 center = glm::vec2(width, height) / 2.0f;
+	float proj1 = glm::dot(center, p2 - p1) / glm::length2(p3 - p1);
+	float proj2 = glm::dot(center, p3 - p1) / glm::length2(p3 - p1);
+	glm::vec3 lerp1 = lerp(wristLeftReal, wristRightReal, proj1);
+	glm::vec3 lerp2 = lerp(wristLeftReal, wrist3Real, proj2);
+	glm::vec3 dir1 = glm::normalize(reject(lerp2 - lerp1, v2 - v1));
+	glm::vec3 dir2 = glm::normalize(reject(lerp1 - lerp2, v3 - v1));
+	glm::vec3 centerv3 = Intersection(lerp1, dir1, lerp2, dir2);
+	std::cout << "projs:    {" << proj1 << ", " << proj2 << "}\n";
+	std::cout << "lerp1:    {" << lerp1.x << ", " << lerp1.y << ", " << lerp1.z << "}\n";
+	std::cout << "lerp2:    {" << lerp2.x << ", " << lerp2.y << ", " << lerp2.z << "}\n";
+	std::cout << "dir1:     {" << dir1.x << ", " << dir1.y << ", " << dir1.z << "}\n";
+	std::cout << "dir2:     {" << dir2.x << ", " << dir2.y << ", " << dir2.z << "}\n";
+	std::cout << "centerv3: {" << centerv3.x << ", " << centerv3.y << ", " << centerv3.z << "}\n\n" << std::flush;
+
+
+	glm::vec3 centerDirection = glm::normalize(centerv3 - position);
+	glm::vec3 upDirection = glm::vec3(0, 1, 0);
+	transform = glm::lookAt(centerv3, position, upDirection);
+	rotation = glm::quatLookAt(centerDirection, upDirection);
+
+	/* * ankle is slightly off ground in calibration, correct for it?
 	*  * get orientation
+	*		get projection between center and line between p1 and p2
+	*		turn based on that, then turn based on rejection (or collision of all three)
+	*		correct for roll
 	*/
 
 	active = true;
+	// to prevent position reseting
+	// https://smartglasseshub.com/disable-quest-2-proximity-sensor/
 }
 glm::vec3 Camera::GetVector(glm::vec2 coords) {
 	coords.x -= width / 2;

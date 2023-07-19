@@ -290,6 +290,10 @@ function InitHost() {
 	hostSocket.onAny((data) => {
 		console.log(data);
 	});
+	hostSocket.on("disconnect", () => {
+		console.log("Host Disconnect");
+		hostSocket.disconnect();
+	});
 }
 
 // Will return true if successfully connected, will return false if:

@@ -22,46 +22,36 @@
 #include <csignal>
 
 #include "PoseTracker.h"
+#include "Overlay.h"
+#include "util.h"
 
 
-static vr::IVRSystem* m_VRSystem;
-static vrinputemulator::VRInputEmulator inputEmulator;
+extern vr::IVRSystem* m_VRSystem;
+extern vrinputemulator::VRInputEmulator inputEmulator;
 
-static uint32_t hipID;
-static uint32_t leftFootID;
-static uint32_t rightFootID;
+extern uint32_t hipID;
+extern uint32_t leftFootID;
+extern uint32_t rightFootID;
 
-const float _headsetHeight = 1.65f;
-const float _handDownHeight = .71f;
-const float _shoulderHeight = .9f;
+extern const float _headsetHeight;
+extern const float _handDownHeight;
+extern const float _shoulderHeight;
 
-float shoulderToShoulder,
-shoulderToHip, hipWidth,
-upperArmLen, lowerArmLen,
-upperLegLen, lowerLegLen;
+extern glm::vec3 headPos, leftHandPos, rightHandPos;
+extern glm::quat headRot, leftHandRot, rightHandRot;
 
-float degPerPixel;
+extern glm::vec3 hipPos, leftFootPos, rightFootPos;
+extern glm::quat hipRot, leftFootRot, rightFootRot;
 
-glm::vec3 cameraPos;
-glm::quat cameraRot;
+extern bool active;
+extern std::thread TrackerUpdateLoopThread;
 
-glm::vec3 headPos, leftHandPos, rightHandPos;
-glm::quat headRot, leftHandRot, rightHandRot;
+extern bool IOTest;
+extern bool NoBreak;
 
-glm::vec3 hipPos, leftFootPos, rightFootPos;
-glm::quat hipRot, leftFootRot, rightFootRot;
-
-glm::vec3 handOffset;
-
-bool active = true;
-std::thread TrackerUpdateLoopThread;
-
-bool IOTest = false;
-bool NoBreak = false;
-
-bool calibrating = false;
-std::queue<uint8_t> calibrationQueue;
-std::thread CalibrationThread;
+extern bool calibrating;
+extern std::queue<uint8_t> calibrationQueue;
+extern std::thread CalibrationThread;
 
 
 enum ButtonMasks : uint64_t {
