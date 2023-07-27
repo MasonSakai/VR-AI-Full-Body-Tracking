@@ -36,6 +36,7 @@ extern const float _shoulderHeight;
 extern glm::vec3 headPos, leftHandPos, rightHandPos;
 extern glm::quat headRot, leftHandRot, rightHandRot;
 
+extern bool trackersOverride;
 extern bool active;
 extern std::thread TrackerUpdateLoopThread;
 

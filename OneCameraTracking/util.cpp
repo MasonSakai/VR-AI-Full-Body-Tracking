@@ -115,6 +115,9 @@ glm::vec3 Intersection(glm::vec3 p1, glm::vec3 v1, glm::vec3 p2, glm::vec3 v2) {
 	return p2 + v2 * s;
 }
 
+glm::vec3 IntersectPlane(glm::vec3 planePos, glm::vec3 planeNorm, glm::vec3 startPos, glm::vec3 direction) {
+	return glm::vec3();
+}
 
 vr::HmdMatrix34_t ConvertMatrix(glm::mat4x4 matrix, glm::vec3 position) {
 	vr::HmdMatrix34_t mat;

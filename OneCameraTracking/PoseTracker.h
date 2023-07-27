@@ -20,8 +20,8 @@ public:
 	glm::vec2 GetPose(uint8_t camera);
 
 	uint8_t CalculatePosition();
-	bool CalculateSingleCameraPosition(PoseTracker *trackers);
-	uint8_t CalculateOrientation(PoseTracker* trackers);
+	bool CalculateSingleCameraPosition();
+	uint8_t CalculateOrientation();
 	
 	glm::vec3 position;
 	glm::quat rotation;

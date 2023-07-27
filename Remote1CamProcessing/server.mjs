@@ -155,7 +155,6 @@ function startBrowser() {
 function onBrowserInit(msg) {
 	if (openBrowsers) {
 		if (msg == "successful") {
-			opened++;
 			console.log(`Successfully opened ${opened} windows`)
 			if (opened < config.windowConfigs.length) {
 				startBrowser();

@@ -58,6 +58,8 @@ glm::vec3 CalculateClosest(glm::vec3 p1, glm::vec3 v1, glm::vec3 p2, glm::vec3 v
 	glm::vec3 c2 = p2 + v2 * (glm::dot(-del, n1) / glm::dot(v2, n1));
 
 	return (c1 + c2) / 2.0f;
+
+	//if this doesn't work well, take n, put p1 and p2 onto same plane, find intersection with util, then use against plane offset to find center
 }
 
 
@@ -73,16 +75,28 @@ void PoseTracker::CalculateMultiPosition() {
 	glm::vec3 pos;
 	float total = 0;
 
+	glm::vec3 closest;
+
+	std::cout << "Multi For: " << PoseNames[tracker] << "\n";
+
 	for (uint8_t i = 0; i < 15; i++) {
 		if (!(cameraFlags & (1 << i))) continue;
+		std::cout << "pos:      {" << cameras[i].position.x << ", " << cameras[i].position.y << ", " << cameras[i].position.z << "}\n";
+		std::cout << "dir:      {" << directions[i].x << ", " << directions[i].y << ", " << directions[i].z << "}\n";
 		for (uint8_t j = i + 1; j < 16; j++) {
 			if (!(cameraFlags & (1 << j))) continue;
 			float weight = scores[i] * scores[j];
 			total += weight;
-			pos += weight * CalculateClosest(cameras[i].position, directions[i], cameras[j].position, directions[j]);
+			closest = CalculateClosest(cameras[i].position, directions[i], cameras[j].position, directions[j]);
+			pos += weight * closest;
+			std::cout << "    pos:  {" << cameras[j].position.x << ", " << cameras[j].position.y << ", " << cameras[j].position.z << "}\n";
+			std::cout << "    dir:  {" << directions[j].x << ", " << directions[j].y << ", " << directions[j].z << "}\n";
+			std::cout << "    clo:  {" << closest.x << ", " << closest.y << ", " << closest.z << "}, " << weight << "\n";
 		}
 	}
 	position = pos / total;
+	std::cout << "pos:  {" << pos.x << ", " << pos.y << ", " << pos.z << "}, " << total << "\n";
+	std::cout << "position: {" << position.x << ", " << position.y << ", " << position.z << "}\n\n" << std::flush;
 }
 
 uint8_t PoseTracker::CalculatePosition() {
@@ -94,23 +108,49 @@ uint8_t PoseTracker::CalculatePosition() {
 	return 2;
 }
 
-//when calculating foot orientation,
-//use floor when on or below
-//put toes on when near (<60/70 deg)
-//use leg when above
-
-
 //return true if able to make pose
-bool PoseTracker::CalculateSingleCameraPosition(PoseTracker* trackers) {
+bool PoseTracker::CalculateSingleCameraPosition() {
 	uint8_t n = 0;
 	for (n = 0; n < 17; n++)
 		if (cameraFlags & (1 << n))
 			break;
 	if (n == 16) return false;
 
-	position = cameras[n].position + directions[n] * 10.0f;
+	float dist = glm::length(cameras[n].position - headPos);
+
+	position = cameras[n].position + directions[n] * dist;
 
 	return true;
+}
+
+uint8_t PoseTracker::CalculateOrientation() {
+	switch (tracker) {
+		//mimic real
+	case Poses::left_wrist:
+		rotation = leftHandRot;
+		break;
+	case Poses::right_wrist:
+		rotation = rightHandRot;
+		break;
+
+	case Poses::right_hip:
+		rotation = glm::quatLookAt(trackers[Poses::left_hip].position - position, trackers[Poses::right_shoulder].position - position);
+		break;
+
+		//use floor when on or below
+		//put toes on when near (<60/70 deg)
+		//use leg when above
+	case Poses::left_ankle:
+		rotation = leftHandRot;
+		break;
+	case Poses::right_ankle:
+		rotation = rightHandRot;
+		break;
+
+	default:
+		return 0;
+	}
+	return 1;
 }
 
 // _1 (left) and _2 (right) are from T-pose
@@ -196,7 +236,7 @@ void Camera::Calibrate(glm::vec3 position, glm::quat qp,
 	glm::vec3 upDirection = glm::rotate(glm::angleAxis(angle, centerDirection), glm::normalize(glm::cross(v1 - position, v2 - position)));
 
 	transform = glm::lookAt(centerv3, position, upDirection);
-	rotation = glm::quatLookAt(centerDirection, upDirection);
+	rotation = glm::quatLookAt(-centerDirection, upDirection);
 
 	active = true;
 
@@ -204,10 +244,11 @@ void Camera::Calibrate(glm::vec3 position, glm::quat qp,
 	// https://smartglasseshub.com/disable-quest-2-proximity-sensor/
 }
 glm::vec3 Camera::GetVector(glm::vec2 coords) {
+	//Double check this math
 	coords.x -= width / 2;
 	coords.y -= height / 2;
-	glm::quat x = glm::quat(glm::highp_vec3(0, radPerPixel * coords.x, 0));
-	glm::quat y = glm::quat(glm::highp_vec3(radPerPixel * coords.y, 0, 0));
+	glm::quat x = glm::quat(glm::vec3(0, radPerPixel * coords.x, 0));
+	glm::quat y = glm::quat(glm::vec3(radPerPixel * coords.y, 0, 0));
 	glm::quat final = rotation * x * y;
 	return glm::rotate(final, glm::vec3(0, 0, 1)); // Confirm this vector
 }
