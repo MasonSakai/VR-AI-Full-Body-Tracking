@@ -45,7 +45,7 @@ extern bool NoBreak;
 
 extern bool calibrating;
 extern std::queue<uint8_t> calibrationQueue;
-extern std::thread CalibrationThread;
+extern std::thread *CalibrationThread;
 
 
 enum ButtonMasks : uint64_t {

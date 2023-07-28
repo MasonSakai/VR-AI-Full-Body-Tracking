@@ -23,11 +23,12 @@ const float _shoulderHeight = .9f;
 glm::vec3 headPos, leftHandPos, rightHandPos;
 glm::quat headRot, leftHandRot, rightHandRot;
 
-glm::vec3 controllerPosOffset, pmOffset;
+glm::vec3 controllerPosOffset, pmOffset(0,0,0);
 glm::quat controllerRotOffset;
 
-glm::vec3 startPMOffset, startControllerPos;
+glm::vec3 lastControllerPos;
 uint8_t pmFlags = PlayspaceMoverFlags::Active;
+std::thread PlayspaceMoverThread;
 
 std::queue<uint8_t> buttonInputListener;
 
@@ -40,7 +41,7 @@ bool NoBreak = false;
 
 bool calibrating = false;
 std::queue<uint8_t> calibrationQueue;
-std::thread CalibrationThread;
+std::thread *CalibrationThread;
 
 //update
 bool findTrackers() {
@@ -167,6 +168,85 @@ void setVirtualDevicePosition(uint32_t id, glm::vec3 pos, glm::quat rot) {
 	//to fix, have (foot) controllers mimic hand controllers and freeze
 	//person lines up their controllers with the virtual ones, and that difference is measured
 }
+void setOffsetVirtualDevicePosition(uint32_t id, glm::vec3 pos, glm::quat rot) {
+	pos += controllerPosOffset; //see if input emulator effects these too
+	rot *= controllerRotOffset;
+	setVirtualDevicePosition(id, pos, rot);
+}
+
+void EnableHardwareOffset() {
+	vr::HmdVector3d_t offset;
+	offset.v[0] = 0;
+	offset.v[1] = 0;
+	offset.v[2] = 0;
+	for (vr::TrackedDeviceIndex_t unDevice = 0; unDevice < vr::k_unMaxTrackedDeviceCount; unDevice++)
+	{
+		if (!m_VRSystem->IsTrackedDeviceConnected(unDevice))
+			continue;
+
+		vr::VRControllerState_t state;
+		if (m_VRSystem->GetControllerState(unDevice, &state, sizeof(state)))
+		{
+			vr::ETrackedDeviceClass trackedDeviceClass = vr::VRSystem()->GetTrackedDeviceClass(unDevice);
+
+			if (trackedDeviceClass < 3 && trackedDeviceClass > 0) {
+				std::cout << unDevice << std::endl << std::flush;
+				inputEmulator.enableDeviceOffsets(unDevice, true, false);
+				inputEmulator.setWorldFromDriverTranslationOffset(unDevice, offset, false);
+			}
+
+		}
+	}
+}
+void UpdateHardwareOffset() {
+
+	vr::HmdVector3d_t offset;
+	offset.v[0] = pmOffset.x;
+	offset.v[1] = pmOffset.y;
+	offset.v[2] = pmOffset.z;
+
+	for (vr::TrackedDeviceIndex_t unDevice = 0; unDevice < vr::k_unMaxTrackedDeviceCount; unDevice++)
+	{
+		if (!m_VRSystem->IsTrackedDeviceConnected(unDevice))
+			continue;
+
+		vr::VRControllerState_t state;
+		if (m_VRSystem->GetControllerState(unDevice, &state, sizeof(state)))
+		{
+			vr::ETrackedDeviceClass trackedDeviceClass = vr::VRSystem()->GetTrackedDeviceClass(unDevice);
+
+			if (trackedDeviceClass < 3 && trackedDeviceClass > 0) {
+				inputEmulator.setWorldFromDriverTranslationOffset(unDevice, offset, false);
+			}
+
+		}
+	}
+}
+void DisableHardwareOffset() {
+	vr::HmdVector3d_t offset;
+	offset.v[0] = 0;
+	offset.v[1] = 0;
+	offset.v[2] = 0;
+
+	for (vr::TrackedDeviceIndex_t unDevice = 0; unDevice < vr::k_unMaxTrackedDeviceCount; unDevice++)
+	{
+		if (!m_VRSystem->IsTrackedDeviceConnected(unDevice))
+			continue;
+
+		vr::VRControllerState_t state;
+		if (m_VRSystem->GetControllerState(unDevice, &state, sizeof(state)))
+		{
+			vr::ETrackedDeviceClass trackedDeviceClass = vr::VRSystem()->GetTrackedDeviceClass(unDevice);
+
+			if (trackedDeviceClass < 3 && trackedDeviceClass > 0) {
+				inputEmulator.setWorldFromDriverTranslationOffset(unDevice, offset, false);
+				inputEmulator.enableDeviceOffsets(unDevice, false, false);
+			}
+
+		}
+	}
+}
+
 
 /*void updateTrackers() {
 	uint32_t HMDID = vr::k_unTrackedDeviceIndexInvalid;
@@ -390,16 +470,21 @@ vr::VRControllerState_t GetControllerState(vr::ETrackedControllerRole controller
 
 
 void CheckPlayspaceMover() {
-	if (!(pmFlags & PlayspaceMoverFlags::Active)) return;
 	if (pmFlags & PlayspaceMoverFlags::Moving) {
-		uint64_t buttons = GetControllerState((pmFlags & PlayspaceMoverFlags::ControllerRight) ? vr::TrackedControllerRole_RightHand  : vr::TrackedControllerRole_LeftHand).ulButtonPressed;
+		uint64_t buttons = GetControllerState((pmFlags & PlayspaceMoverFlags::ControllerRight) ? vr::TrackedControllerRole_RightHand : vr::TrackedControllerRole_LeftHand).ulButtonPressed;
 		if (!(buttons & ButtonMasks::OculusAX)) {
 			pmFlags &= ~PlayspaceMoverFlags::Moving;
 			pmFlags &= ~PlayspaceMoverFlags::ControllerRight;
 			buttonInputListener.pop();
+			std::cout << "Playspace Mover: Up\n" << std::flush;
 		}
 		else {
-			pmOffset = startPMOffset + ((pmFlags & PlayspaceMoverFlags::ControllerRight) ? rightHandPos : leftHandPos) - startPMOffset;
+			UpdateHardwarePositions();
+			glm::vec3 controllerPos = (pmFlags & PlayspaceMoverFlags::ControllerRight) ? rightHandPos : leftHandPos; //stop the gittering here
+			glm::vec3 delta = controllerPos - lastControllerPos;
+			pmOffset += delta;
+			lastControllerPos = controllerPos + delta;
+			UpdateHardwareOffset();
 		}
 		return;
 	}
@@ -409,8 +494,9 @@ void CheckPlayspaceMover() {
 			buttonInputListener.push(0);
 			pmFlags |= PlayspaceMoverFlags::Moving;
 			pmFlags &= ~PlayspaceMoverFlags::ControllerRight;
-			startControllerPos = leftHandPos;
-			startPMOffset = pmOffset;
+			UpdateHardwarePositions();
+			lastControllerPos = leftHandPos;
+			std::cout << "Playspace Mover: Left Down\n" << std::flush;
 			return;
 		}
 		buttons = GetControllerState(vr::TrackedControllerRole_RightHand).ulButtonPressed;
@@ -418,11 +504,20 @@ void CheckPlayspaceMover() {
 			buttonInputListener.push(0);
 			pmFlags |= PlayspaceMoverFlags::Moving;
 			pmFlags |= PlayspaceMoverFlags::ControllerRight;
-			startControllerPos = rightHandPos;
-			startPMOffset = pmOffset;
+			UpdateHardwarePositions();
+			lastControllerPos = rightHandPos;
+			std::cout << "Playspace Mover: Right Down\n" << std::flush;
 			return;
 		}
 	}
+}
+void PlayspaceMoverLoop() {
+	if (!(pmFlags & PlayspaceMoverFlags::Active)) return;
+	EnableHardwareOffset();
+	while (active && (pmFlags & PlayspaceMoverFlags::Active)) {
+		CheckPlayspaceMover();
+	}
+	DisableHardwareOffset();
 }
 
 
@@ -431,10 +526,9 @@ void TrackerUpdateLoop() {
 	bool singleTrackerStates[17];
 	uint8_t i, j;
 	bool completed;
+
 	while (active) {
 		UpdateHardwarePositions();
-
-		CheckPlayspaceMover();
 
 		//Do Math
 		for (i = 0; i < 17; i++) {
@@ -548,14 +642,9 @@ void CalibrationThreadFunct() {
 	glm::quat qp, q1, q2, q3;
 
 	calibrating = true;
-	while (calibrating) {
-		if (calibrationQueue.empty()) {
-			std::this_thread::sleep_for(std::chrono::seconds(5));
-			continue;
-		}
-		buttonInputListener.push(1);
-		while (buttonInputListener.front() != 1) {}
-
+	buttonInputListener.push(1);
+	while (buttonInputListener.front() != 1) {}
+	while (!calibrationQueue.empty()) {
 		camera = calibrationQueue.front();
 		RequestCameraSize(camera);
 		std::cout << "Begining Calibration of camera " << (int)camera << std::endl;
@@ -685,14 +774,15 @@ void CalibrationThreadFunct() {
 
 		std::cout << "Done Calibrating Camera " << (int)camera << std::endl << std::flush;
 		calibrationQueue.pop();
-		buttonInputListener.pop();
 	}
+	buttonInputListener.pop();
+	calibrating = false;
 }
 
 void CalibrateCamera(uint8_t n) {
 	calibrationQueue.push(n);
 	if (!calibrating) {
-		CalibrationThread = std::thread(CalibrationThreadFunct);
+		CalibrationThread = new std::thread(CalibrationThreadFunct);
 	}
 }
 void RequestCalibrateCamera() {
@@ -827,8 +917,10 @@ void endProgram() {
 	if (!IOTest) {
 		OverlayOnClose();
 		TrackerUpdateLoopThread.join();
+		PlayspaceMoverThread.join();
 	}
-	CalibrationThread.join();
+	if(calibrating && CalibrationThread != nullptr)
+		CalibrationThread->join();
 	std::cout << "Driver Stopped\n" << std::flush;
 }
 
@@ -898,6 +990,7 @@ int main(int argc, char* argv[])
 			//rightFootID = createTracker("Right Foot");
 		}
 
+		PlayspaceMoverThread = std::thread(PlayspaceMoverLoop);
 		TrackerUpdateLoopThread = std::thread(TrackerUpdateLoop);
 	}
 
@@ -917,7 +1010,7 @@ int main(int argc, char* argv[])
 	// 0b01000110 Camera Stop
 	// 0b01000111 Recenter
 	uint8_t c;
-	while (true)
+	while (active)
 	{
 		c = ReceiveInt8_t();
 		switch (c)
