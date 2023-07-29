@@ -21,14 +21,12 @@ const float _handDownHeight = .71f;
 const float _shoulderHeight = .9f;
 
 glm::vec3 headPos, leftHandPos, rightHandPos;
+glm::vec3 headPosReal, leftHandPosReal, rightHandPosReal;
 glm::quat headRot, leftHandRot, rightHandRot;
+glm::quat headRotReal, leftHandRotReal, rightHandRotReal;
 
-glm::vec3 controllerPosOffset, pmOffset(0,0,0);
+glm::vec3 controllerPosOffset;
 glm::quat controllerRotOffset;
-
-glm::vec3 lastControllerPos;
-uint8_t pmFlags = PlayspaceMoverFlags::Active;
-std::thread PlayspaceMoverThread;
 
 std::queue<uint8_t> buttonInputListener;
 
@@ -137,19 +135,6 @@ void deleteVirtualDevice(int id) {
 	inputEmulator.setVirtualDevicePose(id, pose, false);
 }
 
-//Add
-void onClose() {
-	for (int i = 0; i < 17; i++) {
-		if (PoseTrackers[i]) {
-			deleteVirtualDevice(trackerIDs[i]);
-		}
-	}
-	//offset = glm::mat4x4(1);
-	//velocity = glm::vec3(0);
-	//move();
-	inputEmulator.disconnect();
-}
-
 void setVirtualDevicePosition(uint32_t id, glm::vec3 pos, glm::quat rot) {
 	vr::DriverPose_t pose = inputEmulator.getVirtualDevicePose(id);
 	pose.poseIsValid = true;
@@ -169,7 +154,7 @@ void setVirtualDevicePosition(uint32_t id, glm::vec3 pos, glm::quat rot) {
 	//person lines up their controllers with the virtual ones, and that difference is measured
 }
 void setOffsetVirtualDevicePosition(uint32_t id, glm::vec3 pos, glm::quat rot) {
-	pos += controllerPosOffset; //see if input emulator effects these too
+	pos += controllerPosOffset + pmOffset; //see if input emulator effects these too
 	rot *= controllerRotOffset;
 	setVirtualDevicePosition(id, pos, rot);
 }
@@ -204,6 +189,7 @@ void UpdateHardwareOffset() {
 	offset.v[0] = pmOffset.x;
 	offset.v[1] = pmOffset.y;
 	offset.v[2] = pmOffset.z;
+	vrinputemulator::DeviceOffsets data;
 
 	for (vr::TrackedDeviceIndex_t unDevice = 0; unDevice < vr::k_unMaxTrackedDeviceCount; unDevice++)
 	{
@@ -217,6 +203,7 @@ void UpdateHardwareOffset() {
 
 			if (trackedDeviceClass < 3 && trackedDeviceClass > 0) {
 				inputEmulator.setWorldFromDriverTranslationOffset(unDevice, offset, false);
+
 			}
 
 		}
@@ -245,6 +232,21 @@ void DisableHardwareOffset() {
 
 		}
 	}
+}
+
+//Add
+void onClose() {
+	for (int i = 0; i < 17; i++) {
+		if (PoseTrackers[i]) {
+			deleteVirtualDevice(trackerIDs[i]);
+		}
+	}
+	//offset = glm::mat4x4(1);
+	//velocity = glm::vec3(0);
+	//move();
+	if (pmFlags & PlayspaceMoverFlags::Active)
+		DisableHardwareOffset();
+	inputEmulator.disconnect();
 }
 
 
@@ -396,6 +398,67 @@ void printPositionalData()
 }
 */
 
+void UpdateRealHardwarePositions() {
+	if (IOTest) return;
+	if (!active) return;
+	for (vr::TrackedDeviceIndex_t unDevice = 0; unDevice < vr::k_unMaxTrackedDeviceCount; unDevice++)
+	{
+		if (!m_VRSystem->IsTrackedDeviceConnected(unDevice))
+			continue;
+
+		vr::VRControllerState_t state;
+		if (m_VRSystem->GetControllerState(unDevice, &state, sizeof(state)))
+		{
+			vr::TrackedDevicePose_t trackedDevicePose;
+			vr::TrackedDevicePose_t trackedControllerPose;
+			vr::VRControllerState_t controllerState;
+			vr::HmdMatrix34_t poseMatrix;
+			glm::vec3 position;
+			glm::quat quaternion;
+			vrinputemulator::DeviceOffsets data;
+			vr::ETrackedDeviceClass trackedDeviceClass = vr::VRSystem()->GetTrackedDeviceClass(unDevice);
+
+			switch (trackedDeviceClass) {
+			case vr::ETrackedDeviceClass::TrackedDeviceClass_HMD:
+				vr::VRSystem()->GetDeviceToAbsoluteTrackingPose(vr::TrackingUniverseStanding, 0, &trackedDevicePose, 1);
+				// print positiona data for the HMD.
+				inputEmulator.getDeviceOffsets(unDevice, data);
+				poseMatrix = trackedDevicePose.mDeviceToAbsoluteTracking; // This matrix contains all positional and rotational data.
+				headPosReal = GetPositionGLM(trackedDevicePose.mDeviceToAbsoluteTracking) - GetPositionGLM(data.worldFromDriverTranslationOffset);
+				headRotReal = GetRotationGLM(trackedDevicePose.mDeviceToAbsoluteTracking) * glm::inverse(GetRotationGLM(data.worldFromDriverRotationOffset));
+				break;
+
+			case vr::ETrackedDeviceClass::TrackedDeviceClass_Controller:
+				vr::VRSystem()->GetControllerStateWithPose(vr::TrackingUniverseStanding, unDevice, &controllerState,
+					sizeof(controllerState), &trackedControllerPose);
+				inputEmulator.getDeviceOffsets(unDevice, data);
+				poseMatrix = trackedControllerPose.mDeviceToAbsoluteTracking; // This matrix contains all positional and rotational data.
+				position = GetPositionGLM(trackedControllerPose.mDeviceToAbsoluteTracking) - GetPositionGLM(data.worldFromDriverTranslationOffset);
+				quaternion = GetRotationGLM(trackedControllerPose.mDeviceToAbsoluteTracking) * glm::inverse(GetRotationGLM(data.worldFromDriverRotationOffset));
+
+				auto trackedControllerRole = vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(unDevice);
+
+				switch (trackedControllerRole)
+				{
+				case vr::TrackedControllerRole_Invalid:
+					// invalid
+					break;
+				case vr::TrackedControllerRole_LeftHand:
+					leftHandPosReal = position;
+					leftHandRotReal = quaternion;
+					break;
+				case vr::TrackedControllerRole_RightHand:
+					rightHandPosReal = position;
+					rightHandRotReal = quaternion;
+					break;
+				}
+
+				break;
+			}
+
+		}
+	}
+}
 void UpdateHardwarePositions() {
 	if (IOTest) return;
 	if (!active) return;
@@ -468,6 +531,8 @@ vr::VRControllerState_t GetControllerState(vr::ETrackedControllerRole controller
 	return buttons;
 }
 
+glm::vec3 pmStartControllerPos, pmOffset, pmOffsetStart;
+uint8_t pmFlags = PlayspaceMoverFlags::Active;
 
 void CheckPlayspaceMover() {
 	if (pmFlags & PlayspaceMoverFlags::Moving) {
@@ -479,11 +544,9 @@ void CheckPlayspaceMover() {
 			std::cout << "Playspace Mover: Up\n" << std::flush;
 		}
 		else {
-			UpdateHardwarePositions();
-			glm::vec3 controllerPos = (pmFlags & PlayspaceMoverFlags::ControllerRight) ? rightHandPos : leftHandPos; //stop the gittering here
-			glm::vec3 delta = controllerPos - lastControllerPos;
-			pmOffset += delta;
-			lastControllerPos = controllerPos + delta;
+			glm::vec3 controllerPos = (pmFlags & PlayspaceMoverFlags::ControllerRight) ? rightHandPosReal : leftHandPosReal; //stop the gittering here
+			glm::vec3 delta = controllerPos - pmStartControllerPos;
+			pmOffset = pmOffsetStart - delta;
 			UpdateHardwareOffset();
 		}
 		return;
@@ -494,8 +557,8 @@ void CheckPlayspaceMover() {
 			buttonInputListener.push(0);
 			pmFlags |= PlayspaceMoverFlags::Moving;
 			pmFlags &= ~PlayspaceMoverFlags::ControllerRight;
-			UpdateHardwarePositions();
-			lastControllerPos = leftHandPos;
+			pmStartControllerPos = leftHandPosReal;
+			pmOffsetStart = pmOffset;
 			std::cout << "Playspace Mover: Left Down\n" << std::flush;
 			return;
 		}
@@ -504,20 +567,12 @@ void CheckPlayspaceMover() {
 			buttonInputListener.push(0);
 			pmFlags |= PlayspaceMoverFlags::Moving;
 			pmFlags |= PlayspaceMoverFlags::ControllerRight;
-			UpdateHardwarePositions();
-			lastControllerPos = rightHandPos;
+			pmStartControllerPos = rightHandPosReal;
+			pmOffsetStart = pmOffset;
 			std::cout << "Playspace Mover: Right Down\n" << std::flush;
 			return;
 		}
 	}
-}
-void PlayspaceMoverLoop() {
-	if (!(pmFlags & PlayspaceMoverFlags::Active)) return;
-	EnableHardwareOffset();
-	while (active && (pmFlags & PlayspaceMoverFlags::Active)) {
-		CheckPlayspaceMover();
-	}
-	DisableHardwareOffset();
 }
 
 
@@ -527,42 +582,75 @@ void TrackerUpdateLoop() {
 	uint8_t i, j;
 	bool completed;
 
+	auto lastTime = std::chrono::high_resolution_clock::now();
+	int numFramePresents = 0;
+	float deltaTime;
+	uint32_t currentFrame = 0;
+
 	while (active) {
-		UpdateHardwarePositions();
+		if (vr::VRCompositor() != NULL) {
+			vr::Compositor_FrameTiming t;
+			t.m_nSize = sizeof(vr::Compositor_FrameTiming);
+			bool hasFrame = vr::VRCompositor()->GetFrameTiming(&t, 0);
+			auto currentTime = std::chrono::high_resolution_clock::now();
+			std::chrono::duration<float> dt = currentTime - lastTime;
+			deltaTime = dt.count();
+			// If the frame has changed we update, if a frame was redisplayed we update.
+			if ((hasFrame && currentFrame != t.m_nFrameIndex) || (hasFrame && t.m_nNumFramePresents != numFramePresents)) {
+				currentFrame = t.m_nFrameIndex;
+				numFramePresents = t.m_nNumFramePresents;
+				lastTime = currentTime;
 
-		//Do Math
-		for (i = 0; i < 17; i++) {
-			singleTrackerStates[i] = false;
-			trackerStates[i] = trackers[i].CalculatePosition();
-		}
+				UpdateHardwarePositions();
+				UpdateRealHardwarePositions();
 
-		for (j = 0; j < 10; j++) {
-			completed = true;
-			for (i = 0; i < 17; i++) {
-				if (trackerStates[i] < 2 && !singleTrackerStates[i]) {
-					if (trackerStates[i] == 1) {
-						singleTrackerStates[i] = trackers[i].CalculateSingleCameraPosition();
-						completed &= singleTrackerStates[i];
-					}
-					else {
-						//todo
-					}
+				if (pmFlags & PlayspaceMoverFlags::Active) {
+					CheckPlayspaceMover();
 				}
-			}
-			if (completed) break;
-		}
 
-		for (i = 0; i < 17; i++) {
-			if(trackerStates[i] == 2 || singleTrackerStates[i])
-				trackers[i].CalculateOrientation();
-		}
-
-		if (!trackersOverride)
-			for (i = 0; i < 17; i++) {
-				if (PoseTrackers[i]) {
-					setVirtualDevicePosition(trackerIDs[i], trackers[i].position, trackers[i].rotation);
+				//Do Math
+				for (i = 0; i < 17; i++) {
+					singleTrackerStates[i] = false;
+					trackerStates[i] = trackers[i].CalculatePosition();
 				}
+
+				for (j = 0; j < 10; j++) {
+					completed = true;
+					for (i = 0; i < 17; i++) {
+						if (trackerStates[i] < 2 && !singleTrackerStates[i]) {
+							if (trackerStates[i] == 1) {
+								singleTrackerStates[i] = trackers[i].CalculateSingleCameraPosition();
+								completed &= singleTrackerStates[i];
+							}
+							else {
+								//todo
+							}
+						}
+					}
+					if (completed) break;
+				}
+
+				for (i = 0; i < 17; i++) {
+					if (trackerStates[i] == 2 || singleTrackerStates[i])
+						trackers[i].CalculateOrientation();
+				}
+
+				if (!trackersOverride)
+					for (i = 0; i < 17; i++) {
+						if (PoseTrackers[i]) {
+							setOffsetVirtualDevicePosition(trackerIDs[i], trackers[i].position, trackers[i].rotation);
+						}
+					}
+
+				// Sleep for just under 1/90th of a second, so that maybe the next frame will be available.
+				std::this_thread::sleep_for(std::chrono::microseconds(10000));
 			}
+			else {
+				// Still waiting on the next frame, wait less this time.
+				std::this_thread::sleep_for(std::chrono::microseconds(1111));
+			}
+		}
+		
 	}
 	onClose();
 }
@@ -917,7 +1005,6 @@ void endProgram() {
 	if (!IOTest) {
 		OverlayOnClose();
 		TrackerUpdateLoopThread.join();
-		PlayspaceMoverThread.join();
 	}
 	if(calibrating && CalibrationThread != nullptr)
 		CalibrationThread->join();
@@ -936,7 +1023,7 @@ static bool EndProgram(DWORD signal) {
 			std::cout << "Closing..." << std::endl;
 			endProgram();
 			//exit(0);
-			return false;
+			return true;
 		}
 		return true; //true? figure out what this means
 
@@ -990,7 +1077,8 @@ int main(int argc, char* argv[])
 			//rightFootID = createTracker("Right Foot");
 		}
 
-		PlayspaceMoverThread = std::thread(PlayspaceMoverLoop);
+		if (pmFlags & PlayspaceMoverFlags::Active)
+			EnableHardwareOffset();
 		TrackerUpdateLoopThread = std::thread(TrackerUpdateLoop);
 	}
 

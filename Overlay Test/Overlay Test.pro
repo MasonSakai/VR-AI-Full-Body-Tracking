@@ -4,11 +4,9 @@
 #
 #-------------------------------------------------
 
-QT       += core gui opengl
-CONFIG   += c++11
+QT     += core;gui;widgets;opengl;openglwidgets
+CONFIG += c++11
 CONFIG += console
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = Overlay Test
 TEMPLATE = app
@@ -23,7 +21,7 @@ HEADERS  += overlaywidget.h \
 
 FORMS    += overlaywidget.ui
 
-LIBS += -lopengl32 -lglu32
+LIBS += -lopengl64 -lglu64
 
 #INCLUDEPATH += ../../headers
 

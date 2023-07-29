@@ -24,6 +24,14 @@ glm::quat GetRotationGLM(vr::HmdMatrix34_t matrix) {
 	q.z = copysign(q.z, matrix.m[1][0] - matrix.m[0][1]);
 	return q;
 }
+glm::quat GetRotationGLM(vr::HmdQuaternion_t quat) {
+	glm::quat q;
+	q.x = quat.x;
+	q.y = quat.y;
+	q.z = quat.z;
+	q.w = quat.w;
+	return q;
+}
 
 vr::HmdVector3_t GetPosition(vr::HmdMatrix34_t matrix) {
 	vr::HmdVector3_t vector;
@@ -40,6 +48,15 @@ glm::vec3 GetPositionGLM(vr::HmdMatrix34_t matrix) {
 	vector.x = matrix.m[0][3];
 	vector.y = matrix.m[1][3];
 	vector.z = matrix.m[2][3];
+
+	return vector;
+}
+glm::vec3 GetPositionGLM(vr::HmdVector3d_t vec) {
+	glm::vec3 vector;
+
+	vector.x = vec.v[0];
+	vector.y = vec.v[1];
+	vector.z = vec.v[2];
 
 	return vector;
 }

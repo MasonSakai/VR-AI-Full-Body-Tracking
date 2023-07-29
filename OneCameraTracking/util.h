@@ -8,9 +8,11 @@
 
 vr::HmdQuaternion_t GetRotation(vr::HmdMatrix34_t matrix);
 glm::quat GetRotationGLM(vr::HmdMatrix34_t matrix);
+glm::quat GetRotationGLM(vr::HmdQuaternion_t quat);
 
 vr::HmdVector3_t GetPosition(vr::HmdMatrix34_t matrix);
 glm::vec3 GetPositionGLM(vr::HmdMatrix34_t matrix);
+glm::vec3 GetPositionGLM(vr::HmdVector3d_t vec);
 
 vr::HmdMatrix34_t ConvertMatrix(glm::mat4x4 matrix, glm::vec3 position);
 

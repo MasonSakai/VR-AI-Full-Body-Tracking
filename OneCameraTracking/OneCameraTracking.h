@@ -34,11 +34,16 @@ extern const float _handDownHeight;
 extern const float _shoulderHeight;
 
 extern glm::vec3 headPos, leftHandPos, rightHandPos;
+extern glm::vec3 headPosReal, leftHandPosReal, rightHandPosReal;
 extern glm::quat headRot, leftHandRot, rightHandRot;
+extern glm::quat headRotReal, leftHandRotReal, rightHandRotReal;
 
 extern bool trackersOverride;
 extern bool active;
 extern std::thread TrackerUpdateLoopThread;
+
+extern glm::vec3 pmOffset;
+extern uint8_t pmFlags;
 
 extern bool IOTest;
 extern bool NoBreak;

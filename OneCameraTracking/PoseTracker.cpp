@@ -116,7 +116,7 @@ bool PoseTracker::CalculateSingleCameraPosition() {
 			break;
 	if (n == 16) return false;
 
-	float dist = glm::length(cameras[n].position - headPos);
+	float dist = glm::length(cameras[n].position - headPosReal);
 
 	position = cameras[n].position + directions[n] * dist;
 
