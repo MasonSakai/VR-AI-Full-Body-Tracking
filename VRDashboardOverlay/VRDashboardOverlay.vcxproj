@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{023B86DA-52E7-4DD1-BE32-0DFAAC9D9D01}</ProjectGuid>
+    <ProjectGuid>{8F9073F8-8F15-4ED0-92DE-2EFA2993A527}</ProjectGuid>
     <Keyword>QtVS_v304</Keyword>
     <WindowsTargetPlatformVersion Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">10.0.19041.0</WindowsTargetPlatformVersion>
     <WindowsTargetPlatformVersion Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">10.0.19041.0</WindowsTargetPlatformVersion>
@@ -32,14 +32,12 @@
   </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="QtSettings">
     <QtInstall>6.5.2_msvc2019_64</QtInstall>
-    <QtModules>core;gui;widgets;opengl;openglwidgets</QtModules>
+    <QtModules>core;gui;opengl;openglwidgets;widgets</QtModules>
     <QtBuildConfig>debug</QtBuildConfig>
-    <QtDeploy>
-    </QtDeploy>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="QtSettings">
     <QtInstall>6.5.2_msvc2019_64</QtInstall>
-    <QtModules>core;gui;widgets</QtModules>
+    <QtModules>core;gui;opengl;openglwidgets;widgets</QtModules>
     <QtBuildConfig>release</QtBuildConfig>
   </PropertyGroup>
   <Target Name="QtMsBuildNotFound" BeforeTargets="CustomBuild;ClCompile" Condition="!Exists('$(QtMsBuild)\qt.targets') or !Exists('$(QtMsBuild)\qt.props')">
@@ -60,15 +58,6 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <AdditionalIncludeDirectories>C:\VSProjects\OpenVR-InputEmulator\openvr\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ClCompile>
-    <Link>
-      <AdditionalLibraryDirectories>C:\VSProjects\OpenVR-InputEmulator\openvr\lib\win64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>openvr_api.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
     <ClCompile>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
@@ -94,18 +83,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <QtRcc Include="OverlayTest.qrc" />
-    <QtUic Include="overlaywidget.ui" />
-    <QtMoc Include="overlaywidget.h" />
-    <ClCompile Include="openvroverlaycontroller.cpp" />
-    <ClCompile Include="overlaywidget.cpp" />
+    <QtRcc Include="DashboardWidget.qrc" />
+    <QtUic Include="DashboardWidget.ui" />
+    <QtMoc Include="DashboardWidget.h" />
+    <ClCompile Include="DashboardWidget.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Overlay Test.pro" />
-  </ItemGroup>
-  <ItemGroup>
-    <QtMoc Include="openvroverlaycontroller.h" />
+    <ClInclude Include="VRDashboardOverlay.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

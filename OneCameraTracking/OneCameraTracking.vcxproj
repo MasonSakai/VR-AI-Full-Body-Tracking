@@ -150,13 +150,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="OneCameraTracking.cpp" />
-    <ClCompile Include="Overlay.cpp" />
+    <ClCompile Include="OverlayManager.cpp" />
     <ClCompile Include="PoseTracker.cpp" />
     <ClCompile Include="util.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="OneCameraTracking.h" />
-    <ClInclude Include="Overlay.h" />
+    <ClInclude Include="OverlayManager.h" />
     <ClInclude Include="PoseTracker.h" />
     <ClInclude Include="util.h" />
   </ItemGroup>

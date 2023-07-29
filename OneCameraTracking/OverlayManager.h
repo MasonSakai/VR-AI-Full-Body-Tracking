@@ -7,6 +7,7 @@
 #include <chrono>
 #include "PoseTracker.h"
 #include "util.h"
+//#include <DashboardOverlay.h> //figure this out
 
 extern vr::VROverlayHandle_t overlayHandle;
 extern vr::VROverlayHandle_t dashboardHandle, dashboardIconHandle;

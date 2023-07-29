@@ -22,7 +22,7 @@
 #include <csignal>
 
 #include "PoseTracker.h"
-#include "Overlay.h"
+#include "OverlayManager.h"
 #include "util.h"
 
 

@@ -21,7 +21,7 @@
     <ClCompile Include="PoseTracker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Overlay.cpp">
+    <ClCompile Include="OverlayManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="util.cpp">
@@ -35,7 +35,7 @@
     <ClInclude Include="OneCameraTracking.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Overlay.h">
+    <ClInclude Include="OverlayManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="util.h">

@@ -1,5 +1,5 @@
 
-#include "Overlay.h"
+#include "OverlayManager.h"
 
 const char* OverlayKey = "AIVRFBTOverlay";
 const char* DashboardKey = "AIVRFBTDashboard";
