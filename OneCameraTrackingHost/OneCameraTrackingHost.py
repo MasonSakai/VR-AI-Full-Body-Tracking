@@ -5,7 +5,7 @@ import os
 import sys
 import json
 
-FileName = r"..\x64\Debug\OneCameraTracking.exe"
+FileName = r"..\x64\Debug\Tracking Driver.exe"
 ConfigFile = r"../Remote1CamProcessing/config.json"
 
 config = {

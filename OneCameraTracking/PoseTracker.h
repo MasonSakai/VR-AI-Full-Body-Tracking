@@ -6,7 +6,7 @@
 #include <string>
 #include <iostream>
 
-#include "Overlay.h"
+#include "OverlayManager.h"
 #include "OneCameraTracking.h"
 
 class PoseTracker {

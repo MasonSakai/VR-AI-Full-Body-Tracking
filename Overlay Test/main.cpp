@@ -12,7 +12,6 @@ int main(int argc, char *argv[])
 	if (AttachConsole(ATTACH_PARENT_PROCESS) || AllocConsole()) { //this doesn't work...
 		freopen("CONOUT$", "w", stdout);
 		freopen("CONERR$", "w", stderr);
-		freopen("CONIN$", "r", stdin);
 	}
 #endif
 	std::cout << "Test\n";
@@ -26,13 +25,6 @@ int main(int argc, char *argv[])
 
 	// don't show widgets that you're going display in an overlay
 	//w.show();
-	
-	int i = a.exec();
-	char c;
-	while (true) {
-		std::cin >> c;
-		std::cout << c;
-	}
 
-	return i;
+	return a.exec();
 }

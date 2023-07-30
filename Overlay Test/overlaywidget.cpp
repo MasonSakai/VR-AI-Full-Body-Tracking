@@ -17,3 +17,7 @@ void OverlayWidget::on_pushButton_clicked()
 {
     QApplication::quit();
 }
+void OverlayWidget::on_pushButton_2_clicked()
+{
+    QApplication::quit();
+}

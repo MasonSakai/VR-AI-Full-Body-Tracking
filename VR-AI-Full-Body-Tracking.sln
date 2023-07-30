@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Initial OVR and Input Emulator Interface", "Initial OVR and Input Emulator Interface\Initial OVR and Input Emulator Interface.vcxproj", "{12AF50D4-DEC2-4FB7-94B1-DAA2E589B8B7}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OneCameraTracking", "OneCameraTracking\OneCameraTracking.vcxproj", "{82DC59C6-50D2-4619-96F0-D314994D6B67}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8F9073F8-8F15-4ED0-92DE-2EFA2993A527} = {8F9073F8-8F15-4ED0-92DE-2EFA2993A527}
+	EndProjectSection
 EndProject
 Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "OneCameraTrackingHost", "OneCameraTrackingHost\OneCameraTrackingHost.pyproj", "{D9337FDD-49A1-4DDA-A760-9FE88FA2BF5B}"
 EndProject
@@ -14,6 +17,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Overlay Test", "Overlay Test\Overlay Test.vcxproj", "{023B86DA-52E7-4DD1-BE32-0DFAAC9D9D01}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VRDashboardOverlay", "VRDashboardOverlay\VRDashboardOverlay.vcxproj", "{8F9073F8-8F15-4ED0-92DE-2EFA2993A527}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VR_AI_FBT_Core", "VR_AI_FBT_Core\VR_AI_FBT_Core.vcxproj", "{0FD964C1-7B82-410E-8B59-AE820DE5B00F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -79,6 +84,14 @@ Global
 		{8F9073F8-8F15-4ED0-92DE-2EFA2993A527}.Release|x64.ActiveCfg = Release|x64
 		{8F9073F8-8F15-4ED0-92DE-2EFA2993A527}.Release|x64.Build.0 = Release|x64
 		{8F9073F8-8F15-4ED0-92DE-2EFA2993A527}.Release|x86.ActiveCfg = Release|x64
+		{0FD964C1-7B82-410E-8B59-AE820DE5B00F}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{0FD964C1-7B82-410E-8B59-AE820DE5B00F}.Debug|x64.ActiveCfg = Debug|x64
+		{0FD964C1-7B82-410E-8B59-AE820DE5B00F}.Debug|x64.Build.0 = Debug|x64
+		{0FD964C1-7B82-410E-8B59-AE820DE5B00F}.Debug|x86.ActiveCfg = Debug|x64
+		{0FD964C1-7B82-410E-8B59-AE820DE5B00F}.Release|Any CPU.ActiveCfg = Release|x64
+		{0FD964C1-7B82-410E-8B59-AE820DE5B00F}.Release|x64.ActiveCfg = Release|x64
+		{0FD964C1-7B82-410E-8B59-AE820DE5B00F}.Release|x64.Build.0 = Release|x64
+		{0FD964C1-7B82-410E-8B59-AE820DE5B00F}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

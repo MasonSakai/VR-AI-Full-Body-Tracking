@@ -23,16 +23,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <QtRcc Include="DashboardWidget.qrc">
+    <QtRcc Include="DashboardOverlay.qrc">
       <Filter>Resource Files</Filter>
     </QtRcc>
-    <QtUic Include="DashboardWidget.ui">
+    <QtUic Include="DashboardOverlay.ui">
       <Filter>Form Files</Filter>
     </QtUic>
-    <QtMoc Include="DashboardWidget.h">
+    <QtMoc Include="DashboardOverlay.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <ClCompile Include="DashboardWidget.cpp">
+    <ClCompile Include="DashboardOverlay.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -40,18 +40,5 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VRDashboardOverlay.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <QtMoc Include="VRDashboardOverlay.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="DashboardListener.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

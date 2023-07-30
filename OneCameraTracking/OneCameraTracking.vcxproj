@@ -119,13 +119,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VSProjects\glm;C:\VSProjects\OpenVR-InputEmulator\third-party\boost_1_63_0;C:\VSProjects\OpenVR-InputEmulator\openvr\headers;C:\VSProjects\OpenVR-InputEmulator\lib_vrinputemulator\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Qt\6.5.2\msvc2019_64\include\QtGui;C:\Qt\6.5.2\msvc2019_64\include\QtCore;C:\Qt\6.5.2\msvc2019_64\include;..\VRDashboardOverlay;C:\VSProjects\glm;C:\VSProjects\OpenVR-InputEmulator\third-party\boost_1_63_0;C:\VSProjects\OpenVR-InputEmulator\openvr\headers;C:\VSProjects\OpenVR-InputEmulator\lib_vrinputemulator\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\VSProjects\OpenVR-InputEmulator\openvr\lib\win64;C:\VSProjects\OpenVR-InputEmulator\Debug\lib\x64;C:\VSProjects\OpenVR-InputEmulator\third-party\boost_1_63_0\stage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libvrinputemulator.lib;openvr_api.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Qt\6.5.2\msvc2019_64\lib;C:\VSProjects\VR-AI-Full-Body-Tracking\x64\Debug;C:\VSProjects\OpenVR-InputEmulator\openvr\lib\win64;C:\VSProjects\OpenVR-InputEmulator\Debug\lib\x64;C:\VSProjects\OpenVR-InputEmulator\third-party\boost_1_63_0\stage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libvrinputemulator.lib;openvr_api.lib;VRDashboardOverlay.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -149,7 +149,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="OneCameraTracking.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="OverlayManager.cpp" />
     <ClCompile Include="PoseTracker.cpp" />
     <ClCompile Include="util.cpp" />
@@ -159,6 +159,11 @@
     <ClInclude Include="OverlayManager.h" />
     <ClInclude Include="PoseTracker.h" />
     <ClInclude Include="util.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\VRDashboardOverlay\VRDashboardOverlay.vcxproj">
+      <Project>{8f9073f8-8f15-4ed0-92de-2efa2993a527}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
