@@ -58,6 +58,15 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
   </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\VSProjects\glm;C:\VSProjects\OpenVR-InputEmulator\third-party\boost_1_63_0;C:\VSProjects\OpenVR-InputEmulator\openvr\headers;C:\VSProjects\OpenVR-InputEmulator\lib_vrinputemulator\include;%(AdditionalIncludeDirectories);$(Qt_INCLUDEPATH_)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>C:\VSProjects\OpenVR-InputEmulator\openvr\lib\win64;C:\VSProjects\OpenVR-InputEmulator\Debug\lib\x64;C:\VSProjects\OpenVR-InputEmulator\third-party\boost_1_63_0\stage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libvrinputemulator.lib;openvr_api.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
     <ClCompile>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>

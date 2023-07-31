@@ -21,6 +21,15 @@
       <UniqueIdentifier>{639EADAA-A684-42e4-A9AD-28FC9BCB8F7C}</UniqueIdentifier>
       <Extensions>ts</Extensions>
     </Filter>
+    <Filter Include="Networking">
+      <UniqueIdentifier>{bbfe976e-44e8-48c7-8faa-feed2837af12}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VR Overlays">
+      <UniqueIdentifier>{75a30d36-bf98-4b3f-bde7-1b36c071e4d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VR Trackers">
+      <UniqueIdentifier>{af7ce076-522d-4436-a6dc-934d0556e1c9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="DashboardOverlay.qrc">
@@ -29,16 +38,18 @@
     <QtUic Include="DashboardOverlay.ui">
       <Filter>Form Files</Filter>
     </QtUic>
-    <QtMoc Include="DashboardOverlay.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <ClCompile Include="DashboardOverlay.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DashboardOverlay.cpp">
+      <Filter>VR Overlays</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="DashboardOverlay.h">
+      <Filter>VR Overlays</Filter>
+    </QtMoc>
   </ItemGroup>
 </Project>
