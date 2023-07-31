@@ -92,10 +92,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <QtRcc Include="DashboardOverlay.qrc" />
-    <QtUic Include="DashboardOverlay.ui" />
-    <QtMoc Include="DashboardOverlay.h" />
-    <ClCompile Include="DashboardOverlay.cpp" />
+    <QtRcc Include="DashboardWidget.qrc" />
+    <QtUic Include="DashboardWidget.ui" />
+    <QtMoc Include="DashboardWidget.h" />
+    <ClCompile Include="DashboardWidget.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

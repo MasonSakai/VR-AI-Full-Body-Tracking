@@ -32,10 +32,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <QtRcc Include="DashboardOverlay.qrc">
+    <QtRcc Include="DashboardWidget.qrc">
       <Filter>Resource Files</Filter>
     </QtRcc>
-    <QtUic Include="DashboardOverlay.ui">
+    <QtUic Include="DashboardWidget.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>
@@ -43,12 +43,12 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DashboardOverlay.cpp">
+    <ClCompile Include="DashboardWidget.cpp">
       <Filter>VR Overlays</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="DashboardOverlay.h">
+    <QtMoc Include="DashboardWidget.h">
       <Filter>VR Overlays</Filter>
     </QtMoc>
   </ItemGroup>
