@@ -1,6 +1,4 @@
 
-const { io } = require("socket.io-client");
-
 const { Camera } = require("./camera-manager");
 const { PoseDetector } = require("./ai-manager");
 
@@ -24,6 +22,8 @@ const btnReset = document.getElementById("btn-reset");
 const lblPutState = document.getElementById("lbl-put-state");
 var lblPutStateTimeout;
 
+var id = -1;
+
 const width = video.clientWidth;
 console.log(width);
 
@@ -32,11 +32,7 @@ lblState.innerHTML = "<i>Loading Camera...</i>";
 const camera = new Camera();
 const poseDetector = new PoseDetector(true, width);
 
-lblState.innerHTML = "<i>Loading Socket...</i>";
-
-const nodeSocket = io();
-
-var hostSocket;// = io();
+var hostSocket;
 
 lblState.innerHTML = "<i>Loading...</i>";
 
@@ -222,18 +218,7 @@ async function drawPose(pose) {
 	});
 }
 
-nodeSocket.on("closing", () => {
-	console.log("Node.js Closing");
-	nodeSocket.disconnect();
 
-})
-nodeSocket.on("disconnect", () => {
-	console.log("disconnected");
-	controlPanel.classList.add("d-none");
-});
-nodeSocket.on("connect", () => {
-	controlPanel.classList.remove("d-none");
-});
 
 function debounce(func, wait, immediate) {
 	var timeout;
@@ -266,9 +251,10 @@ function sleep(ms) {
 }
 
 async function sendPose(pose) {
-	if (hostSocket && hostSocket.connected) {
-		hostSocket.emit("pose", pose);
-	}
+	await putAsync("poseData", {
+		"id": id,
+		"pose": pose
+	});
 }
 
 async function AILoop() {
@@ -278,53 +264,26 @@ async function AILoop() {
 }
 
 
-function InitHost() {
-	hostSocket.on("requestSize", () => {
-		console.log("Request Size");
-		let rect = video.getBoundingClientRect();
-		hostSocket.emit("requestSize", {
-			width: rect.width,
-			height: rect.height
-		});
-	});
-	hostSocket.onAny((data) => {
+async function InitHost() {
+	hostSocket = new WebSocket("ws://" + location.host);
+	hostSocket.onmessage = (data) => {
 		console.log(data);
-	});
-	hostSocket.on("disconnect", () => {
+	};
+	hostSocket.onerror = (data) => {
+		console.error(data);
+	};
+	hostSocket.onclose = () => {
 		console.log("Host Disconnect");
 		hostSocket.disconnect();
-	});
-}
-
-// Will return true if successfully connected, will return false if:
-//     already connected, port is empty, or error occurs (see console for details)
-async function tryConnectHost() {
-	if (hostSocket && hostSocket.connected) return false;
-	if (config.port == "") return false;
-	try {
-		hostSocket = io(config.port);
-		let waiting = true;
-		let timeout = setTimeout(() => { waiting = false; }, 10000);
-		while (waiting) {
-			if (hostSocket.connected) {
-				clearTimeout(timeout);
-				InitHost();
-				return true;
-			}
-		}
-		console.error("Couldn't connect");
-		hostSocket.disconnect();
-		hostSocket = undefined;
-	} catch (err) {
-		console.error(err);
-		hostSocket = undefined;
-	}
-	return false;
-
-}
-async function tryReconnectHost() {
-	if (hostSocket && hostSocket.connected) hostSocket.disconnect();
-	return await tryConnectHost();
+		controlPanel.classList.add("d-none");
+	};
+	let waiting = true;
+	hostSocket.onopen = () => {
+		controlPanel.classList.remove("d-none");
+		waiting = false;
+	};
+	while (waiting) { }
+	while (hostSocket.readyState != 1) { }
 }
 
 async function startAILoop() {
@@ -336,12 +295,9 @@ async function startAILoop() {
 			video.srcObject = await camera.getCameraStream(camid);
 		}
 		if (!poseDetector.detector) await poseDetector.createDetector();
-		if (!(hostSocket && hostSocket.connected)) {
+		if (!(hostSocket && hostSocket.readyState == 1)) {
 			//tryConnectHost();
-			if (config.port > 0) {
-				hostSocket = io(HostName + ":" + config.port);
-				InitHost();
-			}
+			await InitHost();
 		}
 
 		resizeCanvas();
@@ -354,7 +310,7 @@ async function startAILoop() {
 			}))});*/
 
 		lblState.innerHTML = "Started Successfully"
-		if (!(hostSocket && hostSocket.connected)) lblState.innerHTML += "<br>Without connection to host"
+		if (!(hostSocket && hostSocket.readyState == 1)) lblState.innerHTML += "<br>Without connection to host"
 
 		while (activeState) {
 			start = (performance || Date).now();
@@ -406,15 +362,7 @@ async function GetConfig() {
 		lblState.innerHTML = "Loaded!";
 	}
 	setPutState("Connected To Server", 1000);
-
-	switch (status) {
-		case "ok":
-			nodeSocket.emit("initialized", "successful");
-			break;
-		case "no-config":
-			nodeSocket.emit("initialized", "no-config");
-			break;
-	}
+	controlPanel.classList.remove("d-none");
 }
 
 lblState.innerHTML = "<i>Getting Config...</i>";

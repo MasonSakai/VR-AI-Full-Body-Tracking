@@ -52,16 +52,21 @@
     <ClCompile Include="websiteServer.cpp">
       <Filter>Networking</Filter>
     </ClCompile>
+    <ClCompile Include="cameraSocketManager.cpp">
+      <Filter>Networking</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="websiteServer.h">
-      <Filter>Networking</Filter>
+    <ClInclude Include="mathUtil.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="cameraSocketManager.h">
       <Filter>Networking</Filter>
     </ClInclude>
-    <ClInclude Include="mathUtil.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="websiteServer.h">
+      <Filter>Networking</Filter>
+    </QtMoc>
   </ItemGroup>
 </Project>
