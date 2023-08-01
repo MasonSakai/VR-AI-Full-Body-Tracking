@@ -25,6 +25,292 @@
    <property name="currentIndex">
     <number>0</number>
    </property>
+   <widget class="QWidget" name="tabPlayspaceMover">
+    <attribute name="title">
+     <string>Settings and Playspace Mover</string>
+    </attribute>
+    <widget class="QCheckBox" name="cbxEnablePM">
+     <property name="geometry">
+      <rect>
+       <x>460</x>
+       <y>0</y>
+       <width>151</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Enable Playspace Mover</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btnResetPM">
+     <property name="geometry">
+      <rect>
+       <x>460</x>
+       <y>20</y>
+       <width>151</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Recenter Playspace Mover</string>
+     </property>
+    </widget>
+    <widget class="QWidget" name="formLayoutWidget_2">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>101</width>
+       <height>88</height>
+      </rect>
+     </property>
+     <layout class="QFormLayout" name="formLayout">
+      <item row="1" column="0">
+       <widget class="QLabel" name="lblButtonOcAX">
+        <property name="text">
+         <string>Oculus A/X</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QCheckBox" name="cbxButtonOcAX">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="2">
+       <widget class="QLabel" name="lblPMButtons">
+        <property name="toolTip">
+         <string>This is used for playspace mover, calibrating, or any other button inputs</string>
+        </property>
+        <property name="text">
+         <string>Buttons To Use</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="lblButtonOcBY">
+        <property name="text">
+         <string>Oculus B/Y</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QCheckBox" name="cbxButtonOcBY">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="lblButtonOcTrig">
+        <property name="text">
+         <string>Oculus Trigger</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QCheckBox" name="cbxButtonOcTrig">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QCheckBox" name="cbxPMButtonRecenter">
+     <property name="geometry">
+      <rect>
+       <x>460</x>
+       <y>44</y>
+       <width>261</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Press buttons on both controllers to recenter</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tabTrackers">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <attribute name="title">
+     <string>Trackers</string>
+    </attribute>
+    <widget class="QPushButton" name="btnCalibrateTrackers">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>101</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>If your trackers seem to always be off by a certain amount, try this</string>
+     </property>
+     <property name="text">
+      <string>Calibrate Trackers</string>
+     </property>
+    </widget>
+    <widget class="QWidget" name="gridLayoutWidget_2">
+     <property name="geometry">
+      <rect>
+       <x>479</x>
+       <y>0</y>
+       <width>241</width>
+       <height>371</height>
+      </rect>
+     </property>
+     <layout class="QGridLayout" name="gridTrackerCount">
+      <item row="1" column="2">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>TextLabel</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>TextLabel</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>TextLabel</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>TextLabel</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="4">
+       <widget class="QLabel" name="lblSeenByCameras">
+        <property name="toolTip">
+         <string>How many cameras each point is seen by</string>
+        </property>
+        <property name="text">
+         <string>Seen By Cameras</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QWidget" name="formLayoutWidget">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>240</y>
+       <width>81</width>
+       <height>131</height>
+      </rect>
+     </property>
+     <layout class="QFormLayout" name="formTrackers">
+      <item row="1" column="1">
+       <widget class="QCheckBox" name="cbxTrackerAnkle">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+        <property name="tristate">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="lblTrackerAnkle">
+        <property name="text">
+         <string>Ankle/Foot</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="lblTrackerKnee">
+        <property name="text">
+         <string>Knee</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="lblTrackerHip">
+        <property name="text">
+         <string>Hip</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="lblTrackerShoulder">
+        <property name="text">
+         <string>Shoulder</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="lblTrackerElbow">
+        <property name="text">
+         <string>Elbow</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QCheckBox" name="cbxTrackerKnee">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QCheckBox" name="cbxTrackerHip">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QCheckBox" name="cbxTrackerShoulder">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QCheckBox" name="cbxTrackerElbow">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="2">
+       <widget class="QLabel" name="lblTracker">
+        <property name="text">
+         <string>Active Trackers</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </widget>
    <widget class="QWidget" name="tabCamera">
     <attribute name="title">
      <string>Cameras</string>
@@ -59,56 +345,6 @@
        <enum>QLayout::SetMinimumSize</enum>
       </property>
      </layout>
-    </widget>
-   </widget>
-   <widget class="QWidget" name="tabTrackers">
-    <property name="enabled">
-     <bool>true</bool>
-    </property>
-    <attribute name="title">
-     <string>Trackers</string>
-    </attribute>
-    <widget class="QPushButton" name="btnCalibrateTrackers">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>0</y>
-       <width>101</width>
-       <height>24</height>
-      </rect>
-     </property>
-     <property name="toolTip">
-      <string>If your trackers seem to always be off by a certain amount, try this</string>
-     </property>
-     <property name="text">
-      <string>Calibrate Trackers</string>
-     </property>
-    </widget>
-    <widget class="QCheckBox" name="cbxEnablePM">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>330</y>
-       <width>151</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Enable Playspace Mover</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="btnResetPM">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>350</y>
-       <width>151</width>
-       <height>24</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Recenter Playspace Mover</string>
-     </property>
     </widget>
    </widget>
   </widget>

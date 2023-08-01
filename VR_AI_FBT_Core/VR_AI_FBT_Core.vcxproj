@@ -92,11 +92,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="mathUtil.cpp" />
+    <ClCompile Include="websiteServer.cpp" />
     <QtRcc Include="DashboardWidget.qrc" />
     <QtUic Include="DashboardWidget.ui" />
-    <QtMoc Include="DashboardWidget.h" />
-    <ClCompile Include="DashboardWidget.cpp" />
     <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="cameraSocketManager.h" />
+    <ClInclude Include="mathUtil.h" />
+    <ClInclude Include="websiteServer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

@@ -30,6 +30,9 @@
     <Filter Include="VR Trackers">
       <UniqueIdentifier>{af7ce076-522d-4436-a6dc-934d0556e1c9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="VR General">
+      <UniqueIdentifier>{b942e088-c701-4343-aab1-2486368cd12f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="DashboardWidget.qrc">
@@ -43,13 +46,22 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DashboardWidget.cpp">
-      <Filter>VR Overlays</Filter>
+    <ClCompile Include="mathUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="websiteServer.cpp">
+      <Filter>Networking</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="DashboardWidget.h">
-      <Filter>VR Overlays</Filter>
-    </QtMoc>
+    <ClInclude Include="websiteServer.h">
+      <Filter>Networking</Filter>
+    </ClInclude>
+    <ClInclude Include="cameraSocketManager.h">
+      <Filter>Networking</Filter>
+    </ClInclude>
+    <ClInclude Include="mathUtil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

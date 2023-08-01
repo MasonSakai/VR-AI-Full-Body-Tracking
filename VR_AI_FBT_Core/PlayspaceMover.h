@@ -1,0 +1,15 @@
+#pragma once
+
+#include "vrUtil.h"
+
+extern glm::vec3 pmOffset;
+extern uint8_t pmFlags;
+
+void CheckPlayspaceMover();
+
+enum PlayspaceMoverFlags : uint8_t {
+	None = 0,
+	Active = 128,
+	Moving = 1,
+	ControllerRight = 2
+};
