@@ -21,10 +21,10 @@ DashboardWidget::~DashboardWidget()
 
 
 void DashboardWidget::on_btnRecenter_clicked() {
-
+	OnRecenter();
 }
-void DashboardWidget::on_btnCalibrateTrakers_clicked() {
-
+void DashboardWidget::on_btnCalibrateTrackers_clicked() {
+	RecalibrateVirtualControllers();
 }
 void DashboardWidget::on_btnResetPM_clicked() {
 	pmOffset = glm::vec3();
@@ -53,17 +53,32 @@ void DashboardWidget::on_btnQuit_clicked() {
 void DashboardWidget::SetCameraState(uint8_t index, uint8_t state) {
 	if (!camerasWithManagers[index])
 		CreateCameraLabel(index);
-	if (state & 1) {
+	if (state == 1) {
 		cameraStateLabels[index]->setText("Active");
 		cameraCalibrateButtons[index]->setEnabled(true);
+		cameras[index].active = true;
 	}
-	else if (state & 2) {
+	else if (state == 2) {
 		cameraStateLabels[index]->setText("Calibrating");
 		cameraCalibrateButtons[index]->setEnabled(false);
+	}
+	else if (state == 3) {
+		cameraStateLabels[index]->setText("Waiting for Calibration");
+		cameraCalibrateButtons[index]->setEnabled(false);
+	}
+	else if (state == 4) {
+		cameraStateLabels[index]->setText("Requires Calibration");
+		cameraCalibrateButtons[index]->setEnabled(true);
+	}
+	else if (state == 5) {
+		cameraStateLabels[index]->setText("Initializing");
+		cameraCalibrateButtons[index]->setEnabled(false);
+		cameras[index].active = false;
 	}
 	else {
 		cameraStateLabels[index]->setText("Inactive");
 		cameraCalibrateButtons[index]->setEnabled(false);
+		cameras[index].active = false;
 	}
 }
 
@@ -74,7 +89,7 @@ void DashboardWidget::CreateCameraLabel(uint8_t index) {
 	cameraStateLabels[index] = new QLabel("INIT");
 	cameraCalibrateButtons[index] = new QPushButton(txtCalibrate);
 	connect(cameraCalibrateButtons[index], &QPushButton::clicked, this, [=]() {
-		//OnCalibrateCamera
+		CalibrateCamera(index);
 	});
 
 	cameraGrid->addWidget(cameraNameLabels[index], index, 0);

@@ -257,6 +257,14 @@ async function sendSize() {
 		"height": rect.height
 	});
 }
+async function sendStart() {
+	let rect = video.getBoundingClientRect();
+	await putAsyncText("start", config.id);
+}
+async function sendConnect() {
+	let rect = video.getBoundingClientRect();
+	await putAsyncText("connect", config.id);
+}
 
 async function AILoop() {
 	let pose = await poseDetector.getFilteredPose(video, config.confidenceThreshold);
@@ -282,10 +290,13 @@ async function startAILoop() {
 			console.log(data[0].keypoints.map((d) => {
 				return d.name;
 			}))});*/
+		sendConnect();
+		sendSize();
 
 		lblState.innerHTML = "Started Successfully"
 
-		sendSize();
+		await AILoop();
+		sendStart();
 
 		while (activeState) {
 			start = (performance || Date).now();

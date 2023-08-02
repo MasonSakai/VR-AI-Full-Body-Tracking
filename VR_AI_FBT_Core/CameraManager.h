@@ -11,7 +11,6 @@ void CalibrateCamera(uint8_t n);
 uint8_t GetAvailableCameraIndex();
 void RequestAddCamera();
 
-void OnCameraStart();
 void OnCameraStop();
 void OnCameraDisconnect();
 

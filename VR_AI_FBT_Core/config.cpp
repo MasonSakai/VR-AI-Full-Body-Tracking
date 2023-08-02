@@ -37,6 +37,7 @@ bool ReadConfig() {
 	return true;
 }
 void WriteConfig() {
+	return; //fix this
 	QString fileName = BaseDirectory;
 	fileName.append("config.json");
 	QByteArray data = config.toJson(QJsonDocument::Indented);

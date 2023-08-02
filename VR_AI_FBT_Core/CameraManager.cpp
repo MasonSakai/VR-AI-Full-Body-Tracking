@@ -17,6 +17,7 @@ void CalibrationThreadFunct() {
 	while (buttonInputListener.front() != 1) {}
 	while (!calibrationQueue.empty()) {
 		camera = calibrationQueue.front();
+		//VRDashboardOverlay::SharedInstance()->SetCameraState(camera, 2);
 		std::cout << "Begining Calibration of camera " << (int)camera << std::endl;
 
 		std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -133,8 +134,10 @@ void CalibrationThreadFunct() {
 		*		Do in full body measurements
 		*/
 
+		//VRDashboardOverlay::SharedInstance()->SetCameraState(camera, 1);
 		std::cout << "Done Calibrating Camera " << (int)camera << std::endl << std::flush;
 		calibrationQueue.pop();
+		while (calibrationQueue.front() == camera) calibrationQueue.pop();
 	}
 	buttonInputListener.pop();
 	calibrating = false;
@@ -165,12 +168,6 @@ void RequestAddCamera() {
 	CreateCameraOverlay(n);
 }
 
-void OnCameraStart() {
-	uint8_t socket = 0;// ReceiveInt8_t();
-	std::cout << (int)socket << " Start" << std::endl;
-	CalibrateCamera(socket);
-	CreateCameraOverlay(socket);
-}
 void OnCameraStop() {
 	uint8_t socket = 0;// ReceiveInt8_t();
 	std::cout << (int)socket << " Stopped" << std::endl;
@@ -200,8 +197,10 @@ void OnRecenter() {
 	//can only be used to recenter
 }
 void RecalibrateVirtualControllers() {
+	qDebug() << "Queuing Calib...";
 	buttonInputListener.push(2);
 	while (buttonInputListener.front() != 2) {}
+	qDebug() << "Starting Calib...";
 
 	trackersOverride = true;
 
@@ -221,20 +220,25 @@ void RecalibrateVirtualControllers() {
 			break;
 		}
 	}
+	std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-	glm::vec3 leftStartPos = leftHandPos,
-		rightStartPos = rightHandPos;
+	glm::vec3 leftStartPos = leftHandPosReal,
+		rightStartPos = rightHandPosReal;
+	qDebug() << "Waiting...";
 
-	while (!(GetControllerState(vr::TrackedControllerRole_RightHand).ulButtonPressed & ButtonMasks::OculusAX)) {}
+	while ((GetControllerState(side).ulButtonPressed & ButtonMasks::OculusAX) != 0) {}
 
 	UpdateHardwarePositions();
 
 	glm::vec3 startMid = (leftStartPos + rightStartPos) * .5f,
-		endMid = (leftHandPos + rightHandPos) * .5f;
+		endMid = (leftHandPosReal + rightHandPosReal) * .5f;
 
-	controllerPosOffset = endMid - startMid;
+	controllerPosOffset = startMid - endMid;
 
 	//Do I need orientation correction?
 
+	std::this_thread::sleep_for(std::chrono::milliseconds(500));
+	trackersOverride = false;
 	buttonInputListener.pop();
+	qDebug() << "Ending Calib...";
 }

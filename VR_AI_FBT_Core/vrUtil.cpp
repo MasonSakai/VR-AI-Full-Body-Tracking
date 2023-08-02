@@ -30,9 +30,9 @@ bool findTrackers() {
 				return false;
 			}
 		}
-		//trackerIDs[Poses::right_hip] = 0;
-		//trackerIDs[Poses::left_ankle] = 1;
-		//trackerIDs[Poses::right_ankle] = 2;
+		trackerIDs[Poses::right_hip] = 0;
+		trackerIDs[Poses::left_ankle] = 1;
+		trackerIDs[Poses::right_ankle] = 2;
 		std::cout << "Found Trackers\n" << std::flush;
 		return true;
 	}

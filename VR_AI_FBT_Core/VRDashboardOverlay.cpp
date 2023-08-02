@@ -2,7 +2,6 @@
 
 #include "VRDashboardOverlay.h"
 #include "DashboardWidget.h"
-#include "vrUtil.h"
 
 #include <QOpenGLFramebufferObjectFormat>
 #include <QOpenGLPaintDevice>
@@ -142,14 +141,13 @@ bool VRDashboardOverlay::Init()
 
 	if (vr::VROverlay())
 	{
-		std::string sKey = std::string("sample.") + m_strName.toStdString();
-		vr::VROverlayError overlayError = vr::VROverlay()->CreateDashboardOverlay(sKey.c_str(), m_strName.toStdString().c_str(), &m_ulOverlayHandle, &m_ulOverlayThumbnailHandle);
+		vr::VROverlayError overlayError = vr::VROverlay()->CreateDashboardOverlay(DashboardKey, OverlayName, &m_ulOverlayHandle, &m_ulOverlayThumbnailHandle);
 		bSuccess = bSuccess && overlayError == vr::VROverlayError_None;
 	}
 
 	if (bSuccess)
 	{
-		vr::VROverlay()->SetOverlayWidthInMeters(m_ulOverlayHandle, 1.5f);
+		vr::VROverlay()->SetOverlayWidthInMeters(m_ulOverlayHandle, 2.5f);// 1.5f);
 		vr::VROverlay()->SetOverlayInputMethod(m_ulOverlayHandle, vr::VROverlayInputMethod_Mouse);
 
 		m_pPumpEventsTimer = new QTimer(this);

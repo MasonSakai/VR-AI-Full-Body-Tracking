@@ -33,10 +33,10 @@ bool GetOverlays() {
 		error = VROverlay->CreateOverlay(OverlayKey, OverlayName, &overlayHandle);
 	}
 	
-	error = VROverlay->FindOverlay(DashboardKey, &overlayHandle);
+	/*error = VROverlay->FindOverlay(DashboardKey, &overlayHandle);
 	if (error == vr::VROverlayError_UnknownOverlay) {
 		error = VROverlay->CreateDashboardOverlay(DashboardKey, OverlayName, &dashboardHandle, &dashboardIconHandle);
-	}
+	}*/
 
 	return true;
 }

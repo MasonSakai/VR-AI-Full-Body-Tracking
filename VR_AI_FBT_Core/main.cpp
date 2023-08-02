@@ -22,11 +22,6 @@ std::thread MainThread;
 void MainLoop() {
 	active = true;
 
-	std::cout << "Setting Cameras\n";
-	VRDashboardOverlay::SharedInstance()->SetCameraState(0, 0);
-	VRDashboardOverlay::SharedInstance()->SetCameraState(1, 1);
-	VRDashboardOverlay::SharedInstance()->SetCameraState(2, 2);
-
 	uint8_t trackerStates[17];
 	bool singleTrackerStates[17];
 	uint8_t i, j;
@@ -88,7 +83,10 @@ void MainLoop() {
 				if (!trackersOverride)
 					for (i = 0; i < 17; i++) {
 						if (PoseTrackers[i]) {
-							setOffsetVirtualDevicePosition(trackerIDs[i], trackers[i].position, trackers[i].rotation);
+							int j = i;
+							if (i == Poses::left_ankle) j = Poses::left_wrist;
+							if (i == Poses::right_ankle) j = Poses::right_wrist;
+							setOffsetVirtualDevicePosition(trackerIDs[i], trackers[j].position, trackers[j].rotation);
 						}
 					}
 
@@ -105,12 +103,10 @@ void MainLoop() {
 }
 
 
-void HandleArgs(int argc, char* argv[]) {
-	if (argc < 2) return;
-	for (int i = 1; i < argc; i++) {
-		std::cout << argv[i];
-
-		std::cout << std::endl << std::flush;
+void HandleArgs() {
+	if (QApplication::arguments().contains("-webDirectory")) {
+		int index = QApplication::arguments().indexOf("-webDirectory");
+		BaseDirectory = QApplication::arguments().at(index + 1);
 	}
 }
 
@@ -128,6 +124,14 @@ void endProgram() {
 
 	if (calibrating && CalibrationThread != nullptr)
 		CalibrationThread->join();
+
+	for (int i = 0; i < 17; i++) {
+		if (PoseTrackers[i]) {
+			deleteVirtualDevice(trackerIDs[i]);
+		}
+	}
+
+	inputEmulator.disconnect();
 
 	//Save data if needed
 	WriteConfig();
@@ -159,31 +163,48 @@ int main(int argc, char* argv[])
 		freopen("CONOUT$", "w", stdout);
 		freopen("CONOUT$", "w", stderr);
 	}
-	freopen("out.txt", "w", stdout);
-	freopen("out.txt", "w", stderr);
+	else
+	{
+		freopen("log.txt", "w", stdout);
+		freopen("log.txt", "w", stderr);
+	}
 #endif
-	
-	HandleArgs(argc, argv);
-	SetConsoleCtrlHandler((PHANDLER_ROUTINE)EndProgram, true);
 
 	QApplication a(argc, argv);
 
+	HandleArgs();
+	SetConsoleCtrlHandler((PHANDLER_ROUTINE)EndProgram, true);
+
+	//temp
 	BaseDirectory.append("C:\\VSProjects\\VR-AI-Full-Body-Tracking\\Remote1CamProcessing\\");
-	if (QApplication::arguments().contains("-webDirectory")) {
-		int index = QApplication::arguments().indexOf("-webDirectory");
-		BaseDirectory = QApplication::arguments().at(index + 1);
-	}
 
 	if (!ReadConfig()) {
+		std::cout << "Could Not Load Config...\n";
 		QJsonObject json;
 		json.insert("port", 2674);
 		json.insert("windowConfigs", QJsonArray());
 		config.setObject(json);
+		qDebug() << config;
 		WriteConfig();
 	}
 
 	StartVR();
+	if (pmFlags & PlayspaceMoverFlags::Active) {
+		EnableHardwareOffset();
+	}
+
+
 	VRDashboardOverlay::SharedInstance();
+	GetOverlays();
+
+
+	if (!findTrackers()) {
+		for (int i = 0; i < 17; i++) {
+			if (PoseTrackers[i]) {
+				trackerIDs[i] = createTracker(PoseNames[i].c_str());
+			}
+		}
+	}
 
 	MainThread = std::thread(MainLoop);
 

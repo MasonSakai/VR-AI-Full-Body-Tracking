@@ -1,6 +1,8 @@
 #pragma once
 
 #include "vrUtil.h"
+#include "OverlayManager.h"
+#include "DashboardWidget.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -56,6 +58,8 @@ struct Camera {
 	uint16_t width, height;
 
 	static void SetSize(uint8_t index, uint16_t width, uint16_t height);
+	static void OnConnect(uint8_t index);
+	static void OnStart(uint8_t index);
 
 	void Calibrate(glm::vec3 position, glm::quat qp,
 		glm::vec3 v1, glm::vec2 p1, glm::quat q1,

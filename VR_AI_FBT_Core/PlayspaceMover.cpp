@@ -18,7 +18,7 @@ void EnableHardwareOffset() {
 		{
 			vr::ETrackedDeviceClass trackedDeviceClass = vr::VRSystem()->GetTrackedDeviceClass(unDevice);
 
-			if (trackedDeviceClass < 3 && trackedDeviceClass > 0) {
+			if (trackedDeviceClass < 4 && trackedDeviceClass > 0) {
 				std::cout << unDevice << std::endl << std::flush;
 				inputEmulator.enableDeviceOffsets(unDevice, true, false);
 				inputEmulator.setWorldFromDriverTranslationOffset(unDevice, offset, false);
@@ -45,7 +45,7 @@ void UpdateHardwareOffset() {
 		{
 			vr::ETrackedDeviceClass trackedDeviceClass = vr::VRSystem()->GetTrackedDeviceClass(unDevice);
 
-			if (trackedDeviceClass < 3 && trackedDeviceClass > 0) {
+			if (trackedDeviceClass < 4 && trackedDeviceClass > 0) {
 				inputEmulator.setWorldFromDriverTranslationOffset(unDevice, offset, false);
 
 			}
@@ -69,7 +69,7 @@ void DisableHardwareOffset() {
 		{
 			vr::ETrackedDeviceClass trackedDeviceClass = vr::VRSystem()->GetTrackedDeviceClass(unDevice);
 
-			if (trackedDeviceClass < 3 && trackedDeviceClass > 0) {
+			if (trackedDeviceClass < 4 && trackedDeviceClass > 0) {
 				inputEmulator.setWorldFromDriverTranslationOffset(unDevice, offset, false);
 				inputEmulator.enableDeviceOffsets(unDevice, false, false);
 			}

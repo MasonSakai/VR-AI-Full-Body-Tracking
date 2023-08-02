@@ -7,6 +7,7 @@
 #include <qgridlayout.h>
 #include "PlayspaceMover.h"
 #include "vrUtil.h"
+#include "CameraManager.h"
 
 class DashboardWidget : public QWidget
 {
@@ -22,7 +23,7 @@ public:
 
 private slots:
     void on_btnRecenter_clicked();
-    void on_btnCalibrateTrakers_clicked();
+    void on_btnCalibrateTrackers_clicked();
     void on_btnResetPM_clicked();
     void on_cbxEnablePM_clicked(bool checked);
     void on_btnQuit_clicked();

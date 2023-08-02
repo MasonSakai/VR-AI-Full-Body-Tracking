@@ -7,6 +7,7 @@
 #include "mathUtil.h"
 #include "PlayspaceMover.h"
 #include <queue>
+#include "PoseTracker.h"
 
 #define GLM_FORCE_SWIZZLE
 #define GLM_ENABLE_EXPERIMENTAL

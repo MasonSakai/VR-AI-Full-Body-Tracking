@@ -167,6 +167,15 @@ void Camera::SetSize(uint8_t index, uint16_t width, uint16_t height) {
 	cameras[index].height = height;
 	cameras[index].waitingForSize = false;
 }
+void Camera::OnConnect(uint8_t index) {
+	VRDashboardOverlay::SharedInstance()->SetCameraState(index, 5);
+	cameras[index].active = false;
+	cameras[index].connected = true;
+	CreateCameraOverlay(index);
+}
+void Camera::OnStart(uint8_t index) {
+	VRDashboardOverlay::SharedInstance()->SetCameraState(index, 4);
+}
 
 // _1 (left) and _2 (right) are from T-pose
 // _3 is next to foot
@@ -238,12 +247,12 @@ void Camera::Calibrate(glm::vec3 position, glm::quat qp,
 	dir2 = reject(dir2, norm);
 	glm::vec3 centerv3 = Intersection(lerp1, dir1, lerp2, dir2);
 	glm::vec3 centerDirection = glm::normalize(centerv3 - position);
-	/*std::cout << "projs:    {" << proj1 << ", " << proj2 << "}\n";
+	std::cout << "projs:    {" << proj1 << ", " << proj2 << "}\n";
 	std::cout << "lerp1:    {" << lerp1.x << ", " << lerp1.y << ", " << lerp1.z << "}\n";
 	std::cout << "lerp2:    {" << lerp2.x << ", " << lerp2.y << ", " << lerp2.z << "}\n";
 	std::cout << "dir1:     {" << dir1.x << ", " << dir1.y << ", " << dir1.z << "}\n";
 	std::cout << "dir2:     {" << dir2.x << ", " << dir2.y << ", " << dir2.z << "}\n";
-	std::cout << "centerv3: {" << centerv3.x << ", " << centerv3.y << ", " << centerv3.z << "}\n\n" << std::flush;*/
+	std::cout << "centerv3: {" << centerv3.x << ", " << centerv3.y << ", " << centerv3.z << "}\n\n" << std::flush;
 
 	//Correct for roll
 	glm::vec2 pd = p2 - p1;

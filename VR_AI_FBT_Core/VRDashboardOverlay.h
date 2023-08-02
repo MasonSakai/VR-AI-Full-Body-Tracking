@@ -1,6 +1,8 @@
 #pragma once
 
 #include "openvr.h"
+#include "vrUtil.h"
+#include "OverlayManager.h"
 
 #include <QtCore/QtCore>
 // because of incompatibilities with QtOpenGL and GLEW we need to cherry pick includes

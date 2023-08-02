@@ -22,17 +22,26 @@ void configHandler(const QHttpServerRequest& req, QHttpServerResponder&& res) {
 	QByteArray data;
 	QJsonParseError jsonError;
 	QJsonDocument jsonDocument;
+	QJsonArray jsonArray;
 	QJsonObject jsonObject;
 	switch (req.method())
 	{
 	case QHttpServerRequest::Method::Get:
 		data = req.body();
-		index = data.toInt(0);
+		index = data.toInt();
 		if (index == -1) index = 0; //Make better
-		qDebug() << "Get Config " << index;
-		jsonObject = config["windowConfigs"].toArray()[index].toObject();
-		jsonObject.insert("status", "ok");
-		res.sendResponse(QHttpServerResponse(jsonObject));
+		jsonArray = config["windowConfigs"].toArray();
+		if (jsonArray[index].isObject()) {
+			jsonObject = jsonArray[index].toObject();
+			jsonObject.insert("status", "ok");
+			res.sendResponse(QHttpServerResponse(jsonObject));
+		}
+		else
+		{
+			jsonObject = QJsonObject();
+			jsonObject.insert("status", "noConfig");
+			res.sendResponse(QHttpServerResponse(jsonObject));
+		}
 		return;
 	case QHttpServerRequest::Method::Post:
 		
@@ -74,7 +83,6 @@ void onPoseData(const QHttpServerRequest& req, QHttpServerResponder&& res) {
 	}
 	int index = jsonDocument.object()["id"].toInt();
 	QJsonObject pose = jsonDocument.object()["pose"].toObject();
-	qDebug() << jsonDocument << index;
 	PoseTracker::SetPose(index, pose);
 	res.sendResponse(QHttpServerResponse(QHttpServerResponder::StatusCode::Ok));
 }
@@ -91,8 +99,15 @@ void onGetSize(const QHttpServerRequest& req, QHttpServerResponder&& res) {
 	int width = jsonDocument.object()["width"].toInt();
 	int height = jsonDocument.object()["height"].toInt();
 	Camera::SetSize(index, width, height);
-	qDebug() << jsonDocument << index;
 	res.sendResponse(QHttpServerResponse(QHttpServerResponder::StatusCode::Ok));
+}
+void onCameraConnect(const QHttpServerRequest& req, QHttpServerResponder&& res) {
+	int index = req.body().toInt();
+	Camera::OnConnect(index);
+}
+void onCameraStart(const QHttpServerRequest& req, QHttpServerResponder&& res) {
+	int index = req.body().toInt();
+	Camera::OnStart(index);
 }
 
 bool AIRemoteServer::StartServer() {
@@ -102,6 +117,8 @@ bool AIRemoteServer::StartServer() {
 	server->route("/config.json", configHandler);
 	server->route("/poseData", onPoseData);
 	server->route("/cameraSize", onGetSize);
+	server->route("/connect", onCameraConnect);
+	server->route("/start", onCameraStart);
 	server->setMissingHandler(missingHandler);
 
 	server->listen(QHostAddress::Any, config["port"].toInt());
