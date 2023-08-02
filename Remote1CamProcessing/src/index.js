@@ -22,8 +22,6 @@ const btnReset = document.getElementById("btn-reset");
 const lblPutState = document.getElementById("lbl-put-state");
 var lblPutStateTimeout;
 
-var id = -1;
-
 const width = video.clientWidth;
 console.log(width);
 
@@ -32,15 +30,10 @@ lblState.innerHTML = "<i>Loading Camera...</i>";
 const camera = new Camera();
 const poseDetector = new PoseDetector(true, width);
 
-var hostSocket;
-
 lblState.innerHTML = "<i>Loading...</i>";
-
-var HostName = window.location.hostname;
 
 const DefaultConfig = {
 	"id": -1,
-	"port": -1,
 	"cameraName": "",
 	"autostart": false,
 	"confidenceThreshold": 0.3
@@ -252,8 +245,16 @@ function sleep(ms) {
 
 async function sendPose(pose) {
 	await putAsync("poseData", {
-		"id": id,
+		"id": config.id,
 		"pose": pose
+	});
+}
+async function sendSize() {
+	let rect = video.getBoundingClientRect();
+	await putAsync("cameraSize", {
+		"id": config.id,
+		"width": rect.width,
+		"height": rect.height
 	});
 }
 
@@ -261,29 +262,6 @@ async function AILoop() {
 	let pose = await poseDetector.getFilteredPose(video, config.confidenceThreshold);
 	await sendPose(pose);
 	drawPose(pose);
-}
-
-
-async function InitHost() {
-	hostSocket = new WebSocket("ws://" + location.host);
-	hostSocket.onmessage = (data) => {
-		console.log(data);
-	};
-	hostSocket.onerror = (data) => {
-		console.error(data);
-	};
-	hostSocket.onclose = () => {
-		console.log("Host Disconnect");
-		hostSocket.disconnect();
-		controlPanel.classList.add("d-none");
-	};
-	let waiting = true;
-	hostSocket.onopen = () => {
-		controlPanel.classList.remove("d-none");
-		waiting = false;
-	};
-	while (waiting) { }
-	while (hostSocket.readyState != 1) { }
 }
 
 async function startAILoop() {
@@ -295,10 +273,6 @@ async function startAILoop() {
 			video.srcObject = await camera.getCameraStream(camid);
 		}
 		if (!poseDetector.detector) await poseDetector.createDetector();
-		if (!(hostSocket && hostSocket.readyState == 1)) {
-			//tryConnectHost();
-			await InitHost();
-		}
 
 		resizeCanvas();
 		canvas.classList.remove("d-none");
@@ -310,7 +284,8 @@ async function startAILoop() {
 			}))});*/
 
 		lblState.innerHTML = "Started Successfully"
-		if (!(hostSocket && hostSocket.readyState == 1)) lblState.innerHTML += "<br>Without connection to host"
+
+		sendSize();
 
 		while (activeState) {
 			start = (performance || Date).now();

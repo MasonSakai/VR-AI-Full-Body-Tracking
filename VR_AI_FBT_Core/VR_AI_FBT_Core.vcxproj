@@ -32,7 +32,7 @@
   </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="QtSettings">
     <QtInstall>6.5.2_msvc2019_64</QtInstall>
-    <QtModules>core;gui;network;opengl;openglwidgets;websockets;widgets;httpserver</QtModules>
+    <QtModules>core;gui;network;widgets;opengl;openglwidgets;httpserver</QtModules>
     <QtBuildConfig>debug</QtBuildConfig>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="QtSettings">
@@ -60,7 +60,9 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\VSProjects\glm;C:\VSProjects\OpenVR-InputEmulator\third-party\boost_1_63_0;C:\VSProjects\OpenVR-InputEmulator\openvr\headers;C:\VSProjects\OpenVR-InputEmulator\lib_vrinputemulator\include;%(AdditionalIncludeDirectories);$(Qt_INCLUDEPATH_)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VSProjects\glm;C:\VSProjects\OpenVR-InputEmulator\third-party\boost_1_63_0;C:\VSProjects\OpenVR-InputEmulator\openvr\headers;C:\VSProjects\OpenVR-InputEmulator\lib_vrinputemulator\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>$(Qt_STDCPP_)</LanguageStandard>
+      <PreprocessorDefinitions>_HAS_AUTO_PTR_ETC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>C:\VSProjects\OpenVR-InputEmulator\openvr\lib\win64;C:\VSProjects\OpenVR-InputEmulator\Debug\lib\x64;C:\VSProjects\OpenVR-InputEmulator\third-party\boost_1_63_0\stage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -92,15 +94,29 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="cameraSocketManager.cpp" />
+    <ClCompile Include="CameraManager.cpp" />
+    <ClCompile Include="Config.cpp" />
+    <ClCompile Include="DashboardWidget.cpp" />
     <ClCompile Include="mathUtil.cpp" />
+    <ClCompile Include="OverlayManager.cpp" />
+    <ClCompile Include="PlayspaceMover.cpp" />
+    <ClCompile Include="PoseTracker.cpp" />
+    <ClCompile Include="VRDashboardOverlay.cpp" />
+    <ClCompile Include="vrUtil.cpp" />
     <ClCompile Include="websiteServer.cpp" />
     <QtRcc Include="DashboardWidget.qrc" />
     <QtUic Include="DashboardWidget.ui" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="cameraSocketManager.h" />
+    <ClInclude Include="CameraManager.h" />
+    <ClInclude Include="Config.h" />
+    <ClInclude Include="OverlayManager.h" />
+    <ClInclude Include="PlayspaceMover.h" />
+    <QtMoc Include="VRDashboardOverlay.h" />
+    <ClInclude Include="PoseTracker.h" />
+    <ClInclude Include="vrUtil.h" />
+    <QtMoc Include="DashboardWidget.h" />
     <ClInclude Include="mathUtil.h" />
     <QtMoc Include="websiteServer.h" />
   </ItemGroup>

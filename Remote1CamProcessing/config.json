@@ -1,6 +1,5 @@
 {
-	"socketport": 2673,
-	"webport": 2674,
+	"port": 2674,
 	"windowConfigs": [
 		{
 			"cameraName": "USB2.0 HD UVC WebCam (13d3:5666)",

@@ -3,6 +3,8 @@
 vr::IVRSystem* m_VRSystem;
 vrinputemulator::VRInputEmulator inputEmulator;
 
+uint32_t trackerIDs[17];
+
 glm::vec3 headPos, leftHandPos, rightHandPos;
 glm::vec3 headPosReal, leftHandPosReal, rightHandPosReal;
 glm::quat headRot, leftHandRot, rightHandRot;
@@ -13,8 +15,6 @@ glm::quat controllerRotOffset;
 
 bool trackersOverride = false;
 bool active = true;
-
-bool FlagNoVR = false;
 
 std::queue<uint8_t> buttonInputListener;
 
@@ -30,9 +30,9 @@ bool findTrackers() {
 				return false;
 			}
 		}
-		trackerIDs[Poses::right_hip] = 0;
-		trackerIDs[Poses::left_ankle] = 1;
-		trackerIDs[Poses::right_ankle] = 2;
+		//trackerIDs[Poses::right_hip] = 0;
+		//trackerIDs[Poses::left_ankle] = 1;
+		//trackerIDs[Poses::right_ankle] = 2;
 		std::cout << "Found Trackers\n" << std::flush;
 		return true;
 	}
@@ -107,81 +107,6 @@ void setOffsetVirtualDevicePosition(uint32_t id, glm::vec3 pos, glm::quat rot) {
 	setVirtualDevicePosition(id, pos, rot);
 }
 
-void EnableHardwareOffset() {
-	vr::HmdVector3d_t offset;
-	offset.v[0] = 0;
-	offset.v[1] = 0;
-	offset.v[2] = 0;
-	for (vr::TrackedDeviceIndex_t unDevice = 0; unDevice < vr::k_unMaxTrackedDeviceCount; unDevice++)
-	{
-		if (!m_VRSystem->IsTrackedDeviceConnected(unDevice))
-			continue;
-
-		vr::VRControllerState_t state;
-		if (m_VRSystem->GetControllerState(unDevice, &state, sizeof(state)))
-		{
-			vr::ETrackedDeviceClass trackedDeviceClass = vr::VRSystem()->GetTrackedDeviceClass(unDevice);
-
-			if (trackedDeviceClass < 3 && trackedDeviceClass > 0) {
-				std::cout << unDevice << std::endl << std::flush;
-				inputEmulator.enableDeviceOffsets(unDevice, true, false);
-				inputEmulator.setWorldFromDriverTranslationOffset(unDevice, offset, false);
-			}
-
-		}
-	}
-}
-void UpdateHardwareOffset() {
-
-	vr::HmdVector3d_t offset;
-	offset.v[0] = pmOffset.x;
-	offset.v[1] = pmOffset.y;
-	offset.v[2] = pmOffset.z;
-	vrinputemulator::DeviceOffsets data;
-
-	for (vr::TrackedDeviceIndex_t unDevice = 0; unDevice < vr::k_unMaxTrackedDeviceCount; unDevice++)
-	{
-		if (!m_VRSystem->IsTrackedDeviceConnected(unDevice))
-			continue;
-
-		vr::VRControllerState_t state;
-		if (m_VRSystem->GetControllerState(unDevice, &state, sizeof(state)))
-		{
-			vr::ETrackedDeviceClass trackedDeviceClass = vr::VRSystem()->GetTrackedDeviceClass(unDevice);
-
-			if (trackedDeviceClass < 3 && trackedDeviceClass > 0) {
-				inputEmulator.setWorldFromDriverTranslationOffset(unDevice, offset, false);
-
-			}
-
-		}
-	}
-}
-void DisableHardwareOffset() {
-	vr::HmdVector3d_t offset;
-	offset.v[0] = 0;
-	offset.v[1] = 0;
-	offset.v[2] = 0;
-
-	for (vr::TrackedDeviceIndex_t unDevice = 0; unDevice < vr::k_unMaxTrackedDeviceCount; unDevice++)
-	{
-		if (!m_VRSystem->IsTrackedDeviceConnected(unDevice))
-			continue;
-
-		vr::VRControllerState_t state;
-		if (m_VRSystem->GetControllerState(unDevice, &state, sizeof(state)))
-		{
-			vr::ETrackedDeviceClass trackedDeviceClass = vr::VRSystem()->GetTrackedDeviceClass(unDevice);
-
-			if (trackedDeviceClass < 3 && trackedDeviceClass > 0) {
-				inputEmulator.setWorldFromDriverTranslationOffset(unDevice, offset, false);
-				inputEmulator.enableDeviceOffsets(unDevice, false, false);
-			}
-
-		}
-	}
-}
-
 //Do Not Use
 /*void onClose() {
 	for (int i = 0; i < 17; i++) {
@@ -198,7 +123,6 @@ void DisableHardwareOffset() {
 }*/
 
 void UpdateRealHardwarePositions() {
-	if (FlagNoVR) return;
 	if (!active) return;
 	for (vr::TrackedDeviceIndex_t unDevice = 0; unDevice < vr::k_unMaxTrackedDeviceCount; unDevice++)
 	{
@@ -259,7 +183,6 @@ void UpdateRealHardwarePositions() {
 	}
 }
 void UpdateHardwarePositions() {
-	if (FlagNoVR) return;
 	if (!active) return;
 	for (vr::TrackedDeviceIndex_t unDevice = 0; unDevice < vr::k_unMaxTrackedDeviceCount; unDevice++)
 	{
@@ -322,7 +245,6 @@ void UpdateHardwarePositions() {
 vr::VRControllerState_t GetControllerState(vr::ETrackedControllerRole controller) {
 	vr::VRControllerState_t buttons;
 	buttons.ulButtonPressed = 0;
-	if (FlagNoVR) return buttons;
 	auto id = vr::VRSystem()->GetTrackedDeviceIndexForControllerRole(controller);
 	if (id != vr::k_unTrackedDeviceIndexInvalid) {
 		vr::VRSystem()->GetControllerState(id, &buttons, sizeof(vr::VRControllerState_t));
@@ -333,8 +255,6 @@ vr::VRControllerState_t GetControllerState(vr::ETrackedControllerRole controller
 
 bool StartVR()
 {
-	if (FlagNoVR) return true;
-
 	vr::EVRInitError error = vr::VRInitError_Compositor_Failed;
 	std::cout << "Looking for SteamVR..." << std::flush;
 	while (error != vr::VRInitError_None) {

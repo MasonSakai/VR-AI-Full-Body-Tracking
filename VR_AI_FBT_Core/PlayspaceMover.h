@@ -5,6 +5,10 @@
 extern glm::vec3 pmOffset;
 extern uint8_t pmFlags;
 
+void EnableHardwareOffset();
+void UpdateHardwareOffset();
+void DisableHardwareOffset();
+
 void CheckPlayspaceMover();
 
 enum PlayspaceMoverFlags : uint8_t {

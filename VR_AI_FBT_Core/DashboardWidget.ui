@@ -41,6 +41,9 @@
      <property name="text">
       <string>Enable Playspace Mover</string>
      </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
     </widget>
     <widget class="QPushButton" name="btnResetPM">
      <property name="geometry">
@@ -345,6 +348,19 @@
        <enum>QLayout::SetMinimumSize</enum>
       </property>
      </layout>
+    </widget>
+    <widget class="QPushButton" name="btnShowCamera">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>30</y>
+       <width>91</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Show Cameras</string>
+     </property>
     </widget>
    </widget>
   </widget>
