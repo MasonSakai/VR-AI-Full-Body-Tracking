@@ -19,24 +19,31 @@ bool active = true;
 std::queue<uint8_t> buttonInputListener;
 
 
-//update
+//todo UPDATE
 bool findTrackers() {
-	if (inputEmulator.getVirtualDeviceCount() == 3) {
-		for (int i = 0; i < 3; i++) {
-			vr::DriverPose_t pose = inputEmulator.getVirtualDevicePose(i);
-			std::cout << "Found Tracker " << inputEmulator.getVirtualDeviceInfo(i).deviceSerial << "\n" << std::flush;
-			if (pose.deviceIsConnected == true || pose.result != vr::TrackingResult_Uninitialized || pose.poseIsValid == true) {
-				std::cout << "Rejected: " << pose.deviceIsConnected << pose.result << pose.poseIsValid << std::endl << std::flush;
-				return false;
+	//if (inputEmulator.getVirtualDeviceCount() == 3) {
+	for (int i = 0; i < inputEmulator.getVirtualDeviceCount(); i++) {
+		//vr::DriverPose_t pose = inputEmulator.getVirtualDevicePose(i);
+		std::cout << "Found Tracker " << inputEmulator.getVirtualDeviceInfo(i).deviceSerial << "\n" << std::flush;
+		for (int j = 0; j < 17; j++) {
+			if (inputEmulator.getVirtualDeviceInfo(i).deviceSerial == PoseNames[j]) {
+				trackerIDs[j] = i;
+				std::cout << "    Matched\n" << std::flush;
+				break;
 			}
 		}
-		trackerIDs[Poses::right_hip] = 0;
-		trackerIDs[Poses::left_ankle] = 1;
-		trackerIDs[Poses::right_ankle] = 2;
-		std::cout << "Found Trackers\n" << std::flush;
-		return true;
+		/*if (pose.deviceIsConnected == true || pose.result != vr::TrackingResult_Uninitialized || pose.poseIsValid == true) {
+			std::cout << "Rejected: " << pose.deviceIsConnected << pose.result << pose.poseIsValid << std::endl << std::flush;
+			return false;
+		}*/
 	}
-	return false;
+	//trackerIDs[Poses::right_hip] = 0;
+	//trackerIDs[Poses::left_ankle] = 1;
+	//trackerIDs[Poses::right_ankle] = 2;
+	std::cout << "Found Trackers\n" << std::flush;
+	return true;
+	//}
+	//return false;
 }
 
 uint32_t createTracker(const char* deviceName) {
@@ -75,6 +82,20 @@ uint32_t createTracker() {
 	return createTracker(std::to_string(id).c_str());
 }
 
+void GetTrackers() {
+	findTrackers();
+	for (int i = 0; i < 17; i++) {
+		if (PoseTrackers[i]) {
+			try {
+				trackerIDs[i] = createTracker(PoseNames[i].c_str());
+			}
+			catch (...) {
+
+			}
+		}
+	}
+}
+
 void deleteVirtualDevice(int id) {
 	vr::DriverPose_t pose = inputEmulator.getVirtualDevicePose(id);
 	pose.deviceIsConnected = false;
@@ -102,8 +123,8 @@ void setVirtualDevicePosition(uint32_t id, glm::vec3 pos, glm::quat rot) {
 	//person lines up their controllers with the virtual ones, and that difference is measured
 }
 void setOffsetVirtualDevicePosition(uint32_t id, glm::vec3 pos, glm::quat rot) {
-	pos += controllerPosOffset + pmOffset; //see if input emulator effects these too
-	rot *= controllerRotOffset;
+	pos += controllerPosOffset + pmOffset;
+	//rot *= controllerRotOffset;
 	setVirtualDevicePosition(id, pos, rot);
 }
 

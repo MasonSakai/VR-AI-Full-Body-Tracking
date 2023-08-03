@@ -18,6 +18,7 @@
 class PoseTracker {
 public:
 	static void SetPose(uint8_t camera, QJsonObject poseData);
+	static void InitTrackers();
 
 	void Init(uint8_t trackerIndex);
 
@@ -32,6 +33,8 @@ public:
 	
 	glm::vec3 position;
 	glm::quat rotation;
+
+	bool hasValidPosition = false;
 private:
 	uint8_t tracker;
 
@@ -70,6 +73,13 @@ struct Camera {
 	glm::vec3 GetVector(glm::vec2 coords);
 };
 
+
+extern glm::vec3 handToWrist;
+extern float shoulderToShoulder,
+shoulderToHip, hipWidth,
+upperArmLen, lowerArmLen,
+upperLegLen, lowerLegLen;
+
 extern Camera cameras[];
 extern PoseTracker trackers[];
 
@@ -93,7 +103,7 @@ const std::string PoseNames[17] = {
 	"right_ankle"
 };
 
-enum Poses {
+enum Poses : uint8_t {
 	nose,
 	left_eye,
 	right_eye,
@@ -132,10 +142,3 @@ const bool PoseTrackers[17] = {
 	true,	// left  ankle
 	true	// right ankle
 };
-
-
-extern glm::vec3 handToWrist;
-extern float shoulderToShoulder,
-shoulderToHip, hipWidth,
-upperArmLen, lowerArmLen,
-upperLegLen, lowerLegLen;

@@ -87,9 +87,9 @@ glm::vec3 Intersection(glm::vec3 p1, glm::vec3 v1, glm::vec3 p2, glm::vec3 v2) {
 	mat[1][0] = v1.y;
 	mat[2][0] = v1.z;
 
-	mat[0][1] = -v2.x;
-	mat[1][1] = -v2.y;
-	mat[2][1] = -v2.z;
+	mat[0][1] = v2.x;
+	mat[1][1] = v2.y;
+	mat[2][1] = v2.z;
 
 	mat[0][2] = p1.x - p2.x;
 	mat[1][2] = p1.y - p2.y;

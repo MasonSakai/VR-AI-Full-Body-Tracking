@@ -35,11 +35,12 @@ extern bool active;
 extern std::queue<uint8_t> buttonInputListener;
 
 
-//update
 bool findTrackers();
 
 uint32_t createTracker(const char* deviceName);
 uint32_t createTracker();
+
+void GetTrackers();
 
 void deleteVirtualDevice(int id);
 

@@ -19,7 +19,7 @@ void EnableHardwareOffset() {
 			vr::ETrackedDeviceClass trackedDeviceClass = vr::VRSystem()->GetTrackedDeviceClass(unDevice);
 
 			if (trackedDeviceClass < 4 && trackedDeviceClass > 0) {
-				std::cout << unDevice << std::endl << std::flush;
+				//std::cout << unDevice << std::endl << std::flush;
 				inputEmulator.enableDeviceOffsets(unDevice, true, false);
 				inputEmulator.setWorldFromDriverTranslationOffset(unDevice, offset, false);
 			}

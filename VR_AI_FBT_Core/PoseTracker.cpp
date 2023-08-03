@@ -14,6 +14,11 @@ ankleToSole;
 Camera cameras[16];
 PoseTracker trackers[17];
 
+void PoseTracker::InitTrackers() {
+	for (uint8_t i = 0; i < 17; i++) {
+		trackers[i].Init(i);
+	}
+}
 
 void PoseTracker::SetPose(uint8_t camera, QJsonObject poseData) {
 	QJsonObject json;
@@ -106,9 +111,11 @@ void PoseTracker::CalculateMultiPosition() {
 	position = pos / total;
 	std::cout << "pos:  {" << pos.x << ", " << pos.y << ", " << pos.z << "}, " << total << "\n";
 	std::cout << "position: {" << position.x << ", " << position.y << ", " << position.z << "}\n\n" << std::flush;
+	hasValidPosition = true;
 }
 
 uint8_t PoseTracker::CalculatePosition() {
+	hasValidPosition = false;
 	uint8_t n = getNumberOfCams();
 	if (n == 0) return 0;
 	UpdateDirections();
@@ -119,6 +126,17 @@ uint8_t PoseTracker::CalculatePosition() {
 
 //return true if able to make pose
 bool PoseTracker::CalculateSingleCameraPosition() {
+	if (tracker == Poses::left_wrist) {
+		position = leftHandPosReal + leftHandRotReal * handToWrist;
+		hasValidPosition = true;
+		return true;
+	}
+	if (tracker == Poses::right_wrist) {
+		position = rightHandPosReal + rightHandRotReal * handToWrist;
+		hasValidPosition = true;
+		return true;
+	}
+
 	uint8_t n = 0;
 	for (n = 0; n < 17; n++)
 		if (cameraFlags & (1 << n))
@@ -129,6 +147,7 @@ bool PoseTracker::CalculateSingleCameraPosition() {
 
 	position = cameras[n].position + directions[n] * dist;
 
+	hasValidPosition = true;
 	return true;
 }
 
@@ -136,10 +155,10 @@ uint8_t PoseTracker::CalculateOrientation() {
 	switch (tracker) {
 		//mimic real
 	case Poses::left_wrist:
-		rotation = leftHandRot;
+		rotation = leftHandRotReal;
 		break;
 	case Poses::right_wrist:
-		rotation = rightHandRot;
+		rotation = rightHandRotReal;
 		break;
 
 	case Poses::right_hip:
@@ -150,13 +169,14 @@ uint8_t PoseTracker::CalculateOrientation() {
 		//put toes on when near (<60/70 deg)
 		//use leg when above
 	case Poses::left_ankle:
-		rotation = leftHandRot;
+		rotation = leftHandRotReal;
 		break;
 	case Poses::right_ankle:
-		rotation = rightHandRot;
+		rotation = rightHandRotReal;
 		break;
 
 	default:
+		std::cout << "Defaulted" << (int)tracker << "\n";
 		return 0;
 	}
 	return 1;
@@ -235,24 +255,24 @@ void Camera::Calibrate(glm::vec3 position, glm::quat qp,
 	//std::cout << "radPerPixel: " << radPerPixel << "\n\n" << std::flush;
 
 	//get center in 3d space
-	glm::vec2 center = glm::vec2(width, height) / 2.0f;
-	float proj1 = glm::dot(center, p2 - p1) / glm::length2(p3 - p1);
-	float proj2 = glm::dot(center, p3 - p1) / glm::length2(p3 - p1);
+	glm::vec2 center = glm::vec2(width, height) * .5f;
+	float proj1 = glm::dot(center - p1, p2 - p1) / glm::length2(p2 - p1);
+	float proj2 = glm::dot(center - p1, p3 - p1) / glm::length2(p3 - p1);
 	glm::vec3 lerp1 = lerp(wristLeftReal, wristRightReal, proj1);
 	glm::vec3 lerp2 = lerp(wristLeftReal, wrist3Real, proj2);
 	glm::vec3 norm = glm::cross(wristRightReal - wristLeftReal, wrist3Real - wristLeftReal);
 	glm::vec3 dir1 = glm::normalize(reject(lerp2 - lerp1, v2 - v1));
-	glm::vec3 dir2 = glm::normalize(reject(lerp1 - lerp2, v3 - v1));
+	glm::vec3 dir2 = glm::normalize(reject(lerp2 - lerp1, v3 - v1));
 	dir1 = reject(dir1, norm);
 	dir2 = reject(dir2, norm);
 	glm::vec3 centerv3 = Intersection(lerp1, dir1, lerp2, dir2);
 	glm::vec3 centerDirection = glm::normalize(centerv3 - position);
-	std::cout << "projs:    {" << proj1 << ", " << proj2 << "}\n";
+	/*std::cout << "projs:    {" << proj1 << ", " << proj2 << "}\n";
 	std::cout << "lerp1:    {" << lerp1.x << ", " << lerp1.y << ", " << lerp1.z << "}\n";
 	std::cout << "lerp2:    {" << lerp2.x << ", " << lerp2.y << ", " << lerp2.z << "}\n";
 	std::cout << "dir1:     {" << dir1.x << ", " << dir1.y << ", " << dir1.z << "}\n";
 	std::cout << "dir2:     {" << dir2.x << ", " << dir2.y << ", " << dir2.z << "}\n";
-	std::cout << "centerv3: {" << centerv3.x << ", " << centerv3.y << ", " << centerv3.z << "}\n\n" << std::flush;
+	std::cout << "centerv3: {" << centerv3.x << ", " << centerv3.y << ", " << centerv3.z << "}\n\n" << std::flush;*/
 
 	//Correct for roll
 	glm::vec2 pd = p2 - p1;
@@ -291,3 +311,30 @@ void Camera::CalibrateDistances(glm::vec3 v1, glm::quat q1, glm::vec3 v2, glm::q
 
 	//float sts;
 }
+
+/*
+pos: {-0.42421, 1.01416, -2.32494}
+v1: {-0.345276, 1.29682, 0.706046}
+p1: {87.077, 85.8325}
+v2: {1.23155, 1.31366, -0.133572}
+p2: {379.711, 69.6272}
+v3: {0.701194, -0.0242015, 0.243199}
+p3: {297.903, 328.608}
+
+cameraPosOffset: {0.00458194, -0.00167493, 0.0237047}
+pos: {-0.413826, 1.00995, -2.30349}
+
+projs:    {0.764435, 0.836989}
+lerp1:    {0.810067, 1.30916, 0.0908552}
+lerp2:    {0.507529, 0.264109, 0.274884}
+dir1:     {0.017451, -0.999767, 0.012721}
+dir2:     {-0.661834, -0.653586, 0.366642}
+centerv3: {0.192185, -0.047305, 0.449578}
+
+v1: {-0.345276, 1.29682, 0.706046}
+v2: {1.23155, 1.31366, -0.133572}
+v3: {0.701194, -0.0242015, 0.243199}
+
+norm: {0.201284, -0.351162, 0.914423}
+len: 1
+*/

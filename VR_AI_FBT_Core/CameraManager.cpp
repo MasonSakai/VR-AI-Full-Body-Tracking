@@ -37,12 +37,12 @@ void CalibrationThreadFunct() {
 		std::cout << "Release X/A\n" << std::flush;
 		UpdateHardwarePositions();
 		if (captureSide) {
-			position = rightHandPos;
-			qp = rightHandRot;
+			position = rightHandPosReal;
+			qp = rightHandRotReal;
 		}
 		else {
-			position = leftHandPos;
-			qp = leftHandRot;
+			position = leftHandPosReal;
+			qp = leftHandRotReal;
 		}
 		while (active) {
 			uint64_t buttons = GetControllerState(vr::TrackedControllerRole_LeftHand).ulButtonPressed;
@@ -71,14 +71,14 @@ void CalibrationThreadFunct() {
 		std::cout << "Release X/A\n" << std::flush;
 		UpdateHardwarePositions();
 		if (captureSide) {
-			p3 = trackers[10].GetPose(camera);
-			v3 = rightHandPos;
-			q3 = rightHandRot;
+			p3 = trackers[Poses::right_wrist].GetPose(camera);
+			v3 = rightHandPosReal;
+			q3 = rightHandRotReal;
 		}
 		else {
-			p3 = trackers[9].GetPose(camera);
-			v3 = leftHandPos;
-			q3 = leftHandRot;
+			p3 = trackers[Poses::left_wrist].GetPose(camera);
+			v3 = leftHandPosReal;
+			q3 = leftHandRotReal;
 		}
 		while (active) {
 			uint64_t buttons = GetControllerState(vr::TrackedControllerRole_LeftHand).ulButtonPressed;
@@ -100,13 +100,13 @@ void CalibrationThreadFunct() {
 		}
 		std::cout << "Release X/A\n" << std::flush;
 		UpdateHardwarePositions();
-		p1 = trackers[9].GetPose(camera);
-		v1 = leftHandPos;
-		q1 = leftHandRot;
+		p1 = trackers[Poses::left_wrist].GetPose(camera);
+		v1 = leftHandPosReal;
+		q1 = leftHandRotReal;
 
-		p2 = trackers[10].GetPose(camera);
-		v2 = rightHandPos;
-		q2 = rightHandRot;
+		p2 = trackers[Poses::right_wrist].GetPose(camera);
+		v2 = rightHandPosReal;
+		q2 = rightHandRotReal;
 
 		while (active) {
 			uint64_t buttons = GetControllerState(vr::TrackedControllerRole_LeftHand).ulButtonPressed;
@@ -137,7 +137,7 @@ void CalibrationThreadFunct() {
 		//VRDashboardOverlay::SharedInstance()->SetCameraState(camera, 1);
 		std::cout << "Done Calibrating Camera " << (int)camera << std::endl << std::flush;
 		calibrationQueue.pop();
-		while (calibrationQueue.front() == camera) calibrationQueue.pop();
+		while (!calibrationQueue.empty() && calibrationQueue.front() == camera) calibrationQueue.pop();
 	}
 	buttonInputListener.pop();
 	calibrating = false;

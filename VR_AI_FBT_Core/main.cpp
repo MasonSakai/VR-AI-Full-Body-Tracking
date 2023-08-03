@@ -23,7 +23,6 @@ void MainLoop() {
 	active = true;
 
 	uint8_t trackerStates[17];
-	bool singleTrackerStates[17];
 	uint8_t i, j;
 	bool completed;
 
@@ -55,17 +54,15 @@ void MainLoop() {
 
 				//Do Math
 				for (i = 0; i < 17; i++) {
-					singleTrackerStates[i] = false;
 					trackerStates[i] = trackers[i].CalculatePosition();
 				}
 
 				for (j = 0; j < 10; j++) {
 					completed = true;
 					for (i = 0; i < 17; i++) {
-						if (trackerStates[i] < 2 && !singleTrackerStates[i]) {
+						if (!trackers[i].hasValidPosition) {
 							if (trackerStates[i] == 1) {
-								singleTrackerStates[i] = trackers[i].CalculateSingleCameraPosition();
-								completed &= singleTrackerStates[i];
+								completed &= trackers[i].CalculateSingleCameraPosition();
 							}
 							else {
 								//todo
@@ -75,20 +72,17 @@ void MainLoop() {
 					if (completed) break;
 				}
 
-				for (i = 0; i < 17; i++) {
-					if (trackerStates[i] == 2 || singleTrackerStates[i])
+				for (i = 0; i < 17; i++)
+					if (trackers[i].hasValidPosition)
 						trackers[i].CalculateOrientation();
-				}
 
-				if (!trackersOverride)
+				if (!trackersOverride) {
 					for (i = 0; i < 17; i++) {
 						if (PoseTrackers[i]) {
-							int j = i;
-							if (i == Poses::left_ankle) j = Poses::left_wrist;
-							if (i == Poses::right_ankle) j = Poses::right_wrist;
-							setOffsetVirtualDevicePosition(trackerIDs[i], trackers[j].position, trackers[j].rotation);
+							setOffsetVirtualDevicePosition(trackerIDs[i], trackers[i].position, trackers[i].rotation);
 						}
 					}
+				}
 
 				// Sleep for just under 1/90th of a second, so that maybe the next frame will be available.
 				std::this_thread::sleep_for(std::chrono::microseconds(10000));
@@ -192,19 +186,13 @@ int main(int argc, char* argv[])
 	if (pmFlags & PlayspaceMoverFlags::Active) {
 		EnableHardwareOffset();
 	}
-
+	PoseTracker::InitTrackers();
 
 	VRDashboardOverlay::SharedInstance();
 	GetOverlays();
 
 
-	if (!findTrackers()) {
-		for (int i = 0; i < 17; i++) {
-			if (PoseTrackers[i]) {
-				trackerIDs[i] = createTracker(PoseNames[i].c_str());
-			}
-		}
-	}
+	GetTrackers();
 
 	MainThread = std::thread(MainLoop);
 
