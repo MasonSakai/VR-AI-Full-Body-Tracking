@@ -59,11 +59,13 @@ struct Camera {
 	bool connected = false;
 	bool waitingForSize = true;
 	uint16_t width, height;
+	uint8_t index;
 
 	static void SetSize(uint8_t index, uint16_t width, uint16_t height);
 	static void OnConnect(uint8_t index);
 	static void OnStart(uint8_t index);
 
+	void Init(uint8_t index);
 	void Calibrate(glm::vec3 position, glm::quat qp,
 		glm::vec3 v1, glm::vec2 p1, glm::quat q1,
 		glm::vec3 v2, glm::vec2 p2, glm::quat q2,

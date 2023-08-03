@@ -197,10 +197,10 @@ void OnRecenter() {
 	//can only be used to recenter
 }
 void RecalibrateVirtualControllers() {
-	qDebug() << "Queuing Calib...";
+	std::cout << "Queuing Calib...\n";
 	buttonInputListener.push(2);
 	while (buttonInputListener.front() != 2) {}
-	qDebug() << "Starting Calib...";
+	std::cout << "Starting Calib...\n";
 
 	trackersOverride = true;
 
@@ -224,7 +224,7 @@ void RecalibrateVirtualControllers() {
 
 	glm::vec3 leftStartPos = leftHandPosReal,
 		rightStartPos = rightHandPosReal;
-	qDebug() << "Waiting...";
+	std::cout << "Waiting...\n";
 
 	while ((GetControllerState(side).ulButtonPressed & ButtonMasks::OculusAX) != 0) {}
 
@@ -240,5 +240,5 @@ void RecalibrateVirtualControllers() {
 	std::this_thread::sleep_for(std::chrono::milliseconds(500));
 	trackersOverride = false;
 	buttonInputListener.pop();
-	qDebug() << "Ending Calib...";
+	std::cout << "Ending Calib...\n";
 }

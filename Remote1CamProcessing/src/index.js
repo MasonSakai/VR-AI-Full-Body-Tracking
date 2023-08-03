@@ -332,6 +332,10 @@ async function GetConfig() {
 	if (status != "ok") {
 		console.log(`Error: ${status}`);
 		lblState.innerHTML = `Loaded Error/Status:<br>${status}`;
+		config.id = data.id;
+		if (status == "madeConfig") {
+			config = data;
+		}
 	} else {
 		lblState.innerHTML = "Loaded Config, reading...";
 		config = data;

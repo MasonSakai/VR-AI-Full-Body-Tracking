@@ -85,7 +85,7 @@ void MainLoop() {
 				}
 
 				// Sleep for just under 1/90th of a second, so that maybe the next frame will be available.
-				std::this_thread::sleep_for(std::chrono::microseconds(10000));
+				std::this_thread::sleep_for(std::chrono::microseconds(1111));
 			}
 			else {
 				// Still waiting on the next frame, wait less this time.
@@ -110,13 +110,14 @@ void endProgram() {
 	calibrating = false;
 	OverlayOnClose();
 	
-	MainThread.join();
+	if(MainThread.joinable())
+		MainThread.join();
 	if (pmFlags & PlayspaceMoverFlags::Active) {
 		pmOffset = glm::vec3();
 		DisableHardwareOffset();
 	}
 
-	if (calibrating && CalibrationThread != nullptr)
+	if (calibrating && CalibrationThread != nullptr && CalibrationThread->joinable())
 		CalibrationThread->join();
 
 	for (int i = 0; i < 17; i++) {

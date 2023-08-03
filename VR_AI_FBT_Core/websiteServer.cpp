@@ -10,6 +10,7 @@ AIRemoteServer* AIRemoteServer::SharedInstance() {
 	return sharedServer;
 }
 
+int connected = 0;
 
 QHttpServerResponse defaultHandler(const QHttpServerRequest& req) {
 	QString fileName = BaseDirectory;
@@ -18,7 +19,7 @@ QHttpServerResponse defaultHandler(const QHttpServerRequest& req) {
 	return QHttpServerResponse("text/html", data);
 }
 void configHandler(const QHttpServerRequest& req, QHttpServerResponder&& res) {
-	int index = 0;
+	int index = -1;
 	QByteArray data;
 	QJsonParseError jsonError;
 	QJsonDocument jsonDocument;
@@ -28,18 +29,34 @@ void configHandler(const QHttpServerRequest& req, QHttpServerResponder&& res) {
 	{
 	case QHttpServerRequest::Method::Get:
 		data = req.body();
-		index = data.toInt();
-		if (index == -1) index = 0; //Make better
+		if(!data.isEmpty())
+			index = data.toInt();
+		if (index == -1) {
+			index = connected; //Make better
+			connected++;
+		}
 		jsonArray = config["windowConfigs"].toArray();
-		if (jsonArray[index].isObject()) {
+		if (index < jsonArray.count() && jsonArray[index].isObject()) {
 			jsonObject = jsonArray[index].toObject();
 			jsonObject.insert("status", "ok");
+			jsonObject.insert("id", index);
 			res.sendResponse(QHttpServerResponse(jsonObject));
 		}
 		else
 		{
 			jsonObject = QJsonObject();
-			jsonObject.insert("status", "noConfig");
+			if (index != 0) {
+				jsonObject = jsonArray[index - 1].toObject();
+				jsonArray.append(jsonObject);
+			}
+			else {
+				jsonObject.insert("autostart", false);
+				jsonObject.insert("confidenceThreshold", 0.3f);
+				jsonObject.insert("cameraName", "");
+				jsonArray.append(jsonObject);
+			}
+			jsonObject.insert("status", "madeConfig");
+			jsonObject.insert("id", index);
 			res.sendResponse(QHttpServerResponse(jsonObject));
 		}
 		return;
