@@ -7,6 +7,7 @@
 #include <chrono>
 #include "PoseTracker.h"
 #include "mathUtil.h"
+#include "VRFloatingOverlay.h"
 #include "VRDashboardOverlay.h"
 
 
@@ -14,8 +15,6 @@ extern const char* OverlayKey;
 extern const char* DashboardKey;
 extern const char* OverlayName;
 
-extern vr::VROverlayHandle_t overlayHandle;
-extern vr::VROverlayHandle_t dashboardHandle, dashboardIconHandle;
 extern vr::IVROverlay* VROverlay;
 
 extern vr::VROverlayHandle_t cameraOverlays[];

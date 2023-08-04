@@ -22,7 +22,7 @@ void MainLoop() {
 	active = true;
 
 	uint8_t trackerStates[17];
-	uint8_t i, j;
+	uint8_t i;
 	bool completed;
 
 	auto lastTime = std::chrono::high_resolution_clock::now();
@@ -56,7 +56,7 @@ void MainLoop() {
 					trackerStates[i] = trackers[i].CalculatePosition();
 				}
 
-				for (j = 0; j < 10; j++) {
+				for (i = 0; i < 10; i++) {
 					completed = true;
 					for (i = 0; i < 17; i++) {
 						if (!trackers[i].hasValidPosition) {
@@ -68,7 +68,12 @@ void MainLoop() {
 							}
 						}
 					}
-					if (completed) break;
+					if (completed) {
+						if (i > 2) {
+							std::cout << "Completed in " << i << std::endl;
+						}
+						break;
+					}
 				}
 
 				for (i = 0; i < 17; i++)
@@ -126,6 +131,7 @@ void endProgram() {
 	}
 
 	inputEmulator.disconnect();
+	DisconnectFromVRRuntime();
 
 	//Save data if needed
 	WriteConfig();
@@ -187,7 +193,6 @@ int main(int argc, char* argv[])
 	}
 	PoseTracker::InitTrackers();
 
-	VRDashboardOverlay::SharedInstance();
 	GetOverlays();
 
 	GetTrackers();

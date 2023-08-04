@@ -74,9 +74,9 @@ glm::vec3 CalculateClosest(glm::vec3 p1, glm::vec3 v1, glm::vec3 p2, glm::vec3 v
 	glm::vec3 c1 = p1 + v1 * (glm::dot(del, n2) / glm::dot(v1, n2));
 	glm::vec3 c2 = p2 + v2 * (glm::dot(-del, n1) / glm::dot(v2, n1));
 
-	return (c1 + c2) / 2.0f;
+	return (c1 + c2) * .5f;
 
-	//if this doesn't work well, take n, put p1 and p2 onto same plane, find intersection with util, then use against plane offset to find center
+	//have it give distance?
 }
 
 
@@ -103,6 +103,7 @@ void PoseTracker::CalculateMultiPosition() {
 			if (!(cameraFlags & (1 << j))) continue;
 			weight = scores[i] * scores[j];
 			total += weight;
+			//disregard if too far/out of range?
 			closest = CalculateClosest(cameras[i].position, directions[i], cameras[j].position, directions[j]);
 			pos += weight * closest;
 		}
@@ -111,225 +112,24 @@ void PoseTracker::CalculateMultiPosition() {
 	hasValidPosition = true;
 
 	if (tracker == Poses::right_hip) {
+		hipPosValid = true;
+		hipRightRealPos = position;
 		if (trackers[Poses::left_hip].hasValidPosition) {
-			position = (position + trackers[Poses::left_hip].position) * .5f;
+			position = (hipRightRealPos + trackers[Poses::left_hip].position) * .5f;
 		}
 		else
 		{
 			hasValidPosition = false;
 		}
 	}
-
-
-	/*
-	Multi For: nose
-	pos: {0.632671, 1.00893e-43, -0.198833}
-	pos:      {-0.877877, 1.01514, -2.18955}
-	dir:      {0.55663, 0.16833, 0.813528}
-		pos:  {-0.889765, 0.52607, 1.38652}
-		dir:  {0.632671, 0.442465, -0.635572}
-		clo:  {0.559234, 1.49082, -0.0557221}, 0.400206
-	pos:      {-0.889765, 0.52607, 1.38652}
-	dir:      {0.632671, 0.442465, -0.635572}
-	pos:  {0.559234, 1.49082, -0.0557221}, 1
-	position: {0.559234, 1.49082, -0.0557221}
-
-	Multi For: left_eye
-	pos: {0.641554, 1.00893e-43, -0.206095}
-	pos:      {-0.877877, 1.01514, -2.18955}
-	dir:      {0.554514, 0.184704, 0.811417}
-		pos:  {-0.889765, 0.52607, 1.38652}
-		dir:  {0.641554, 0.455746, -0.617012}
-		clo:  {0.585305, 1.5353, -0.021517}, 0.522582
-	pos:      {-0.889765, 0.52607, 1.38652}
-	dir:      {0.641554, 0.455746, -0.617012}
-	pos:  {0.585305, 1.5353, -0.021517}, 1
-	position: {0.585305, 1.5353, -0.021517}
-
-	Multi For: right_eye
-	pos: {0.618574, 1.00893e-43, -0.209952}
-	pos:      {-0.877877, 1.01514, -2.18955}
-	dir:      {0.582737, 0.233565, 0.778373}
-		pos:  {-0.889765, 0.52607, 1.38652}
-		dir:  {0.618574, 0.462699, -0.635041}
-		clo:  {0.627535, 1.63813, -0.163791}, 0.3373
-	pos:      {-0.889765, 0.52607, 1.38652}
-	dir:      {0.618574, 0.462699, -0.635041}
-	pos:  {0.627535, 1.63813, -0.163791}, 1
-	position: {0.627535, 1.63813, -0.163791}
-
-	Multi For: left_ear
-	pos: {0.656847, 1.00893e-43, -0.199802}
-	pos:      {-0.877877, 1.01514, -2.18955}
-	dir:      {0.613625, 0.233191, 0.754378}
-		pos:  {-0.889765, 0.52607, 1.38652}
-		dir:  {0.656847, 0.444271, -0.609241}
-		clo:  {0.774297, 1.64703, -0.155695}, 0.488827
-	pos:      {-0.889765, 0.52607, 1.38652}
-	dir:      {0.656847, 0.444271, -0.609241}
-	pos:  {0.774297, 1.64703, -0.155695}, 1
-	position: {0.774297, 1.64703, -0.155695}
-
-	Multi For: right_ear
-	pos: {0.609886, 1.00893e-43, -0.202222}
-	pos:      {-0.877877, 1.01514, -2.18955}
-	dir:      {0.602998, 0.233024, 0.76295}
-		pos:  {-0.889765, 0.52607, 1.38652}
-		dir:  {0.609886, 0.448573, -0.653316}
-		clo:  {0.64384, 1.62669, -0.247312}, 0.554019
-	pos:      {-0.889765, 0.52607, 1.38652}
-	dir:      {0.609886, 0.448573, -0.653316}
-	pos:  {0.64384, 1.62669, -0.247312}, 1
-	position: {0.64384, 1.62669, -0.247312}
-
-	Multi For: left_shoulder
-	pos: {0.699929, 1.00893e-43, -0.152654}
-	pos:      {-0.877877, 1.01514, -2.18955}
-	dir:      {0.670896, 0.142198, 0.72779}
-		pos:  {-0.889765, 0.52607, 1.38652}
-		dir:  {0.699929, 0.356515, -0.618867}
-		clo:  {0.928407, 1.42375, -0.216753}, 0.763177
-	pos:      {-0.889765, 0.52607, 1.38652}
-	dir:      {0.699929, 0.356515, -0.618867}
-	pos:  {0.928407, 1.42375, -0.216753}, 1
-	position: {0.928407, 1.42375, -0.216753}
-
-	Multi For: right_shoulder
-	pos: {0.596007, 1.00893e-43, -0.163016}
-	pos:      {-0.877877, 1.01514, -2.18955}
-	dir:      {0.596632, 0.184408, 0.78104}
-		pos:  {-0.889765, 0.52607, 1.38652}
-		dir:  {0.596007, 0.375675, -0.709679}
-		clo:  {0.548202, 1.44492, -0.329912}, 0.648596
-	pos:      {-0.889765, 0.52607, 1.38652}
-	dir:      {0.596007, 0.375675, -0.709679}
-	pos:  {0.548202, 1.44492, -0.329912}, 1
-	position: {0.548202, 1.44492, -0.329912}
-
-	Multi For: left_elbow
-	pos: {0.732598, 1.00893e-43, -0.0920184}
-	pos:      {-0.877877, 1.01514, -2.18955}
-	dir:      {0.67827, 0.0231271, 0.734448}
-		pos:  {-0.889765, 0.52607, 1.38652}
-		dir:  {0.732598, 0.239948, -0.636965}
-		clo:  {0.944368, 1.10135, -0.207683}, 0.500652
-	pos:      {-0.889765, 0.52607, 1.38652}
-	dir:      {0.732598, 0.239948, -0.636965}
-	pos:  {0.944368, 1.10135, -0.207683}, 1
-	position: {0.944368, 1.10135, -0.207683}
-
-	Multi For: right_elbow
-	pos: {0.599307, 1.00893e-43, -0.135014}
-	pos:      {-0.877877, 1.01514, -2.18955}
-	dir:      {0.536686, 0.0736134, 0.840565}
-		pos:  {-0.889765, 0.52607, 1.38652}
-		dir:  {0.599307, 0.322521, -0.732674}
-		clo:  {0.397343, 1.20347, -0.183189}, 0.759468
-	pos:      {-0.889765, 0.52607, 1.38652}
-	dir:      {0.599307, 0.322521, -0.732674}
-	pos:  {0.397343, 1.20347, -0.183189}, 1
-	position: {0.397343, 1.20347, -0.183189}
-
-	Multi For: left_wrist
-	pos: {0.761282, 1.00893e-43, -0.0384733}
-	pos:      {-0.877877, 1.01514, -2.18955}
-	dir:      {0.659407, -0.0661097, 0.748874}
-		pos:  {-0.889765, 0.52607, 1.38652}
-		dir:  {0.761282, 0.134516, -0.634315}
-		clo:  {0.932284, 0.840781, -0.132294}, 0.436757
-	pos:      {-0.889765, 0.52607, 1.38652}
-	dir:      {0.761282, 0.134516, -0.634315}
-	pos:  {0.932284, 0.840781, -0.132294}, 1
-	position: {0.932284, 0.840781, -0.132294}
-
-	Multi For: right_wrist
-	pos: {0.623623, 1.00893e-43, -0.185249}
-	pos:      {-0.877877, 1.01514, -2.18955}
-	dir:      {0.517202, 0.161277, 0.840531}
-		pos:  {-0.889765, 0.52607, 1.38652}
-		dir:  {0.623623, 0.417403, -0.66096}
-		clo:  {0.44983, 1.42616, -0.0343691}, 0.509653
-	pos:      {-0.889765, 0.52607, 1.38652}
-	dir:      {0.623623, 0.417403, -0.66096}
-	pos:  {0.44983, 1.42616, -0.0343691}, 1
-	position: {0.44983, 1.42616, -0.0343691}
-
-	Multi For: left_hip
-	pos: {0.722846, 1.00893e-43, -0.0497415}
-	pos:      {-0.877877, 1.01514, -2.18955}
-	dir:      {0.6442, -0.0543649, 0.762923}
-		pos:  {-0.889765, 0.52607, 1.38652}
-		dir:  {0.722846, 0.156923, -0.672955}
-		clo:  {0.805962, 0.883483, -0.192835}, 0.706946
-	pos:      {-0.889765, 0.52607, 1.38652}
-	dir:      {0.722846, 0.156923, -0.672955}
-	pos:  {0.805962, 0.883483, -0.192835}, 1
-	position: {0.805962, 0.883483, -0.192835}
-
-	Multi For: right_hip
-	pos: {0.656217, 1.00893e-43, -0.0502712}
-	pos:      {-0.877877, 1.01514, -2.18955}
-	dir:      {0.605995, -0.0523375, 0.793745}
-		pos:  {-0.889765, 0.52607, 1.38652}
-		dir:  {0.656217, 0.157724, -0.737904}
-		clo:  {0.586123, 0.88481, -0.272954}, 0.546189
-	pos:      {-0.889765, 0.52607, 1.38652}
-	dir:      {0.656217, 0.157724, -0.737904}
-	pos:  {0.586123, 0.88481, -0.272954}, 1
-	position: {0.586123, 0.88481, -0.272954}
-
-	Multi For: left_knee
-	pos: {0.717224, 1.00893e-43, 0.0486217}
-	pos:      {-0.877877, 1.01514, -2.18955}
-	dir:      {0.619363, -0.239948, 0.747539}
-		pos:  {-0.889765, 0.52607, 1.38652}
-		dir:  {0.717224, -0.0392327, -0.695738}
-		clo:  {0.756435, 0.409879, -0.219401}, 0.573129
-	pos:      {-0.889765, 0.52607, 1.38652}
-	dir:      {0.717224, -0.0392327, -0.695738}
-	pos:  {0.756435, 0.409879, -0.219401}, 1
-	position: {0.756435, 0.409879, -0.219401}
-
-	Multi For: right_knee
-	pos: {0.661968, 1.00893e-43, 0.0516441}
-	pos:      {-0.877877, 1.01514, -2.18955}
-	dir:      {0.602529, -0.240296, 0.761063}
-		pos:  {-0.889765, 0.52607, 1.38652}
-		dir:  {0.661968, -0.0455345, -0.748148}
-		clo:  {0.610643, 0.422205, -0.30947}, 0.615638
-	pos:      {-0.889765, 0.52607, 1.38652}
-	dir:      {0.661968, -0.0455345, -0.748148}
-	pos:  {0.610643, 0.422205, -0.30947}, 1
-	position: {0.610643, 0.422205, -0.30947}
-
-	Multi For: left_ankle
-	pos: {0.702716, 1.00893e-43, 0.139878}
-	pos:      {-0.877877, 1.01514, -2.18955}
-	dir:      {0.585425, -0.383888, 0.714078}
-		pos:  {-0.889765, 0.52607, 1.38652}
-		dir:  {0.702716, -0.220798, -0.676342}
-		clo:  {0.753278, -0.0202498, -0.210695}, 0.558246
-	pos:      {-0.889765, 0.52607, 1.38652}
-	dir:      {0.702716, -0.220798, -0.676342}
-	pos:  {0.753278, -0.0202498, -0.210695}, 1
-	position: {0.753278, -0.0202498, -0.210695}
-
-	Multi For: right_ankle
-	pos: {0.634169, 1.00893e-43, 0.139936}
-	pos:      {-0.877877, 1.01514, -2.18955}
-	dir:      {0.573922, -0.412011, 0.707715}
-		pos:  {-0.889765, 0.52607, 1.38652}
-		dir:  {0.634169, -0.221266, -0.740858}
-		clo:  {0.603167, -0.0194275, -0.373586}, 0.641282
-	pos:      {-0.889765, 0.52607, 1.38652}
-	dir:      {0.634169, -0.221266, -0.740858}
-	pos:  {0.603167, -0.0194275, -0.373586}, 1
-	position: {0.603167, -0.0194275, -0.373586}
-	*/
 }
 
 uint8_t PoseTracker::CalculatePosition() {
 	hasValidPosition = false;
+	hipPosValid = false;
+	hasAmbiguousPosition = false;
+	hasDualPosition = false;
+
 	uint8_t n = getNumberOfCams();
 	if (n == 0) return 0;
 	UpdateDirections();
@@ -350,6 +150,11 @@ bool PoseTracker::CalculateSingleCameraPosition() {
 
 	hasValidPosition = true;
 
+	//use
+	hasAmbiguousPosition = false;
+	hasDualPosition = false;
+	//amb1, amb2;
+
 	switch (tracker)
 	{
 	case Poses::nose:
@@ -360,10 +165,12 @@ bool PoseTracker::CalculateSingleCameraPosition() {
 		break;
 	case Poses::right_hip:
 		if (trackers[Poses::left_hip].hasValidPosition) {
-			dist = glm::length(cameras[n].position - trackers[Poses::left_hip].position);
-			position = cameras[n].position + directions[n] * dist;
+			if (!hipPosValid) {
+				dist = glm::length(cameras[n].position - trackers[Poses::left_hip].position);
+				hipRightRealPos = cameras[n].position + directions[n] * dist;
+			}
 
-			position = (position + trackers[Poses::left_hip].position) * .5f;
+			position = (hipRightRealPos + trackers[Poses::left_hip].position) * .5f;
 		}
 		else
 		{
@@ -394,9 +201,12 @@ uint8_t PoseTracker::CalculateOrientation() {
 		rotation = rightHandRotReal;
 		break;
 
-		//use floor when on or below
+		//use floor(level) when on or below
 		//put toes on when near (<60/70 deg)
-		//use leg when above
+		//use knee when above
+		
+		//when off floor, use plane between hip, knee, and foot for orientation
+		//when on floor, have setting to switch between that and current (using hip forward)
 	case Poses::left_ankle:
 		rotation = glm::quatLookAt(reject(trackers[right_hip].rotation * glm::vec3(1, 0, 0),
 			glm::vec3(0, 1, 0)), glm::vec3(0, 1, 0));
@@ -457,13 +267,13 @@ void Camera::SetSize(uint8_t index, uint16_t width, uint16_t height) {
 	cameras[index].waitingForSize = false;
 }
 void Camera::OnConnect(uint8_t index) {
-	VRDashboardOverlay::SharedInstance()->SetCameraState(index, 5);
+	VRDashboardOverlay::SharedInstance()->SetCameraState(index, CameraState::Camera_Connecting);
 	cameras[index].active = false;
 	cameras[index].connected = true;
 	CreateCameraOverlay(index);
 }
 void Camera::OnStart(uint8_t index) {
-	VRDashboardOverlay::SharedInstance()->SetCameraState(index, 4);
+	VRDashboardOverlay::SharedInstance()->SetCameraState(index, CameraState::Camera_NeedsCalibration);
 }
 
 void Camera::Init(uint8_t index) {

@@ -1,7 +1,6 @@
 
 
 #include "VRDashboardOverlay.h"
-#include "DashboardWidget.h"
 
 #include <QOpenGLFramebufferObjectFormat>
 #include <QOpenGLPaintDevice>
@@ -37,15 +36,25 @@ VRDashboardOverlay* VRDashboardOverlay::SharedInstance()
 }
 
 
-void VRDashboardOverlay::SetCameraState(uint8_t index, uint8_t state) {
-	((DashboardWidget*)m_pWidget)->SetCameraState(index, state);
+void VRDashboardOverlay::SetCameraState(uint8_t index, CameraState state) {
+	cameraStateQueue.push(DashboardCameraState(index, state));
+}
+void VRDashboardOverlay::UpdateCameraStateUI() {
+	uint8_t index;
+	CameraState state;
+	while (!cameraStateQueue.empty()) {
+		index = cameraStateQueue.front().index;
+		state = cameraStateQueue.front().state;
+		cameraStateQueue.pop();
+		((DashboardWidget*)m_pWidget)->SetCameraState(index, state);
+	}
 }
 void VRDashboardOverlay::ReturnCameraScreenshot(uint8_t index, uint8_t* data[]) {
 
 }
 
 
-VRDashboardOverlay::VRDashboardOverlay(int argc, char* argv[])
+VRDashboardOverlay::VRDashboardOverlay()
 	: BaseClass()
 	, m_eLastHmdError(vr::VRInitError_None)
 	, m_eCompositorError(vr::VRInitError_None)
@@ -299,6 +308,7 @@ void VRDashboardOverlay::OnTimeoutPumpEvents()
 
 		case vr::VREvent_OverlayShown:
 		{
+			UpdateCameraStateUI();
 			m_pWidget->repaint();
 		}
 		break;
@@ -353,34 +363,8 @@ void VRDashboardOverlay::SetWidget(QWidget* pWidget)
 
 }
 
-void VRDashboardOverlay::DisconnectFromVRRuntime()
-{
-	vr::VR_Shutdown();
+
+DashboardCameraState::DashboardCameraState(uint8_t index, CameraState state) {
+	this->index = index;
+	this->state = state;
 }
-
-
-QString VRDashboardOverlay::GetVRDriverString()
-{
-	return m_strVRDriver;
-}
-
-
-QString VRDashboardOverlay::GetVRDisplayString()
-{
-	return m_strVRDisplay;
-}
-
-
-bool VRDashboardOverlay::BHMDAvailable()
-{
-	return vr::VRSystem() != NULL;
-}
-
-
-
-vr::HmdError VRDashboardOverlay::GetLastHmdError()
-{
-	return m_eLastHmdError;
-}
-
-

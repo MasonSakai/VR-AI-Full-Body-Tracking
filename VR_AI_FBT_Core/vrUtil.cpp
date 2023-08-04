@@ -18,8 +18,8 @@ bool active = true;
 
 std::queue<uint8_t> buttonInputListener;
 
-ButtonMasks inputButtonMask = ButtonMasks::OculusAX;
-ButtonMasks pmButtonMask = ButtonMasks::OculusBY;
+uint64_t inputButtonMask = ButtonMasks::OculusAX;
+uint64_t pmButtonMask = ButtonMasks::OculusBY;
 
 //todo UPDATE
 bool findTrackers() {
@@ -303,4 +303,8 @@ bool StartVR()
 	}
 	std::cout << "Success!\n" << std::flush;
 	return true;
+}
+void DisconnectFromVRRuntime()
+{
+	vr::VR_Shutdown();
 }

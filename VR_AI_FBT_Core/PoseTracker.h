@@ -34,7 +34,13 @@ public:
 	glm::vec3 position;
 	glm::quat rotation;
 
+	glm::vec3 hipRightRealPos;
+	bool hipPosValid = false;
+
 	bool hasValidPosition = false;
+	bool hasAmbiguousPosition = false;
+	bool hasDualPosition = false;
+	glm::vec3 amb1, amb2;
 private:
 	uint8_t tracker;
 
@@ -80,7 +86,7 @@ extern glm::vec3 handToWrist;
 extern float shoulderToShoulder,
 shoulderToHip, hipWidth,
 upperArmLen, lowerArmLen,
-upperLegLen, lowerLegLen;
+upperLegLen, lowerLegLen; //add shoulder to head
 
 extern Camera cameras[];
 extern PoseTracker trackers[];

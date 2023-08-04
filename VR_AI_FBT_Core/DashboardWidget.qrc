@@ -1,3 +1,4 @@
 <RCC>
     <qresource prefix="/DashboardWidget"/>
+    <qresource prefix="/OverlayWidget"/>
 </RCC>

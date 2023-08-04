@@ -3,7 +3,7 @@
 #include "openvr.h"
 #include "vrUtil.h"
 #include "OverlayManager.h"
-#include "DashboardWidget.h"
+#include "OverlayWidget.h"
 
 #include <queue>
 
@@ -19,26 +19,17 @@
 #include <QOffscreenSurface>
 class QOpenGLFramebufferObject;
 
-enum CameraState;
-
-class DashboardCameraState {
-public:
-	uint8_t index;
-	CameraState state;
-	DashboardCameraState(uint8_t index, CameraState state);
-};
-
-class VRDashboardOverlay : public QObject
+class VRFloatingOverlay : public QObject
 {
 	Q_OBJECT
 		typedef QObject BaseClass;
 
 public:
-	static VRDashboardOverlay* SharedInstance();
+	static VRFloatingOverlay* SharedInstance();
 
 public:
-	VRDashboardOverlay();
-	virtual ~VRDashboardOverlay();
+	VRFloatingOverlay();
+	virtual ~VRFloatingOverlay();
 
 	bool Init();
 	void Shutdown();
@@ -48,7 +39,7 @@ public:
 	void SetWidget(QWidget* pWidget);
 
 
-	void SetCameraState(uint8_t index, CameraState state);
+	void SetCameraState(QString text);
 	void ReturnCameraScreenshot(uint8_t index, uint8_t* data[]);
 
 public slots:
@@ -72,7 +63,6 @@ private:
 	vr::HmdError m_eOverlayError;
 	vr::Compositor_OverlaySettings m_overlaySettings;
 	vr::VROverlayHandle_t m_ulOverlayHandle;
-	vr::VROverlayHandle_t m_ulOverlayThumbnailHandle;
 
 	QOpenGLContext* m_pOpenGLContext;
 	QGraphicsScene* m_pScene;
@@ -81,7 +71,7 @@ private:
 
 	QTimer* m_pPumpEventsTimer;
 
-	std::queue<DashboardCameraState> cameraStateQueue;
+	std::queue<QString> cameraStateQueue;
 
 	// the widget we're drawing into the texture
 	QWidget* m_pWidget;

@@ -17,7 +17,7 @@ void CalibrationThreadFunct() {
 	while (buttonInputListener.front() != 1) {}
 	while (!calibrationQueue.empty()) {
 		camera = calibrationQueue.front();
-		//VRDashboardOverlay::SharedInstance()->SetCameraState(camera, 2);
+		VRDashboardOverlay::SharedInstance()->SetCameraState(camera, CameraState::Camera_Calibrating);
 		std::cout << "Begining Calibration of camera " << (int)camera << std::endl;
 
 		std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -134,7 +134,7 @@ void CalibrationThreadFunct() {
 		*		Do in full body measurements
 		*/
 
-		//VRDashboardOverlay::SharedInstance()->SetCameraState(camera, 1);
+		VRDashboardOverlay::SharedInstance()->SetCameraState(camera, CameraState::Camera_Active);
 		std::cout << "Done Calibrating Camera " << (int)camera << std::endl << std::flush;
 		calibrationQueue.pop();
 		while (!calibrationQueue.empty() && calibrationQueue.front() == camera) calibrationQueue.pop();

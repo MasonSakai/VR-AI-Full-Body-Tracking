@@ -3,6 +3,7 @@
 #include "CameraManager.h"
 #include "PoseTracker.h"
 #include "Config.h"
+#include "DashboardWidget.h"
 
 #include <qhttpserver.h>
 #include <qobject.h>

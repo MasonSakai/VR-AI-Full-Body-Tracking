@@ -42,8 +42,8 @@ extern bool active;
 
 extern std::queue<uint8_t> buttonInputListener;
 
-extern ButtonMasks inputButtonMask;
-extern ButtonMasks pmButtonMask;
+extern uint64_t inputButtonMask;
+extern uint64_t pmButtonMask;
 
 bool findTrackers();
 
@@ -64,3 +64,4 @@ void UpdateHardwarePositions();
 vr::VRControllerState_t GetControllerState(vr::ETrackedControllerRole controller);
 
 bool StartVR();
+void DisconnectFromVRRuntime();

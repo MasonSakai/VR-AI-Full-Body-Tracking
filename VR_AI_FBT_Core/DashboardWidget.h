@@ -5,38 +5,52 @@
 #include <qlabel.h>
 #include <qpushbutton.h>
 #include <qgridlayout.h>
+#include <qstring.h>
+#include <string.h>
 #include "PlayspaceMover.h"
 #include "vrUtil.h"
 #include "CameraManager.h"
 
+enum CameraState {
+	Camera_Inactive,
+	Camera_Active,
+	Camera_Calibrating,
+	Camera_WaitingForCalibration,
+	Camera_NeedsCalibration,
+	Camera_Connecting
+};
+
 class DashboardWidget : public QWidget
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    DashboardWidget(QWidget* parent = nullptr);
-    ~DashboardWidget();
+	DashboardWidget(QWidget* parent = nullptr);
+	~DashboardWidget();
 
-    void SetCameraState(uint8_t index, uint8_t state);
-    void ReturnCameraScreenshot(uint8_t index, uint8_t* data[]);
+	void SetCameraState(uint8_t index, CameraState state);
+	void ReturnCameraScreenshot(uint8_t index, uint8_t* data[]);
 
 
 private slots:
-    void on_btnRecenter_clicked();
-    void on_btnCalibrateTrackers_clicked();
-    void on_btnResetPM_clicked();
-    void on_cbxEnablePM_clicked(bool checked);
-    void on_btnQuit_clicked();
+	void on_btnRecenter_clicked();
+	void on_btnCalibrateTrackers_clicked();
+	void on_btnResetPM_clicked();
+	void on_cbxEnablePM_clicked(bool checked);
+	void on_btnQuit_clicked();
 
 private:
-    Ui::DashboardWidgetClass ui;
+	Ui::DashboardWidgetClass ui;
 
-    QGridLayout* cameraGrid;
-    bool camerasWithManagers[16];
-    QLabel* cameraNameLabels[16];
-    QLabel* cameraStateLabels[16];
-    QPushButton* cameraCalibrateButtons[16];
-    void CreateCameraLabel(uint8_t index);
+	QGridLayout* cameraGrid;
+	bool camerasWithManagers[16];
+	QLabel* cameraNameLabels[16];
+	QLabel* cameraStateLabels[16];
+	QPushButton* cameraCalibrateButtons[16];
+	void CreateCameraLabel(uint8_t index);
 
+	void InitInputControls();
+	void InitTrackerDisplays();
+	void InitConfig();
 };
 

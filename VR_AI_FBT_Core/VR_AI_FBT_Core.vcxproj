@@ -96,25 +96,30 @@
   <ItemGroup>
     <ClCompile Include="CameraManager.cpp" />
     <ClCompile Include="Config.cpp" />
+    <ClCompile Include="OverlayWidget.cpp" />
     <ClCompile Include="DashboardWidget.cpp" />
     <ClCompile Include="mathUtil.cpp" />
     <ClCompile Include="OverlayManager.cpp" />
     <ClCompile Include="PlayspaceMover.cpp" />
     <ClCompile Include="PoseTracker.cpp" />
+    <ClCompile Include="VRFloatingOverlay.cpp" />
     <ClCompile Include="VRDashboardOverlay.cpp" />
     <ClCompile Include="vrUtil.cpp" />
     <ClCompile Include="websiteServer.cpp" />
     <QtRcc Include="DashboardWidget.qrc" />
     <QtUic Include="DashboardWidget.ui" />
     <ClCompile Include="main.cpp" />
+    <QtUic Include="OverlayWidget.ui" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CameraManager.h" />
     <ClInclude Include="Config.h" />
+    <QtMoc Include="OverlayWidget.h" />
     <ClInclude Include="OverlayManager.h" />
     <ClInclude Include="PlayspaceMover.h" />
     <QtMoc Include="VRDashboardOverlay.h" />
     <ClInclude Include="PoseTracker.h" />
+    <QtMoc Include="VRFloatingOverlay.h" />
     <ClInclude Include="vrUtil.h" />
     <QtMoc Include="DashboardWidget.h" />
     <ClInclude Include="mathUtil.h" />

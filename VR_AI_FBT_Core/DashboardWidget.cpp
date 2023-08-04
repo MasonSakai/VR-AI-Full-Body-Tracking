@@ -1,6 +1,4 @@
 #include "DashboardWidget.h"
-#include <qstring.h>
-#include <string.h>
 
 QString txtCalibrate("Calibrate");
 
@@ -14,10 +12,48 @@ DashboardWidget::DashboardWidget(QWidget* parent)
 	for (int i = 0; i < 16; i++) camerasWithManagers[i] = false;
 	cameraGrid = findChild<QGridLayout*>("gridCameras");
 	cameraGrid->minimumSize().setHeight(rowHeight);
+
+	InitInputControls();
+	InitTrackerDisplays();
+	InitConfig();
 }
 
 DashboardWidget::~DashboardWidget()
 {}
+
+
+void DashboardWidget::InitInputControls() {
+	connect(findChild<QCheckBox*>("cbxButtonOcAX"), &QCheckBox::clicked, this, [](bool checked) {
+		if (checked) inputButtonMask |= ButtonMasks::OculusAX;
+		else inputButtonMask &= ~ButtonMasks::OculusAX;
+		});
+	connect(findChild<QCheckBox*>("cbxButtonOcBY"), &QCheckBox::clicked, this, [](bool checked) {
+		if (checked) inputButtonMask |= ButtonMasks::OculusBY;
+		else inputButtonMask &= ~ButtonMasks::OculusBY;
+		});
+	connect(findChild<QCheckBox*>("cbxButtonOcTrig"), &QCheckBox::clicked, this, [](bool checked) {
+		if (checked) inputButtonMask |= ButtonMasks::OculusTrigger;
+		else inputButtonMask &= ~ButtonMasks::OculusTrigger;
+		});
+	connect(findChild<QCheckBox*>("cbxButtonOcAXpm"), &QCheckBox::clicked, this, [](bool checked) {
+		if (checked) pmButtonMask |= ButtonMasks::OculusAX;
+		else pmButtonMask &= ~ButtonMasks::OculusAX;
+		});
+	connect(findChild<QCheckBox*>("cbxButtonOcBYpm"), &QCheckBox::clicked, this, [](bool checked) {
+		if (checked) pmButtonMask |= ButtonMasks::OculusBY;
+		else pmButtonMask &= ~ButtonMasks::OculusBY;
+		});
+	connect(findChild<QCheckBox*>("cbxButtonOcTrigpm"), &QCheckBox::clicked, this, [](bool checked) {
+		if (checked) pmButtonMask |= ButtonMasks::OculusTrigger;
+		else pmButtonMask &= ~ButtonMasks::OculusTrigger;
+		});
+}
+void DashboardWidget::InitTrackerDisplays() {
+
+}
+void DashboardWidget::InitConfig() {
+
+}
 
 
 void DashboardWidget::on_btnRecenter_clicked() {
@@ -50,32 +86,38 @@ void DashboardWidget::on_btnQuit_clicked() {
 	QApplication::quit();
 }
 
-void DashboardWidget::SetCameraState(uint8_t index, uint8_t state) {
+void DashboardWidget::SetCameraState(uint8_t index, CameraState state) {
 	if (!camerasWithManagers[index])
 		CreateCameraLabel(index);
-	if (state == 1) {
+	switch (state) {
+	case CameraState::Camera_Inactive:
+		cameraStateLabels[index]->setText("Inactive");
+		cameraCalibrateButtons[index]->setEnabled(false);
+		cameras[index].active = false;
+		break;
+	case CameraState::Camera_Active:
 		cameraStateLabels[index]->setText("Active");
 		cameraCalibrateButtons[index]->setEnabled(true);
 		cameras[index].active = true;
-	}
-	else if (state == 2) {
+		break;
+	case CameraState::Camera_Calibrating:
 		cameraStateLabels[index]->setText("Calibrating");
 		cameraCalibrateButtons[index]->setEnabled(false);
-	}
-	else if (state == 3) {
+		break;
+	case CameraState::Camera_WaitingForCalibration:
 		cameraStateLabels[index]->setText("Waiting for Calibration");
 		cameraCalibrateButtons[index]->setEnabled(false);
-	}
-	else if (state == 4) {
+		break;
+	case CameraState::Camera_NeedsCalibration:
 		cameraStateLabels[index]->setText("Requires Calibration");
 		cameraCalibrateButtons[index]->setEnabled(true);
-	}
-	else if (state == 5) {
+		break;
+	case CameraState::Camera_Connecting:
 		cameraStateLabels[index]->setText("Initializing");
 		cameraCalibrateButtons[index]->setEnabled(false);
 		cameras[index].active = false;
-	}
-	else {
+		break;
+	default:
 		cameraStateLabels[index]->setText("Inactive");
 		cameraCalibrateButtons[index]->setEnabled(false);
 		cameras[index].active = false;

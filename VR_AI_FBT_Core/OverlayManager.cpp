@@ -8,8 +8,6 @@ const char* OverlayName = "AI Full Body Tracking";
 std::string CameraKey = "AIVRFBTCam";
 std::string CameraName = "AI FBT Camera ";
 
-vr::VROverlayHandle_t overlayHandle;
-vr::VROverlayHandle_t dashboardHandle, dashboardIconHandle;
 vr::IVROverlay *VROverlay;
 
 vr::VROverlayHandle_t cameraOverlays[16];
@@ -26,24 +24,28 @@ bool cameraThreadActive = false;
 
 
 bool GetOverlays() {
-	VROverlay = vr::VROverlay();
+	/*VROverlay = vr::VROverlay();
 	//vr::VROverlayError_None
 	vr::EVROverlayError error = VROverlay->FindOverlay(OverlayKey, &overlayHandle);
 	if (error == vr::VROverlayError_UnknownOverlay) {
 		error = VROverlay->CreateOverlay(OverlayKey, OverlayName, &overlayHandle);
 	}
-	
-	/*error = VROverlay->FindOverlay(DashboardKey, &overlayHandle);
+
+	error = VROverlay->FindOverlay(DashboardKey, &overlayHandle);
 	if (error == vr::VROverlayError_UnknownOverlay) {
 		error = VROverlay->CreateDashboardOverlay(DashboardKey, OverlayName, &dashboardHandle, &dashboardIconHandle);
 	}*/
+
+	VRFloatingOverlay::SharedInstance();
+	VRDashboardOverlay::SharedInstance();
 
 	return true;
 }
 
 void DestroyOverlays() {
-	vr::EVROverlayError error = VROverlay->DestroyOverlay(overlayHandle);
-	error = VROverlay->DestroyOverlay(dashboardHandle);
+	vr::EVROverlayError error;
+	//error = VROverlay->DestroyOverlay(overlayHandle);
+	//error = VROverlay->DestroyOverlay(dashboardHandle);
 	for (int i = 0; i < 16; i++) {
 		error = VROverlay->DestroyOverlay(cameraOverlays[i]);
 	}
