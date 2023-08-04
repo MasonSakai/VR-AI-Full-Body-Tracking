@@ -18,6 +18,8 @@ bool active = true;
 
 std::queue<uint8_t> buttonInputListener;
 
+ButtonMasks inputButtonMask = ButtonMasks::OculusAX;
+ButtonMasks pmButtonMask = ButtonMasks::OculusBY;
 
 //todo UPDATE
 bool findTrackers() {

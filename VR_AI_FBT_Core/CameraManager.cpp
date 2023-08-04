@@ -24,12 +24,12 @@ void CalibrationThreadFunct() {
 		std::cout << "Put top of controller against the camera and hold X/A\n" << std::flush;
 		while (active) {
 			uint64_t buttons = GetControllerState(vr::TrackedControllerRole_LeftHand).ulButtonPressed;
-			if (buttons & ButtonMasks::OculusAX) {
+			if (buttons & inputButtonMask) {
 				captureSide = false;
 				break;
 			}
 			buttons = GetControllerState(vr::TrackedControllerRole_RightHand).ulButtonPressed;
-			if (buttons & ButtonMasks::OculusAX) {
+			if (buttons & inputButtonMask) {
 				captureSide = true;
 				break;
 			}
@@ -46,9 +46,9 @@ void CalibrationThreadFunct() {
 		}
 		while (active) {
 			uint64_t buttons = GetControllerState(vr::TrackedControllerRole_LeftHand).ulButtonPressed;
-			if ((buttons & ButtonMasks::OculusAX) == 0) break;
+			if ((buttons & inputButtonMask) == 0) break;
 			buttons = GetControllerState(vr::TrackedControllerRole_RightHand).ulButtonPressed;
-			if ((buttons & ButtonMasks::OculusAX) == 0) break;
+			if ((buttons & inputButtonMask) == 0) break;
 		}
 
 
@@ -58,12 +58,12 @@ void CalibrationThreadFunct() {
 		std::cout << "same way you did for the camera and hold X/A\n" << std::flush;
 		while (active) {
 			uint64_t buttons = GetControllerState(vr::TrackedControllerRole_LeftHand).ulButtonPressed;
-			if (buttons & ButtonMasks::OculusAX) {
+			if (buttons & inputButtonMask) {
 				captureSide = false;
 				break;
 			}
 			buttons = GetControllerState(vr::TrackedControllerRole_RightHand).ulButtonPressed;
-			if (buttons & ButtonMasks::OculusAX) {
+			if (buttons & inputButtonMask) {
 				captureSide = true;
 				break;
 			}
@@ -82,9 +82,9 @@ void CalibrationThreadFunct() {
 		}
 		while (active) {
 			uint64_t buttons = GetControllerState(vr::TrackedControllerRole_LeftHand).ulButtonPressed;
-			if ((buttons & ButtonMasks::OculusAX) == 0) break;
+			if ((buttons & inputButtonMask) == 0) break;
 			buttons = GetControllerState(vr::TrackedControllerRole_RightHand).ulButtonPressed;
-			if ((buttons & ButtonMasks::OculusAX) == 0) break;
+			if ((buttons & inputButtonMask) == 0) break;
 		}
 
 
@@ -94,9 +94,9 @@ void CalibrationThreadFunct() {
 		std::cout << "This will be used to calibrate your hands from your wrists\n" << std::flush;
 		while (active) {
 			uint64_t buttons = GetControllerState(vr::TrackedControllerRole_LeftHand).ulButtonPressed;
-			if (buttons & ButtonMasks::OculusAX) break;
+			if (buttons & inputButtonMask) break;
 			buttons = GetControllerState(vr::TrackedControllerRole_RightHand).ulButtonPressed;
-			if (buttons & ButtonMasks::OculusAX) break;
+			if (buttons & inputButtonMask) break;
 		}
 		std::cout << "Release X/A\n" << std::flush;
 		UpdateHardwarePositions();
@@ -110,9 +110,9 @@ void CalibrationThreadFunct() {
 
 		while (active) {
 			uint64_t buttons = GetControllerState(vr::TrackedControllerRole_LeftHand).ulButtonPressed;
-			if ((buttons & ButtonMasks::OculusAX) == 0) break;
+			if ((buttons & inputButtonMask) == 0) break;
 			buttons = GetControllerState(vr::TrackedControllerRole_RightHand).ulButtonPressed;
-			if ((buttons & ButtonMasks::OculusAX) == 0) break;
+			if ((buttons & inputButtonMask) == 0) break;
 		}
 
 		std::cout << "Hold a moment...\n" << std::flush;
@@ -210,12 +210,12 @@ void RecalibrateVirtualControllers() {
 		setVirtualDevicePosition(trackerIDs[Poses::left_ankle], leftHandPos, leftHandRot);
 		setVirtualDevicePosition(trackerIDs[Poses::right_ankle], rightHandPos, rightHandRot);
 		uint64_t buttons = GetControllerState(vr::TrackedControllerRole_LeftHand).ulButtonPressed;
-		if (buttons & ButtonMasks::OculusAX) {
+		if (buttons & inputButtonMask) {
 			side = vr::TrackedControllerRole_LeftHand;
 			break;
 		}
 		buttons = GetControllerState(vr::TrackedControllerRole_RightHand).ulButtonPressed;
-		if (buttons & ButtonMasks::OculusAX) {
+		if (buttons & inputButtonMask) {
 			side = vr::TrackedControllerRole_RightHand;
 			break;
 		}
@@ -226,7 +226,7 @@ void RecalibrateVirtualControllers() {
 		rightStartPos = rightHandPosReal;
 	std::cout << "Waiting...\n";
 
-	while ((GetControllerState(side).ulButtonPressed & ButtonMasks::OculusAX) != 0) {}
+	while ((GetControllerState(side).ulButtonPressed & inputButtonMask) != 0) {}
 
 	UpdateHardwarePositions();
 

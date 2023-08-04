@@ -9,7 +9,6 @@
 #include <qjsondocument.h>
 #include <qjsonobject.h>
 #include <qjsonarray.h>
-#include <QDebug>
 
 class AIRemoteServer : public QObject {
 	Q_OBJECT

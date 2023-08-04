@@ -16,6 +16,14 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+enum ButtonMasks : uint64_t {
+	OculusBY      = 0b00000000000000000000000000000000010,
+	OculusAX      = 0b00000000000000000000000000010000000,
+	OculusStick   = 0b00100000000000000000000000000000000,
+	OculusTrigger = 0b01000000000000000000000000000000000,
+	OculusBumper  = 0b10000000000000000000000000000000100 //figure out why this has two
+};
+
 extern vr::IVRSystem* m_VRSystem;
 extern vrinputemulator::VRInputEmulator inputEmulator;
 
@@ -34,6 +42,8 @@ extern bool active;
 
 extern std::queue<uint8_t> buttonInputListener;
 
+extern ButtonMasks inputButtonMask;
+extern ButtonMasks pmButtonMask;
 
 bool findTrackers();
 
@@ -54,11 +64,3 @@ void UpdateHardwarePositions();
 vr::VRControllerState_t GetControllerState(vr::ETrackedControllerRole controller);
 
 bool StartVR();
-
-enum ButtonMasks : uint64_t {
-	OculusBY      = 0b00000000000000000000000000000000010,
-	OculusAX      = 0b00000000000000000000000000010000000,
-	OculusStick   = 0b00100000000000000000000000000000000,
-	OculusTrigger = 0b01000000000000000000000000000000000,
-	OculusBumper  = 0b10000000000000000000000000000000100 //figure out why this has two
-};

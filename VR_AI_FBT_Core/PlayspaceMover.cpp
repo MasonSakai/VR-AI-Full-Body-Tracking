@@ -1,7 +1,7 @@
 #include "PlayspaceMover.h"
 
 glm::vec3 pmStartControllerPos, pmOffset, pmOffsetStart;
-uint8_t pmFlags = PlayspaceMoverFlags::Active;
+uint8_t pmFlags = PlayspaceMoverFlags::Active | PlayspaceMoverFlags::DoubleButtonReset;
 
 void EnableHardwareOffset() {
 	vr::HmdVector3d_t offset;
@@ -81,13 +81,24 @@ void DisableHardwareOffset() {
 void CheckPlayspaceMover() {
 	if (pmFlags & PlayspaceMoverFlags::Moving) {
 		uint64_t buttons = GetControllerState((pmFlags & PlayspaceMoverFlags::ControllerRight) ? vr::TrackedControllerRole_RightHand : vr::TrackedControllerRole_LeftHand).ulButtonPressed;
-		if (!(buttons & ButtonMasks::OculusAX)) {
+		if (!(buttons & pmButtonMask)) {
 			pmFlags &= ~PlayspaceMoverFlags::Moving;
 			pmFlags &= ~PlayspaceMoverFlags::ControllerRight;
 			buttonInputListener.pop();
 			std::cout << "Playspace Mover: Up\n" << std::flush;
 		}
 		else {
+			if (pmFlags & PlayspaceMoverFlags::DoubleButtonReset) {
+				buttons = GetControllerState((pmFlags & PlayspaceMoverFlags::ControllerRight) ? vr::TrackedControllerRole_LeftHand : vr::TrackedControllerRole_RightHand).ulButtonPressed;
+				if (buttons & pmButtonMask) {
+					pmOffset = glm::vec3(0, 0, 0);
+					UpdateHardwareOffset();
+					pmFlags &= ~PlayspaceMoverFlags::Moving;
+					pmFlags &= ~PlayspaceMoverFlags::ControllerRight;
+					buttonInputListener.pop();
+					return;
+				}
+			}
 			glm::vec3 controllerPos = (pmFlags & PlayspaceMoverFlags::ControllerRight) ? rightHandPosReal : leftHandPosReal; //stop the gittering here
 			glm::vec3 delta = controllerPos - pmStartControllerPos;
 			pmOffset = pmOffsetStart - delta;
@@ -97,7 +108,7 @@ void CheckPlayspaceMover() {
 	}
 	else if (buttonInputListener.empty()) {
 		uint64_t buttons = GetControllerState(vr::TrackedControllerRole_LeftHand).ulButtonPressed;
-		if (buttons == ButtonMasks::OculusAX) {
+		if (buttons == pmButtonMask) {
 			buttonInputListener.push(0);
 			pmFlags |= PlayspaceMoverFlags::Moving;
 			pmFlags &= ~PlayspaceMoverFlags::ControllerRight;
@@ -107,7 +118,7 @@ void CheckPlayspaceMover() {
 			return;
 		}
 		buttons = GetControllerState(vr::TrackedControllerRole_RightHand).ulButtonPressed;
-		if (buttons == ButtonMasks::OculusAX) {
+		if (buttons == pmButtonMask) {
 			buttonInputListener.push(0);
 			pmFlags |= PlayspaceMoverFlags::Moving;
 			pmFlags |= PlayspaceMoverFlags::ControllerRight;

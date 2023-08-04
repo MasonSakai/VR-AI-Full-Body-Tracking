@@ -12,7 +12,6 @@
 #include "Config.h"
 
 #include <QApplication>
-#include <QDebug>
 #include <Windows.h>
 #include <iostream>
 #include <thread>
@@ -179,7 +178,6 @@ int main(int argc, char* argv[])
 		json.insert("port", 2674);
 		json.insert("windowConfigs", QJsonArray());
 		config.setObject(json);
-		qDebug() << config;
 		WriteConfig();
 	}
 
@@ -192,9 +190,9 @@ int main(int argc, char* argv[])
 	VRDashboardOverlay::SharedInstance();
 	GetOverlays();
 
-
 	GetTrackers();
 
+	//use dnspy or more std::cout to figure out why it crashes here
 	MainThread = std::thread(MainLoop);
 
 	AIRemoteServer::SharedInstance()->StartServer();

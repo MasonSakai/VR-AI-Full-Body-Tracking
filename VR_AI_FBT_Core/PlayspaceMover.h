@@ -15,5 +15,6 @@ enum PlayspaceMoverFlags : uint8_t {
 	None = 0,
 	Active = 128,
 	Moving = 1,
-	ControllerRight = 2
+	ControllerRight = 2,
+	DoubleButtonReset = 4
 };
