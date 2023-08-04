@@ -394,11 +394,6 @@ uint8_t PoseTracker::CalculateOrientation() {
 		rotation = rightHandRotReal;
 		break;
 
-	case Poses::right_hip:
-		rotation = glm::quatLookAt(glm::normalize(trackers[Poses::left_hip].position - position),
-								   glm::normalize(trackers[Poses::right_shoulder].position - position));
-		break;
-
 		//use floor when on or below
 		//put toes on when near (<60/70 deg)
 		//use leg when above
@@ -409,6 +404,44 @@ uint8_t PoseTracker::CalculateOrientation() {
 	case Poses::right_ankle:
 		rotation = glm::quatLookAt(reject(trackers[right_hip].rotation * glm::vec3(1, 0, 0),
 			glm::vec3(0, 1, 0)), glm::vec3(0, 1, 0));
+		break;
+
+		//Hip
+	case Poses::left_hip:
+		rotation = glm::quatLookAt(glm::normalize(trackers[Poses::right_hip].position - position),
+			glm::normalize(trackers[Poses::left_shoulder].position - position));
+		break;
+	case Poses::right_hip:
+		rotation = glm::quatLookAt(glm::normalize(trackers[Poses::left_hip].position - position),
+			glm::normalize(trackers[Poses::right_shoulder].position - position));
+		break;
+
+		// Elbow / Knee
+	case Poses::left_elbow:
+		rotation = glm::quatLookAt(glm::normalize(trackers[Poses::left_wrist].position - position),
+			glm::normalize(trackers[Poses::left_shoulder].position - position));
+		break;
+	case Poses::right_elbow:
+		rotation = glm::quatLookAt(glm::normalize(trackers[Poses::right_wrist].position - position),
+			glm::normalize(trackers[Poses::right_shoulder].position - position));
+		break;
+	case Poses::left_knee:
+		rotation = glm::quatLookAt(glm::normalize(trackers[Poses::left_ankle].position - position),
+			-glm::normalize(trackers[Poses::left_hip].position - position));
+		break;
+	case Poses::right_knee:
+		rotation = glm::quatLookAt(glm::normalize(trackers[Poses::right_ankle].position - position),
+			-glm::normalize(trackers[Poses::right_hip].position - position)); //Maybe flip sign based on headset/hip
+		break;
+
+
+	case Poses::left_shoulder:
+		rotation = glm::quatLookAt(glm::normalize(trackers[Poses::left_hip].position - position),
+			glm::normalize(trackers[Poses::right_shoulder].position - position));
+		break;
+	case Poses::right_shoulder:
+		rotation = glm::quatLookAt(glm::normalize(trackers[Poses::right_hip].position - position),
+			glm::normalize(trackers[Poses::left_shoulder].position - position));
 		break;
 
 	default:
@@ -562,26 +595,26 @@ void Camera::CalibrateDistances(glm::vec3 v1, glm::quat q1, glm::vec3 v2, glm::q
 		//std::cout << "dir: {" << dir.x << ", " << dir.y << ", " << dir.z << "}\n\n";
 	}
 
-	float ats = (trackers[Poses::left_ankle].position.y + trackers[Poses::right_ankle].position.y) * .5f;
+	float ats = (positions[Poses::left_ankle].y + positions[Poses::right_ankle].y) * .5f;
 	ankleToSole = (ankleToSole * distancesRecorded + ats) / (distancesRecorded + 1);
-	float sts = glm::length(trackers[Poses::left_shoulder].position - trackers[Poses::right_shoulder].position);
+	float sts = glm::length(positions[Poses::left_shoulder] - positions[Poses::right_shoulder]);
 	shoulderToShoulder = (shoulderToShoulder * distancesRecorded + sts) / (distancesRecorded + 1);
-	float hw = glm::length(trackers[Poses::left_hip].position - trackers[Poses::right_hip].position);
+	float hw = glm::length(positions[Poses::left_hip] - positions[Poses::right_hip]);
 	hipWidth = (hipWidth * distancesRecorded + hw) / (distancesRecorded + 1);
-	float sth = (glm::length(trackers[Poses::left_hip].position - trackers[Poses::left_shoulder].position) + 
-		glm::length(trackers[Poses::right_hip].position - trackers[Poses::right_shoulder].position)) * .5f;
+	float sth = (glm::length(positions[Poses::left_hip] - positions[Poses::left_shoulder]) + 
+		glm::length(positions[Poses::right_hip] - positions[Poses::right_shoulder])) * .5f;
 	shoulderToHip = (shoulderToHip * distancesRecorded + sth) / (distancesRecorded + 1);
-	float ua = (glm::length(trackers[Poses::left_elbow].position - trackers[Poses::left_shoulder].position) +
-		glm::length(trackers[Poses::right_elbow].position - trackers[Poses::right_shoulder].position)) * .5f;
+	float ua = (glm::length(positions[Poses::left_elbow] - positions[Poses::left_shoulder]) +
+		glm::length(positions[Poses::right_elbow] - positions[Poses::right_shoulder])) * .5f;
 	upperArmLen = (upperArmLen * distancesRecorded + ua) / (distancesRecorded + 1);
-	float la = (glm::length(trackers[Poses::left_elbow].position - trackers[Poses::left_wrist].position) +
-		glm::length(trackers[Poses::right_elbow].position - trackers[Poses::right_wrist].position)) * .5f;
+	float la = (glm::length(positions[Poses::left_elbow] - positions[Poses::left_wrist]) +
+		glm::length(positions[Poses::right_elbow] - positions[Poses::right_wrist])) * .5f;
 	lowerArmLen = (lowerArmLen * distancesRecorded + la) / (distancesRecorded + 1);
-	float ul = (glm::length(trackers[Poses::left_hip].position - trackers[Poses::left_knee].position) +
-		glm::length(trackers[Poses::right_hip].position - trackers[Poses::right_knee].position)) * .5f;
+	float ul = (glm::length(positions[Poses::left_hip] - positions[Poses::left_knee]) +
+		glm::length(positions[Poses::right_hip] - positions[Poses::right_knee])) * .5f;
 	upperLegLen = (upperLegLen * distancesRecorded + ul) / (distancesRecorded + 1);
-	float ll = (glm::length(trackers[Poses::left_ankle].position - trackers[Poses::left_knee].position) +
-		glm::length(trackers[Poses::right_ankle].position - trackers[Poses::right_knee].position)) * .5f;
+	float ll = (glm::length(positions[Poses::left_ankle] - positions[Poses::left_knee]) +
+		glm::length(positions[Poses::right_ankle] - positions[Poses::right_knee])) * .5f;
 	lowerLegLen = (lowerLegLen * distancesRecorded + ll) / (distancesRecorded + 1);
 	distancesRecorded++;
 
