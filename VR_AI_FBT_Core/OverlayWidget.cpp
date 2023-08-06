@@ -1,6 +1,6 @@
 #include "OverlayWidget.h"
 
-QString labelBase = "lblLine%1";
+QString labelBase = "lblLine";
 
 const int pxPerChar = 8,
 minCharPerLine = 25,
@@ -15,7 +15,8 @@ OverlayWidget::OverlayWidget(QWidget* parent)
 	ui.setupUi(this);
 
 	for (int i = 0; i < 3; i++) {
-		QString labelName = labelBase.arg(i);
+		QString labelName = labelBase;
+		labelName.append(QString::number(i));
 		lblLines[i] = findChild<QLabel*>(labelName);
 		lblLines[i]->setText(labelName);
 	}

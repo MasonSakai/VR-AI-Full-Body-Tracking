@@ -144,6 +144,39 @@ glm::vec3 IntersectPlane(glm::vec3 planePos, glm::vec3 planeNorm, glm::vec3 star
 	return startPos + direction * t;
 }
 
+uint8_t IntersectSphere(glm::vec3 center, float radius, glm::vec3 startPos, glm::vec3 direction, glm::vec3* p1, glm::vec3* p2, float tolerance) {
+	glm::vec3 closest = project(center - startPos, direction) + startPos;
+	float dist = glm::length(closest - center);
+	float delta = radius - dist; //+ is in, - is out
+	if (fabsf(delta) < tolerance) {
+		p1->x = closest.x;
+		p1->y = closest.y;
+		p1->z = closest.z;
+		return 1;
+	}
+	if (delta < 0) {
+		p1->x = closest.x;
+		p1->y = closest.y;
+		p1->z = closest.z;
+		return 0;
+	}
+	float dot = glm::dot(direction, center - startPos);
+	float dirlen2 = glm::length2(direction);
+	float a = dot / dirlen2;
+	float b = sqrtf(dot * dot - dirlen2 * (glm::length2(center - startPos) - radius * radius)) / dirlen2;
+	float d1 = a - b;
+	float d2 = a + b;
+	glm::vec3 pos1 = startPos + direction * d1;
+	glm::vec3 pos2 = startPos + direction * d2;
+	p1->x = pos1.x;
+	p1->y = pos1.y;
+	p1->z = pos1.z;
+	p1->x = pos2.x;
+	p1->y = pos2.y;
+	p1->z = pos2.z;
+	return 2;
+}
+
 vr::HmdMatrix34_t ConvertMatrix(glm::mat4x4 matrix, glm::vec3 position) {
 	vr::HmdMatrix34_t mat;
 	for (int i = 0; i < 3; i++)

@@ -77,6 +77,8 @@ VRFloatingOverlay::VRFloatingOverlay()
 	std::cout << "Set Widget\n";
 	SetWidget(pOverlayWidget);
 
+	//vr::VROverlay()->ShowOverlay(m_ulOverlayHandle);
+
 	std::cout << "Started\n";
 }
 
@@ -129,8 +131,26 @@ bool VRFloatingOverlay::Init()
 
 	if (bSuccess)
 	{
-		vr::VROverlay()->SetOverlayWidthInMeters(m_ulOverlayHandle, 1.0f);
-		vr::VROverlay()->SetOverlayInputMethod(m_ulOverlayHandle, vr::VROverlayInputMethod_Mouse);
+		vr::VROverlay()->SetOverlayWidthInMeters(m_ulOverlayHandle, .25f);
+		vr::HmdMatrix34_t transform;
+		glm::vec3 offset(0, -.125f, -.25f);
+		glm::vec3 front = -glm::normalize(offset);
+		glm::vec3 left(1, 0, 0);
+		glm::vec3 up = glm::cross(front, left);
+		transform.m[0][0] = left.x;
+		transform.m[1][0] = left.y;
+		transform.m[2][0] = left.z;
+		transform.m[0][1] = up.x;
+		transform.m[1][1] = up.y;
+		transform.m[2][1] = up.z;
+		transform.m[0][2] = front.x;
+		transform.m[1][2] = front.y;
+		transform.m[2][2] = front.z;
+		transform.m[0][3] = offset.x;
+		transform.m[1][3] = offset.y;
+		transform.m[2][3] = offset.z;
+
+		vr::VROverlay()->SetOverlayTransformTrackedDeviceRelative(m_ulOverlayHandle, vr::k_unTrackedDeviceIndex_Hmd, &transform);
 
 		m_pPumpEventsTimer = new QTimer(this);
 		connect(m_pPumpEventsTimer, SIGNAL(timeout()), this, SLOT(OnTimeoutPumpEvents()));
@@ -142,8 +162,6 @@ bool VRFloatingOverlay::Init()
 }
 void VRFloatingOverlay::Shutdown()
 {
-	DisconnectFromVRRuntime();
-
 	delete m_pScene;
 	delete m_pFbo;
 	delete m_pOffscreenSurface;
@@ -186,19 +204,6 @@ void VRFloatingOverlay::OnTimeoutPumpEvents()
 	if (!vr::VRSystem())
 		return;
 
-
-	if (m_bManualMouseHandling)
-	{
-		// tell OpenVR to make some events for us
-		for (vr::TrackedDeviceIndex_t unDeviceId = 1; unDeviceId < vr::k_unControllerStateAxisCount; unDeviceId++)
-		{
-			if (vr::VROverlay()->HandleControllerOverlayInteractionAsMouse(m_ulOverlayHandle, unDeviceId))
-			{
-				break;
-			}
-		}
-	}
-
 	vr::VREvent_t vrEvent;
 	while (vr::VROverlay()->PollNextOverlayEvent(m_ulOverlayHandle, &vrEvent, sizeof(vrEvent)))
 	{
@@ -206,13 +211,13 @@ void VRFloatingOverlay::OnTimeoutPumpEvents()
 		{
 		case vr::VREvent_OverlayShown:
 		{
-			UpdateCameraStateUI();
+			//UpdateCameraStateUI();
 			m_pWidget->repaint();
 		}
 		break;
 
 		case vr::VREvent_Quit:
-			QApplication::exit();
+			//QApplication::exit();
 			break;
 		}
 	}

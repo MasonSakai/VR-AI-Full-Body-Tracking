@@ -22,7 +22,7 @@ void MainLoop() {
 	active = true;
 
 	uint8_t trackerStates[17];
-	uint8_t i;
+	int i, j;
 	bool completed;
 
 	auto lastTime = std::chrono::high_resolution_clock::now();
@@ -31,7 +31,7 @@ void MainLoop() {
 	uint32_t currentFrame = 0;
 
 	while (active) {
-		if (vr::VRCompositor() != NULL) {
+		/*if (vr::VRCompositor() != NULL) {
 			vr::Compositor_FrameTiming t;
 			t.m_nSize = sizeof(vr::Compositor_FrameTiming);
 			bool hasFrame = vr::VRCompositor()->GetFrameTiming(&t, 0);
@@ -42,12 +42,14 @@ void MainLoop() {
 			if ((hasFrame && currentFrame != t.m_nFrameIndex) || (hasFrame && t.m_nNumFramePresents != numFramePresents)) {
 				currentFrame = t.m_nFrameIndex;
 				numFramePresents = t.m_nNumFramePresents;
-				lastTime = currentTime;
+				lastTime = currentTime;*/
 
 				UpdateHardwarePositions();
 				UpdateRealHardwarePositions();
 
-				if (pmFlags & PlayspaceMoverFlags::Active) {
+				if (pmFlags & PlayspaceMoverFlags::Active) { 
+					//move pm to another thread to make more smooth!
+					//and figure out why it has trouble activating
 					CheckPlayspaceMover();
 				}
 
@@ -58,10 +60,10 @@ void MainLoop() {
 
 				for (i = 0; i < 10; i++) {
 					completed = true;
-					for (i = 0; i < 17; i++) {
-						if (!trackers[i].hasValidPosition) {
-							if (trackerStates[i] == 1) {
-								completed &= trackers[i].CalculateSingleCameraPosition();
+					for (j = 0; j < 17; j++) {
+						if (!trackers[j].hasValidPosition) {
+							if (trackerStates[j] == 1) {
+								completed &= trackers[j].CalculateSingleCameraPosition();
 							}
 							else {
 								//todo
@@ -87,7 +89,7 @@ void MainLoop() {
 						}
 					}
 				}
-
+				/*
 				// Sleep for just under 1/90th of a second, so that maybe the next frame will be available.
 				std::this_thread::sleep_for(std::chrono::microseconds(1111));
 			}
@@ -95,7 +97,7 @@ void MainLoop() {
 				// Still waiting on the next frame, wait less this time.
 				std::this_thread::sleep_for(std::chrono::microseconds(1111));
 			}
-		}
+		}*/
 
 	}
 }
@@ -176,7 +178,9 @@ int main(int argc, char* argv[])
 	SetConsoleCtrlHandler((PHANDLER_ROUTINE)EndProgram, true);
 
 	//temp
+#ifdef DEBUGDIRECTORY
 	BaseDirectory.append("C:\\VSProjects\\VR-AI-Full-Body-Tracking\\Remote1CamProcessing\\");
+#endif
 
 	if (!ReadConfig()) {
 		std::cout << "Could Not Load Config...\n";
@@ -197,7 +201,7 @@ int main(int argc, char* argv[])
 
 	GetTrackers();
 
-	//use dnspy or more std::cout to figure out why it crashes here
+	//check if it works without the loop
 	MainThread = std::thread(MainLoop);
 
 	AIRemoteServer::SharedInstance()->StartServer();

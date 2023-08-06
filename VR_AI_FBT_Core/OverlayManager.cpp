@@ -24,8 +24,8 @@ bool cameraThreadActive = false;
 
 
 bool GetOverlays() {
-	/*VROverlay = vr::VROverlay();
-	//vr::VROverlayError_None
+	VROverlay = vr::VROverlay();
+	/*//vr::VROverlayError_None
 	vr::EVROverlayError error = VROverlay->FindOverlay(OverlayKey, &overlayHandle);
 	if (error == vr::VROverlayError_UnknownOverlay) {
 		error = VROverlay->CreateOverlay(OverlayKey, OverlayName, &overlayHandle);
@@ -44,10 +44,11 @@ bool GetOverlays() {
 
 void DestroyOverlays() {
 	vr::EVROverlayError error;
-	//error = VROverlay->DestroyOverlay(overlayHandle);
-	//error = VROverlay->DestroyOverlay(dashboardHandle);
+	VRFloatingOverlay::SharedInstance()->Shutdown();
+	VRDashboardOverlay::SharedInstance()->Shutdown();
 	for (int i = 0; i < 16; i++) {
-		error = VROverlay->DestroyOverlay(cameraOverlays[i]);
+		if(cameraOverlays[i])
+			error = VROverlay->DestroyOverlay(cameraOverlays[i]);
 	}
 }
 
@@ -74,7 +75,7 @@ void OverlayOnClose() {
 		cameraThreadActive = false;
 		CameraDisplayTimeoutThread.join();
 	}
-	DestroyOverlays();
+	//DestroyOverlays();
 }
 
 void CreateCameraOverlay(int index) {

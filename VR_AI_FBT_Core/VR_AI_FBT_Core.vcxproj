@@ -37,7 +37,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="QtSettings">
     <QtInstall>6.5.2_msvc2019_64</QtInstall>
-    <QtModules>core;gui;network;opengl;openglwidgets;websockets;widgets</QtModules>
+    <QtModules>core;gui;network;widgets;opengl;openglwidgets;httpserver</QtModules>
     <QtBuildConfig>release</QtBuildConfig>
   </PropertyGroup>
   <Target Name="QtMsBuildNotFound" BeforeTargets="CustomBuild;ClCompile" Condition="!Exists('$(QtMsBuild)\qt.targets') or !Exists('$(QtMsBuild)\qt.props')">
@@ -62,12 +62,22 @@
     <ClCompile>
       <AdditionalIncludeDirectories>C:\VSProjects\glm;C:\VSProjects\OpenVR-InputEmulator\third-party\boost_1_63_0;C:\VSProjects\OpenVR-InputEmulator\openvr\headers;C:\VSProjects\OpenVR-InputEmulator\lib_vrinputemulator\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>$(Qt_STDCPP_)</LanguageStandard>
-      <PreprocessorDefinitions>_HAS_AUTO_PTR_ETC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_HAS_AUTO_PTR_ETC;DEBUGDIRECTORY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>C:\VSProjects\OpenVR-InputEmulator\openvr\lib\win64;C:\VSProjects\OpenVR-InputEmulator\Debug\lib\x64;C:\VSProjects\OpenVR-InputEmulator\third-party\boost_1_63_0\stage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\VSProjects\OpenVR-InputEmulator\openvr\lib\win64;C:\VSProjects\OpenVR-InputEmulator\Debug\lib\x64;C:\VSProjects\OpenVR-InputEmulator\third-party\boost_1_63_0\stage\cpp17\x64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>libvrinputemulator.lib;openvr_api.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Link>
+      <AdditionalDependencies>libvrinputemulator.lib;openvr_api.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\VSProjects\OpenVR-InputEmulator\openvr\lib\win64;C:\VSProjects\OpenVR-InputEmulator\Release\lib\x64;C:\VSProjects\OpenVR-InputEmulator\third-party\boost_1_63_0\stage\cpp17\x64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\VSProjects\glm;C:\VSProjects\OpenVR-InputEmulator\third-party\boost_1_63_0;C:\VSProjects\OpenVR-InputEmulator\openvr\headers;C:\VSProjects\OpenVR-InputEmulator\lib_vrinputemulator\include;$(Qt_INCLUDEPATH_)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_HAS_AUTO_PTR_ETC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
     <ClCompile>

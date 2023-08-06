@@ -12,9 +12,6 @@
 #include <string>
 #include <iostream>
 
-//#include "OverlayManager.h"
-//#include "OneCameraTracking.h"
-
 class PoseTracker {
 public:
 	static void SetPose(uint8_t camera, QJsonObject poseData);
@@ -54,6 +51,15 @@ private:
 
 	void CalculateMultiPosition();
 	void UpdateDirections();
+
+	uint8_t CalculateOneValid(glm::vec3 center, float r, glm::vec3 pos, glm::vec3 dir);
+	uint8_t CalculateTwoValid(glm::vec3 p1, float r1, glm::vec3 p2, float r2, glm::vec3 pos, glm::vec3 dir);
+
+	void CalculateSingleAnkle(uint8_t n, uint8_t knee, uint8_t hip);
+	void CalculateSingleKnee(uint8_t n, uint8_t ankle, uint8_t hip);
+	void CalculateSingleElbow(uint8_t n, uint8_t wrist, uint8_t shoulder);
+
+	void CalculateOrientationAnkle(uint8_t knee, uint8_t hip);
 };
 
 struct Camera {

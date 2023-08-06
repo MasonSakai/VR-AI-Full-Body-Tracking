@@ -169,8 +169,6 @@ bool VRDashboardOverlay::Init()
 }
 void VRDashboardOverlay::Shutdown()
 {
-	DisconnectFromVRRuntime();
-
 	delete m_pScene;
 	delete m_pFbo;
 	delete m_pOffscreenSurface;

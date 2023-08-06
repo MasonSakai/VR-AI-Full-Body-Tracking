@@ -1,6 +1,7 @@
 #include "PoseTracker.h"
 
-const float handToWristRatio = .88;
+const float handToWristRatio = .88,
+			footToLowerLegRatio = .16666667f;
 
 float htwRecorded = 0;
 glm::vec3 handToWrist;
@@ -9,7 +10,7 @@ float shoulderToShoulder,
 shoulderToHip, hipWidth,
 upperArmLen, lowerArmLen,
 upperLegLen, lowerLegLen,
-ankleToSole;
+ankleToSole, footLen, maxAnkle;
 
 Camera cameras[16];
 PoseTracker trackers[17];
@@ -97,8 +98,6 @@ void PoseTracker::CalculateMultiPosition() {
 
 	for (uint8_t i = 0; i < 15; i++) {
 		if (!(cameraFlags & (1 << i))) continue;
-		std::cout << "pos:      {" << cameras[i].position.x << ", " << cameras[i].position.y << ", " << cameras[i].position.z << "}\n";
-		std::cout << "dir:      {" << directions[i].x << ", " << directions[i].y << ", " << directions[i].z << "}\n";
 		for (uint8_t j = i + 1; j < 16; j++) {
 			if (!(cameraFlags & (1 << j))) continue;
 			weight = scores[i] * scores[j];
@@ -138,8 +137,61 @@ uint8_t PoseTracker::CalculatePosition() {
 	return 2;
 }
 
+uint8_t PoseTracker::CalculateOneValid(glm::vec3 center, float r, glm::vec3 pos, glm::vec3 dir) {
+	glm::vec3 p1, p2;
+	uint8_t count = IntersectSphere(center, r, pos, dir, &p1, &p2, 0.025f);
+	switch (count)
+	{
+	case 0:
+		hasAmbiguousPosition = false;
+		hasDualPosition = false;
+		amb1 = p1;
+		amb2 = glm::normalize(p1 - center) * r + center;
+		break;
+	case 1:
+		hasAmbiguousPosition = false;
+		hasDualPosition = false;
+		amb1 = p1;
+	case 2:
+		hasAmbiguousPosition = true;
+		hasDualPosition = true;
+		amb1 = p1;
+		amb2 = p2;
+		break;
+	}
+	return count;
+}
+uint8_t PoseTracker::CalculateTwoValid(glm::vec3 p1, float r1, glm::vec3 p2, float r2, glm::vec3 pos, glm::vec3 dir) {
+	float d = glm::length(p2 - p1);
+	float d1 = (r2 * r2 - r1 * r1 - d * d) / (-2 * d);
+	float r = sqrtf(r1 * r1 - d1 * d1);
+	glm::vec3 center = lerp(p1, p2, d1 / d);
+	glm::vec3 norm = glm::normalize(p2 - p1);
+	if (fabsf(glm::dot(norm, dir)) < 0.1f) {
+		return CalculateOneValid(center, r, pos, dir);
+	}
+	else {
+		glm::vec3 p = IntersectPlane(center, norm, pos, dir);
+		float rad = glm::length(pos - center);
+		if (fabsf(r - rad) < .05f) {
+			hasAmbiguousPosition = false;
+			amb1 = p;
+			return 1;
+		}
+		else {
+			//if this returns false there's a serious issue with something...
+			hasAmbiguousPosition = true;
+			amb1 = p;
+			amb2 = center + glm::normalize(p - center) * r;
+			return 0;
+		}
+	}
+}
+
+
 //return true if able to make pose
 bool PoseTracker::CalculateSingleCameraPosition() {
+	if (hasValidPosition) return true;
 
 	uint8_t n = 0;
 	for (n = 0; n < 17; n++)
@@ -148,12 +200,9 @@ bool PoseTracker::CalculateSingleCameraPosition() {
 	if (n == 16) return false;
 	float dist;
 
-	hasValidPosition = true;
-
-	//use
+	hasValidPosition = false;
 	hasAmbiguousPosition = false;
 	hasDualPosition = false;
-	//amb1, amb2;
 
 	switch (tracker)
 	{
@@ -171,24 +220,386 @@ bool PoseTracker::CalculateSingleCameraPosition() {
 			}
 
 			position = (hipRightRealPos + trackers[Poses::left_hip].position) * .5f;
-		}
-		else
-		{
-			hasValidPosition = false;
+			hasValidPosition = true;
 		}
 		break;
 	case Poses::left_wrist:
 		position = leftHandPosReal + leftHandRotReal * handToWrist;
+		hasValidPosition = true;
 		break;
 	case Poses::right_wrist:
 		position = rightHandPosReal + rightHandRotReal * handToWrist;
+		hasValidPosition = true;
 		break;
+
+	case Poses::left_ankle:
+		CalculateSingleAnkle(n, Poses::left_knee, Poses::left_hip);
+		break;
+	case Poses::right_ankle:
+		CalculateSingleAnkle(n, Poses::right_knee, Poses::right_hip);
+		break;
+
+	case Poses::left_knee:
+		CalculateSingleKnee(n, Poses::left_ankle, Poses::left_hip);
+		break;
+	case Poses::right_knee:
+		CalculateSingleKnee(n, Poses::right_ankle, Poses::right_hip);
+		break;
+
 	default:
 		dist = glm::length(cameras[n].position - headPosReal);
 		position = cameras[n].position + directions[n] * dist;
+		hasValidPosition = true;
 		break;
 	}
 	return hasValidPosition;
+}
+
+void PoseTracker::CalculateSingleAnkle(uint8_t n, uint8_t knee, uint8_t hip) {
+	if (trackers[knee].hasValidPosition) {
+		uint8_t c = CalculateOneValid(trackers[knee].position, lowerLegLen, cameras[n].position, directions[n]);
+		if (c == 2) {
+			if (trackers[Poses::left_hip].hasValidPosition && trackers[Poses::right_hip].hasValidPosition) {
+				glm::vec3 c1 = glm::cross(amb1 - trackers[knee].position,
+					trackers[hip].position - trackers[knee].position);
+				glm::vec3 c2 = glm::cross(amb2 - trackers[knee].position,
+					trackers[hip].position - trackers[knee].position);
+				bool p1v = glm::dot(c1, trackers[Poses::right_hip].position - trackers[Poses::left_hip].position) > 0;
+				bool p2v = glm::dot(c2, trackers[Poses::right_hip].position - trackers[Poses::left_hip].position) > 0;
+				if (p1v == p2v) {
+					float d1 = glm::length(amb1 - position);
+					float d2 = glm::length(amb2 - position);
+					if (d1 < d2)
+						position = amb1;
+					else
+						position = amb2;
+				}
+				else if (p1v) {
+					position = amb1;
+				}
+				else if (p2v) {
+					position = amb2;
+				}
+				hasValidPosition = true;
+			}
+			else {
+				hasValidPosition = false;
+				//
+			}
+		}
+		else if (c == 1) {
+			position = amb1;
+			hasValidPosition = true;
+		}
+		else if (c == 0) {
+			position = (position + amb2) * .5f;
+			hasValidPosition = true;
+			hasAmbiguousPosition = true;
+		}
+	}
+	else if (trackers[knee].hasAmbiguousPosition && trackers[knee].hasDualPosition) {
+		glm::vec3 p1, p2, p3, p4, c;
+		bool b1 = false, b2 = false, b3 = false, b4 = false;;
+		uint8_t n = 0;
+		uint8_t n1 = CalculateOneValid(trackers[knee].amb1, lowerLegLen, cameras[n].position, directions[n]);
+		p1 = amb1; p2 = amb2;
+		uint8_t n2 = CalculateOneValid(trackers[knee].amb2, lowerLegLen, cameras[n].position, directions[n]);
+		p3 = amb1; p4 = amb2;
+		if (n1 > 0) {
+			c = glm::cross(p1 - trackers[knee].position,
+				trackers[hip].position - trackers[knee].position);
+			b1 = glm::dot(c, trackers[Poses::right_hip].position - trackers[hip].position) > 0;
+			n++;
+		}
+		if (n1 == 2) {
+			c = glm::cross(p2 - trackers[knee].position,
+				trackers[hip].position - trackers[knee].position);
+			b2 = glm::dot(c, trackers[Poses::right_hip].position - trackers[hip].position) > 0;
+			n++;
+		}
+		if (n2 > 0) {
+			c = glm::cross(p3 - trackers[knee].position,
+				trackers[hip].position - trackers[knee].position);
+			b3 = glm::dot(c, trackers[Poses::right_hip].position - trackers[hip].position) > 0;
+			n++;
+		}
+		if (n2 == 2) {
+			c = glm::cross(p4 - trackers[knee].position,
+				trackers[hip].position - trackers[knee].position);
+			b4 = glm::dot(c, trackers[Poses::right_hip].position - trackers[hip].position) > 0;
+			n++;
+		}
+		switch (n) {
+		case 0:
+			hasValidPosition = false;
+			hasAmbiguousPosition = false;
+			hasDualPosition = false;
+			break;
+		case 1:
+			hasValidPosition = true;
+			if (b1) position = p1;
+			else if (b2) position = p2;
+			else if (b3) position = p3;
+			else if (b4) position = p4;
+			else hasValidPosition = false;
+			break;
+		case 2:
+			hasValidPosition = false;
+			if (b1) amb1 = p1;
+			else if (b2) amb1 = p2;
+			else if (b3) amb1 = p3;
+			if (b2) amb2 = p2;
+			else if (b3) amb2 = p3;
+			else if (b4) amb2 = p4;
+
+			if (b1 && b2) {
+				trackers[knee].hasValidPosition = true;
+				trackers[knee].position = trackers[knee].amb1;
+			}
+			else if (b3 && b4) {
+				trackers[knee].hasValidPosition = true;
+				trackers[knee].position = trackers[knee].amb2;
+			}
+			hasAmbiguousPosition = true;
+			hasDualPosition = true;
+			break;
+		case 3:
+		case 4:
+			float f1 = INFINITY, f2 = INFINITY, f3 = INFINITY, f4 = INFINITY, sf, nsf;
+			int sn, nsn;
+			if (b1) f1 = glm::length(p1 - position);
+			if (b2) f2 = glm::length(p2 - position);
+			if (b3) f3 = glm::length(p3 - position);
+			if (b4) f4 = glm::length(p4 - position);
+			sf = f1; sn = 1;
+			if (f2 < sf) {
+				nsf = sf; sf = f2;
+				nsn = sn; sn = 2;
+			}
+			if (f3 < sf) {
+				nsf = sf; sf = f3;
+				nsn = sn; sn = 3;
+			}
+			if (f4 < sf) {
+				nsf = sf; sf = f4;
+				nsn = sn; sn = 4;
+			}
+			if (sn == 1) amb1 = p1;
+			else if (sn == 2) amb1 = p2;
+			else if (sn == 3) amb1 = p3;
+			else amb1 = p4;
+			if (nsn == 1) amb2 = p1;
+			else if (nsn == 2) amb2 = p2;
+			else if (nsn == 3) amb2 = p3;
+			else amb2 = p4;
+			hasAmbiguousPosition = true;
+			break;
+		}
+	}
+}
+void PoseTracker::CalculateSingleKnee(uint8_t n, uint8_t ankle, uint8_t hip) {
+	if (trackers[hip].hasValidPosition && trackers[ankle].hasValidPosition) {
+		uint8_t c = CalculateTwoValid(trackers[hip].position, upperLegLen,
+			trackers[ankle].position, lowerLegLen,
+			cameras[n].position, directions[n]);
+		switch (c) {
+		case 0:
+			position = (position + amb2) * .5f;
+			hasValidPosition = true;
+			break;
+		case 1:
+			position = amb1;
+			hasValidPosition = true;
+			break;
+		case 2:
+			if (trackers[Poses::left_hip].hasValidPosition && trackers[Poses::right_hip].hasValidPosition) {
+				glm::vec3 c1 = glm::cross(trackers[ankle].position - amb1,
+					trackers[hip].position - amb1);
+				glm::vec3 c2 = glm::cross(trackers[ankle].position - amb2,
+					trackers[hip].position - amb2);
+				bool p1v = glm::dot(c1, trackers[Poses::right_hip].position - trackers[Poses::left_hip].position) > 0;
+				bool p2v = glm::dot(c2, trackers[Poses::right_hip].position - trackers[Poses::left_hip].position) > 0;
+				if (p1v == p2v) {
+					float d1 = glm::length(amb1 - position);
+					float d2 = glm::length(amb2 - position);
+					if (d1 < d2)
+						position = amb1;
+					else
+						position = amb2;
+				}
+				else if (p1v) {
+					position = amb1;
+				}
+				else if (p2v) {
+					position = amb2;
+				}
+				hasValidPosition = true;
+			}
+			else {
+				//Needs better check?
+				if (glm::length2(position - amb1) < glm::length2(position - amb2))
+					position = amb1;
+				else
+					position = amb2;
+				hasValidPosition = true;
+			}
+			break;
+		}
+	}
+	else if (trackers[hip].hasValidPosition) {
+		uint8_t c = CalculateOneValid(trackers[hip].position, lowerLegLen, cameras[n].position, directions[n]);
+		switch (c) {
+		case 0:
+			position = (position + amb2) * .5f;
+			hasValidPosition = true;
+			break;
+		case 1:
+			position = amb1;
+			hasValidPosition = true;
+			break;
+		case 2:
+			/*//Needs better check?
+			//for the moment keeping ambiguous since the ankles should fix it's position
+			if (glm::length2(position - amb1) < glm::length2(position - amb2))
+				position = amb1;
+			else
+				position = amb2;
+			hasValidPosition = true;*/
+			break;
+		}
+	}
+	else if (trackers[ankle].hasValidPosition) {
+		uint8_t c = CalculateOneValid(trackers[ankle].position, lowerLegLen, cameras[n].position, directions[n]);
+		switch (c) {
+		case 0:
+			position = (position + amb2) * .5f;
+			hasValidPosition = true;
+			break;
+		case 1:
+			position = amb1;
+			hasValidPosition = true;
+			break;
+		case 2:
+			//Needs better check?
+			if (glm::length2(position - amb1) < glm::length2(position - amb2))
+				position = amb1;
+			else
+				position = amb2;
+			hasValidPosition = true;
+			break;
+		}
+	}
+}
+void PoseTracker::CalculateSingleElbow(uint8_t n, uint8_t wrist, uint8_t shoulder) {
+	if (trackers[shoulder].hasValidPosition && trackers[wrist].hasValidPosition) {
+		uint8_t c = CalculateTwoValid(trackers[shoulder].position, upperLegLen,
+			trackers[wrist].position, lowerLegLen,
+			cameras[n].position, directions[n]);
+		switch (c) {
+		case 0:
+			position = (position + amb2) * .5f;
+			hasValidPosition = true;
+			break;
+		case 1:
+			position = amb1;
+			hasValidPosition = true;
+			break;
+		case 2:
+			//Needs better check?
+			if (glm::length2(position - amb1) < glm::length2(position - amb2))
+				position = amb1;
+			else
+				position = amb2;
+			hasValidPosition = true;
+			break;
+		}
+	}
+	else if (trackers[shoulder].hasValidPosition) {
+		uint8_t c = CalculateOneValid(trackers[shoulder].position, lowerLegLen, cameras[n].position, directions[n]);
+		switch (c) {
+		case 0:
+			position = (position + amb2) * .5f;
+			hasValidPosition = true;
+			break;
+		case 1:
+			position = amb1;
+			hasValidPosition = true;
+			break;
+		case 2:
+			//Needs better check?
+			if (glm::length2(position - amb1) < glm::length2(position - amb2))
+				position = amb1;
+			else
+				position = amb2;
+			hasValidPosition = true;
+			break;
+		}
+	}
+	else if (trackers[wrist].hasValidPosition) {
+		uint8_t c = CalculateOneValid(trackers[wrist].position, lowerLegLen, cameras[n].position, directions[n]);
+		switch (c) {
+		case 0:
+			position = (position + amb2) * .5f;
+			hasValidPosition = true;
+			break;
+		case 1:
+			position = amb1;
+			hasValidPosition = true;
+			break;
+		case 2:
+			//Needs better check?
+			if (glm::length2(position - amb1) < glm::length2(position - amb2))
+				position = amb1;
+			else
+				position = amb2;
+			hasValidPosition = true;
+			break;
+		}
+	}
+}
+
+void PoseTracker::CalculateOrientationAnkle(uint8_t knee, uint8_t hip) {
+	//use floor(level) when on or below
+	//put toes on when near (<60/70 deg)
+	//use knee when above
+
+	//when off floor, use plane between hip, knee, and foot for orientation
+	//when on floor, have setting to switch between that and current (using hip forward)
+
+	bool footFollowHip = true;
+
+	float height = position.y;// -ankleToSole;
+	float delh = height - maxAnkle;
+	float dot = glm::dot(glm::normalize(trackers[knee].position - position), glm::vec3(0, 1, 0));
+	if (height <= maxAnkle && dot > .95f) {
+		//if dot between up and knee is too small, do same as else statement
+		if (footFollowHip) {
+			rotation = glm::quatLookAt(reject(trackers[right_hip].rotation * glm::vec3(1, 0, 0),
+				glm::vec3(0, 1, 0)), glm::vec3(0, 1, 0));
+		}
+		else {
+			// follow leg, flat to ground
+			// if knee in front of body, use hip -> knee
+			// if knee behind, use knee -> hip as forward
+			// reject with up
+			// up is (0,1,0)
+		}
+		if (delh > 0) {
+			float theta = asinf(delh / footLen);
+			glm::quat footRot = glm::angleAxis(theta, glm::vec3(-1, 0, 0));
+			rotation = footRot * rotation;
+		}
+	}
+	else {
+		glm::vec3 up = glm::normalize(trackers[knee].position - position);
+		glm::vec3 left = glm::normalize(glm::cross(up, trackers[knee].position - trackers[hip].position));
+		glm::vec3 forward = glm::normalize(glm::cross(left, up));
+
+		//what to do when they're in a straight line...
+		//I suppose forward is almost always up or down/left is horizontal; if it's not entirely upright...
+		//do forward check
+		rotation = glm::quatLookAt(forward, up);
+	}
 }
 
 uint8_t PoseTracker::CalculateOrientation() {
@@ -201,19 +612,11 @@ uint8_t PoseTracker::CalculateOrientation() {
 		rotation = rightHandRotReal;
 		break;
 
-		//use floor(level) when on or below
-		//put toes on when near (<60/70 deg)
-		//use knee when above
-		
-		//when off floor, use plane between hip, knee, and foot for orientation
-		//when on floor, have setting to switch between that and current (using hip forward)
 	case Poses::left_ankle:
-		rotation = glm::quatLookAt(reject(trackers[right_hip].rotation * glm::vec3(1, 0, 0),
-			glm::vec3(0, 1, 0)), glm::vec3(0, 1, 0));
+		CalculateOrientationAnkle(Poses::left_knee, Poses::left_hip);
 		break;
 	case Poses::right_ankle:
-		rotation = glm::quatLookAt(reject(trackers[right_hip].rotation * glm::vec3(1, 0, 0),
-			glm::vec3(0, 1, 0)), glm::vec3(0, 1, 0));
+		CalculateOrientationAnkle(Poses::right_knee, Poses::right_hip);
 		break;
 
 		//Hip
@@ -229,11 +632,11 @@ uint8_t PoseTracker::CalculateOrientation() {
 		// Elbow / Knee
 	case Poses::left_elbow:
 		rotation = glm::quatLookAt(glm::normalize(trackers[Poses::left_wrist].position - position),
-			glm::normalize(trackers[Poses::left_shoulder].position - position));
+			-glm::normalize(trackers[Poses::left_shoulder].position - position));
 		break;
 	case Poses::right_elbow:
 		rotation = glm::quatLookAt(glm::normalize(trackers[Poses::right_wrist].position - position),
-			glm::normalize(trackers[Poses::right_shoulder].position - position));
+			-glm::normalize(trackers[Poses::right_shoulder].position - position));
 		break;
 	case Poses::left_knee:
 		rotation = glm::quatLookAt(glm::normalize(trackers[Poses::left_ankle].position - position),
@@ -405,7 +808,7 @@ void Camera::CalibrateDistances(glm::vec3 v1, glm::quat q1, glm::vec3 v2, glm::q
 		//std::cout << "dir: {" << dir.x << ", " << dir.y << ", " << dir.z << "}\n\n";
 	}
 
-	float ats = (positions[Poses::left_ankle].y + positions[Poses::right_ankle].y) * .5f;
+	float ats = fabsf((positions[Poses::left_ankle].y + positions[Poses::right_ankle].y) * .5f);
 	ankleToSole = (ankleToSole * distancesRecorded + ats) / (distancesRecorded + 1);
 	float sts = glm::length(positions[Poses::left_shoulder] - positions[Poses::right_shoulder]);
 	shoulderToShoulder = (shoulderToShoulder * distancesRecorded + sts) / (distancesRecorded + 1);
@@ -426,6 +829,8 @@ void Camera::CalibrateDistances(glm::vec3 v1, glm::quat q1, glm::vec3 v2, glm::q
 	float ll = (glm::length(positions[Poses::left_ankle] - positions[Poses::left_knee]) +
 		glm::length(positions[Poses::right_ankle] - positions[Poses::right_knee])) * .5f;
 	lowerLegLen = (lowerLegLen * distancesRecorded + ll) / (distancesRecorded + 1);
+	footLen = lowerLegLen * footToLowerLegRatio;
+	maxAnkle = footLen * .5f;
 	distancesRecorded++;
 
 	std::cout << "ankleToSole        " << ankleToSole << std::endl;

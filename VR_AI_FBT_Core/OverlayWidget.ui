@@ -19,10 +19,17 @@
      <x>-1</x>
      <y>-1</y>
      <width>461</width>
-     <height>61</height>
+     <height>62</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QLabel" name="lblLine0">
+      <property name="text">
+       <string>REEEEEEEEEEEEEEEEE</string>
+      </property>
+     </widget>
+    </item>
     <item>
      <widget class="QLabel" name="lblLine1">
       <property name="text">
@@ -32,13 +39,6 @@
     </item>
     <item>
      <widget class="QLabel" name="lblLine2">
-      <property name="text">
-       <string>REEEEEEEEEEEEEEEEE</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QLabel" name="lblLine3">
       <property name="text">
        <string>REEEEEEEEEEEEEEEEE</string>
       </property>

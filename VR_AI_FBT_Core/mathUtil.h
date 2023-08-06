@@ -28,3 +28,5 @@ glm::vec2 reject(glm::vec2 v1, glm::vec2 v2);
 glm::vec3 Intersection(glm::vec3 p1, glm::vec3 v1, glm::vec3 p2, glm::vec3 v2);
 
 glm::vec3 IntersectPlane(glm::vec3 planePos, glm::vec3 planeNorm, glm::vec3 startPos, glm::vec3 direction);
+
+uint8_t IntersectSphere(glm::vec3 center, float radius, glm::vec3 startPos, glm::vec3 direction, glm::vec3* p1, glm::vec3* p2, float tolerance = .001f);
