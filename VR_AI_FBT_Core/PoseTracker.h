@@ -27,6 +27,8 @@ public:
 	uint8_t CalculatePosition();
 	bool CalculateSingleCameraPosition();
 	uint8_t CalculateOrientation();
+
+	uint8_t getNumberOfCams();
 	
 	glm::vec3 position;
 	glm::quat rotation;
@@ -47,7 +49,6 @@ private:
 
 	
 	uint16_t cameraFlags = 0;
-	uint8_t getNumberOfCams();
 
 	void CalculateMultiPosition();
 	void UpdateDirections();
@@ -60,6 +61,8 @@ private:
 	void CalculateSingleElbow(uint8_t n, uint8_t wrist, uint8_t shoulder);
 
 	void CalculateOrientationAnkle(uint8_t knee, uint8_t hip);
+
+	static glm::vec3 GetFootForward(uint8_t foot, uint8_t knee, uint8_t hip);
 };
 
 struct Camera {

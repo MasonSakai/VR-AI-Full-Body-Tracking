@@ -32,4 +32,6 @@ void OverlayWidget::SetLine(uint8_t index, QString text) {
 }
 void OverlayWidget::SetText(QString text) {
 	SetLine(0, text);
+	SetLine(1, text);
+	SetLine(2, text);
 }

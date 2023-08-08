@@ -13,7 +13,6 @@ DashboardWidget::DashboardWidget(QWidget* parent)
 	cameraGrid = findChild<QGridLayout*>("gridCameras");
 	cameraGrid->minimumSize().setHeight(rowHeight);
 
-	InitInputControls();
 	InitTrackerDisplays();
 	InitConfig();
 }
@@ -22,32 +21,38 @@ DashboardWidget::~DashboardWidget()
 {}
 
 
-void DashboardWidget::InitInputControls() {
-	connect(findChild<QCheckBox*>("cbxButtonOcAX"), &QCheckBox::clicked, this, [](bool checked) {
-		if (checked) inputButtonMask |= ButtonMasks::OculusAX;
-		else inputButtonMask &= ~ButtonMasks::OculusAX;
-		});
-	connect(findChild<QCheckBox*>("cbxButtonOcBY"), &QCheckBox::clicked, this, [](bool checked) {
-		if (checked) inputButtonMask |= ButtonMasks::OculusBY;
-		else inputButtonMask &= ~ButtonMasks::OculusBY;
-		});
-	connect(findChild<QCheckBox*>("cbxButtonOcTrig"), &QCheckBox::clicked, this, [](bool checked) {
-		if (checked) inputButtonMask |= ButtonMasks::OculusTrigger;
-		else inputButtonMask &= ~ButtonMasks::OculusTrigger;
-		});
-	connect(findChild<QCheckBox*>("cbxButtonOcAXpm"), &QCheckBox::clicked, this, [](bool checked) {
-		if (checked) pmButtonMask |= ButtonMasks::OculusAX;
-		else pmButtonMask &= ~ButtonMasks::OculusAX;
-		});
-	connect(findChild<QCheckBox*>("cbxButtonOcBYpm"), &QCheckBox::clicked, this, [](bool checked) {
-		if (checked) pmButtonMask |= ButtonMasks::OculusBY;
-		else pmButtonMask &= ~ButtonMasks::OculusBY;
-		});
-	connect(findChild<QCheckBox*>("cbxButtonOcTrigpm"), &QCheckBox::clicked, this, [](bool checked) {
-		if (checked) pmButtonMask |= ButtonMasks::OculusTrigger;
-		else pmButtonMask &= ~ButtonMasks::OculusTrigger;
-		});
+void DashboardWidget::on_cbxButtonOcAX_clicked(bool checked) {
+	if (checked) inputButtonMask |= ButtonMasks::OculusAX;
+	else inputButtonMask &= ~ButtonMasks::OculusAX;
 }
+void DashboardWidget::on_cbxButtonOcBY_clicked(bool checked) {
+	if (checked) inputButtonMask |= ButtonMasks::OculusBY;
+	else inputButtonMask &= ~ButtonMasks::OculusBY;
+}
+void DashboardWidget::on_cbxButtonOcTrig_clicked(bool checked) {
+	if (checked) inputButtonMask |= ButtonMasks::OculusTrigger;
+	else inputButtonMask &= ~ButtonMasks::OculusTrigger;
+}
+void DashboardWidget::on_cbxButtonOcAXpm_clicked(bool checked) {
+	if (checked) pmButtonMask |= ButtonMasks::OculusAX;
+	else pmButtonMask &= ~ButtonMasks::OculusAX;
+}
+void DashboardWidget::on_cbxButtonOcBYpm_clicked(bool checked) {
+	if (checked) pmButtonMask |= ButtonMasks::OculusBY;
+	else pmButtonMask &= ~ButtonMasks::OculusBY;
+}
+void DashboardWidget::on_cbxButtonOcTrigpm_clicked(bool checked) {
+	if (checked) pmButtonMask |= ButtonMasks::OculusTrigger;
+	else pmButtonMask &= ~ButtonMasks::OculusTrigger;
+}
+
+bool DashboardWidget::SetLabel(QString labelName, QString text) {
+	QLabel* label = findChild<QLabel*>(labelName);
+	if (label == nullptr) return false;
+	label->setText(text);
+	return true;
+}
+
 void DashboardWidget::InitTrackerDisplays() {
 
 }

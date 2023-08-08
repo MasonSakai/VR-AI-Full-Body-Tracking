@@ -68,6 +68,14 @@
       <AdditionalLibraryDirectories>C:\VSProjects\OpenVR-InputEmulator\openvr\lib\win64;C:\VSProjects\OpenVR-InputEmulator\Debug\lib\x64;C:\VSProjects\OpenVR-InputEmulator\third-party\boost_1_63_0\stage\cpp17\x64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>libvrinputemulator.lib;openvr_api.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(TargetDir)$(TargetName).exe" "Z:\_Shared\$(TargetName).exe"
+copy /Y "$(TargetDir)$(TargetName).ilk" "Z:\_Shared\$(TargetName).ilk"
+copy /Y "$(TargetDir)$(TargetName).pdb" "Z:\_Shared\$(TargetName).pdb"</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copying to shared drive...</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Link>

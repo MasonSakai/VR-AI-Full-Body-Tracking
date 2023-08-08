@@ -49,8 +49,14 @@ void VRDashboardOverlay::UpdateCameraStateUI() {
 		((DashboardWidget*)m_pWidget)->SetCameraState(index, state);
 	}
 }
-void VRDashboardOverlay::ReturnCameraScreenshot(uint8_t index, uint8_t* data[]) {
 
+void VRDashboardOverlay::UpdateTrackersSeen() {
+	DashboardWidget* widget = (DashboardWidget*)m_pWidget;
+	for (int i = 5; i < 17; i++) {
+		QString name = "lbl_";
+		name.append(PoseNames[i]);
+		widget->SetLabel(name, QString::number(trackers[i].getNumberOfCams()));
+	}
 }
 
 
@@ -123,9 +129,10 @@ bool VRDashboardOverlay::Init()
 		m_strName = arguments.at(nNameArg + 1);
 	}
 
-	QSurfaceFormat format;
+	QSurfaceFormat format = QSurfaceFormat::defaultFormat();
 	format.setMajorVersion(4);
 	format.setMinorVersion(1);
+	format.setSamples(4);
 	format.setProfile(QSurfaceFormat::CompatibilityProfile);
 
 	m_pOpenGLContext = new QOpenGLContext();
@@ -303,10 +310,9 @@ void VRDashboardOverlay::OnTimeoutPumpEvents()
 			QApplication::sendEvent(m_pScene, &mouseEvent);
 		}
 		break;
-
+		
 		case vr::VREvent_OverlayShown:
 		{
-			UpdateCameraStateUI();
 			m_pWidget->repaint();
 		}
 		break;
@@ -315,6 +321,10 @@ void VRDashboardOverlay::OnTimeoutPumpEvents()
 			QApplication::exit();
 			break;
 		}
+	}
+	if (vr::VROverlay()->IsOverlayVisible(m_ulOverlayHandle)) {
+		UpdateCameraStateUI();
+		OnSceneChanged(QList<QRectF>());
 	}
 
 	if (m_ulOverlayThumbnailHandle != vr::k_ulOverlayHandleInvalid)

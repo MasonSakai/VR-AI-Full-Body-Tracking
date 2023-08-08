@@ -27,8 +27,13 @@ void PoseTracker::InitTrackers() {
 void PoseTracker::SetPose(uint8_t camera, QJsonObject poseData) {
 	QJsonObject json;
 	for (int i = 0; i < 17; i++) {
-		json = poseData[PoseNames[i].c_str()].toObject();
-		trackers[i].UpdatePose(camera, json["x"].toDouble(), json["y"].toDouble(), json["score"].toDouble());
+		if (poseData[PoseNames[i].c_str()].isObject()) {
+			json = poseData[PoseNames[i].c_str()].toObject();
+			trackers[i].UpdatePose(camera, json["x"].toDouble(), json["y"].toDouble(), json["score"].toDouble());
+		}
+		else {
+			trackers[i].ClearPose(camera);
+		}
 	}
 }
 
@@ -558,6 +563,48 @@ void PoseTracker::CalculateSingleElbow(uint8_t n, uint8_t wrist, uint8_t shoulde
 	}
 }
 
+//vec3 getFootForward(foot, knee, hip)
+//for straight legs, uses angle lerp and hip orientation
+//what's the equation for cross product, can that convert directly to angle?
+//used for foot and knee, when dot is too high or low |d|>.9[5]f
+//reject foot - hip with up (compared to world or hip) vector for direction
+//cross/dot/however we get angle with forward/right
+//if sufficiently up or down (compared to hip) use hip forward
+//then take orthoganal to leg closest to up,
+//and rotate it along the leg by the given angle
+glm::vec3 PoseTracker::GetFootForward(uint8_t foot, uint8_t knee, uint8_t hip) {
+	glm::vec3 hipLeft = glm::normalize(trackers[Poses::left_hip].position - trackers[Poses::right_hip].position);
+	glm::vec3 hipUp = glm::normalize((trackers[Poses::left_shoulder].position + trackers[Poses::right_shoulder].position) 
+		- (trackers[Poses::left_hip].position + trackers[Poses::right_hip].position));
+	glm::vec3 hipForward = glm::normalize(glm::cross(hipLeft, hipUp));
+
+	glm::vec3 hipToFoot = trackers[foot].position - trackers[hip].position;
+
+	glm::vec3 footToKnee = glm::normalize(trackers[knee].position - trackers[foot].position);
+	float hipKneeDot = glm::dot(-footToKnee, glm::normalize(hipToFoot));
+	if (hipKneeDot > .85f) {
+		//perform verticality check
+		float footVecDot = glm::dot(glm::normalize(hipToFoot), hipUp);
+		if (fabsf(footVecDot) > .95f) {
+			return glm::normalize(reject(hipForward, hipToFoot)) * (footVecDot > 0 ? -1.0f : 1.0f);
+		}
+
+		glm::vec3 footDir = glm::normalize(reject(hipToFoot, hipUp));
+		glm::vec3 footCross = glm::cross(footDir, hipForward);
+		float theta = asinf(glm::length(footCross)) * (glm::dot(footCross, hipUp) >= 0 ? -1 : 1);
+		glm::quat rot = glm::angleAxis(theta, glm::normalize(hipToFoot));
+
+		glm::vec3 footForward = glm::normalize(reject(hipUp, hipToFoot));
+		footForward = rot * footForward;
+		return footForward;
+	}
+	//else if(hipKneeDot < -.9f) //figure this out
+	else {
+		glm::vec3 left = glm::normalize(glm::cross(-footToKnee, trackers[hip].position - trackers[knee].position));
+		return glm::normalize(glm::cross(left, footToKnee));
+	}
+}
+
 void PoseTracker::CalculateOrientationAnkle(uint8_t knee, uint8_t hip) {
 	//use floor(level) when on or below
 	//put toes on when near (<60/70 deg)
@@ -578,11 +625,10 @@ void PoseTracker::CalculateOrientationAnkle(uint8_t knee, uint8_t hip) {
 				glm::vec3(0, 1, 0)), glm::vec3(0, 1, 0));
 		}
 		else {
-			// follow leg, flat to ground
-			// if knee in front of body, use hip -> knee
-			// if knee behind, use knee -> hip as forward
-			// reject with up
-			// up is (0,1,0)
+			glm::vec3 up(0, 1, 0);
+			glm::vec3 forward = GetFootForward(tracker, knee, hip);
+			forward = glm::normalize(reject(forward, up));
+			rotation = glm::quatLookAt(forward, up);
 		}
 		if (delh > 0) {
 			float theta = asinf(delh / footLen);
@@ -592,12 +638,7 @@ void PoseTracker::CalculateOrientationAnkle(uint8_t knee, uint8_t hip) {
 	}
 	else {
 		glm::vec3 up = glm::normalize(trackers[knee].position - position);
-		glm::vec3 left = glm::normalize(glm::cross(up, trackers[knee].position - trackers[hip].position));
-		glm::vec3 forward = glm::normalize(glm::cross(left, up));
-
-		//what to do when they're in a straight line...
-		//I suppose forward is almost always up or down/left is horizontal; if it's not entirely upright...
-		//do forward check
+		glm::vec3 forward = GetFootForward(tracker, knee, hip);
 		rotation = glm::quatLookAt(forward, up);
 	}
 }

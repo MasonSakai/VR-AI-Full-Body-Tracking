@@ -168,7 +168,12 @@ void UpdateRealHardwarePositions() {
 			case vr::ETrackedDeviceClass::TrackedDeviceClass_HMD:
 				vr::VRSystem()->GetDeviceToAbsoluteTrackingPose(vr::TrackingUniverseStanding, 0, &trackedDevicePose, 1);
 				// print positiona data for the HMD.
-				inputEmulator.getDeviceOffsets(unDevice, data);
+				try {
+					inputEmulator.getDeviceOffsets(unDevice, data);
+				}
+				catch (const std::exception& exc) {
+					std::cerr << exc.what() << "\n";
+				}
 				poseMatrix = trackedDevicePose.mDeviceToAbsoluteTracking; // This matrix contains all positional and rotational data.
 				headPosReal = GetPositionGLM(trackedDevicePose.mDeviceToAbsoluteTracking) - GetPositionGLM(data.worldFromDriverTranslationOffset);
 				headRotReal = GetRotationGLM(trackedDevicePose.mDeviceToAbsoluteTracking) * glm::inverse(GetRotationGLM(data.worldFromDriverRotationOffset));
@@ -177,7 +182,12 @@ void UpdateRealHardwarePositions() {
 			case vr::ETrackedDeviceClass::TrackedDeviceClass_Controller:
 				vr::VRSystem()->GetControllerStateWithPose(vr::TrackingUniverseStanding, unDevice, &controllerState,
 					sizeof(controllerState), &trackedControllerPose);
-				inputEmulator.getDeviceOffsets(unDevice, data);
+				try {
+					inputEmulator.getDeviceOffsets(unDevice, data);
+				}
+				catch (const std::exception& exc) {
+					std::cerr << exc.what() << "\n";
+				}
 				poseMatrix = trackedControllerPose.mDeviceToAbsoluteTracking; // This matrix contains all positional and rotational data.
 				position = GetPositionGLM(trackedControllerPose.mDeviceToAbsoluteTracking) - GetPositionGLM(data.worldFromDriverTranslationOffset);
 				quaternion = GetRotationGLM(trackedControllerPose.mDeviceToAbsoluteTracking) * glm::inverse(GetRotationGLM(data.worldFromDriverRotationOffset));
@@ -264,7 +274,6 @@ void UpdateHardwarePositions() {
 }
 
 //vr::TrackedControllerRole_LeftHand
-//Fix in NoVR
 vr::VRControllerState_t GetControllerState(vr::ETrackedControllerRole controller) {
 	vr::VRControllerState_t buttons;
 	buttons.ulButtonPressed = 0;

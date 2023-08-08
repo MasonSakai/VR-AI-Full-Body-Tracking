@@ -18,11 +18,6 @@ using namespace vr;
 #include <iostream>
 
 
-//Idea, can I define functions for this class in the main program?
-//If so, I can use that to make callbacks
-//If not, interfaces (that's also a good/better idea)
-
-
 VRFloatingOverlay* s_pSharedVRController = NULL;
 
 
@@ -35,19 +30,34 @@ VRFloatingOverlay* VRFloatingOverlay::SharedInstance()
 	return s_pSharedVRController;
 }
 
-
-void VRFloatingOverlay::SetCameraState(QString text) {
-	cameraStateQueue.push(text);
+void VRFloatingOverlay::QueueText(QString text, float duration) {
+	FloatingOverlayText fot;
+	fot.text = text;
+	fot.duration = duration;
+	textQueue.push(fot);
 }
-void VRFloatingOverlay::UpdateCameraStateUI() { //turn into timeout based system
-	while (!cameraStateQueue.empty()) {
-		QString text = cameraStateQueue.front();
-		cameraStateQueue.pop();
-		((OverlayWidget*)m_pWidget)->SetText(text);
+std::chrono::high_resolution_clock::time_point durationStart;
+bool hasDuration = false;
+void VRFloatingOverlay::UpdateTextUI() {
+	if (!textQueue.empty()) {
+		std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+		if (hasDuration) {
+			std::chrono::duration<float> dt = now - durationStart;
+			if (dt.count() > textQueue.front().duration) {
+				textQueue.pop();
+				if (textQueue.empty()) {
+					hasDuration = false;
+					vr::VROverlay()->HideOverlay(m_ulOverlayHandle);
+					return;
+				}
+			}
+			else return;
+		}
+		durationStart = now;
+		((OverlayWidget*)m_pWidget)->SetText(textQueue.front().text);
+		hasDuration = true;
+		vr::VROverlay()->ShowOverlay(m_ulOverlayHandle);
 	}
-}
-void VRFloatingOverlay::ReturnCameraScreenshot(uint8_t index, uint8_t* data[]) {
-
 }
 
 
@@ -77,8 +87,6 @@ VRFloatingOverlay::VRFloatingOverlay()
 	std::cout << "Set Widget\n";
 	SetWidget(pOverlayWidget);
 
-	//vr::VROverlay()->ShowOverlay(m_ulOverlayHandle);
-
 	std::cout << "Started\n";
 }
 
@@ -102,9 +110,10 @@ bool VRFloatingOverlay::Init()
 		m_strName = arguments.at(nNameArg + 1);
 	}
 
-	QSurfaceFormat format;
+	QSurfaceFormat format = QSurfaceFormat::defaultFormat();
 	format.setMajorVersion(4);
 	format.setMinorVersion(1);
+	format.setSamples(4);
 	format.setProfile(QSurfaceFormat::CompatibilityProfile);
 
 	m_pOpenGLContext = new QOpenGLContext();
@@ -211,7 +220,6 @@ void VRFloatingOverlay::OnTimeoutPumpEvents()
 		{
 		case vr::VREvent_OverlayShown:
 		{
-			//UpdateCameraStateUI();
 			m_pWidget->repaint();
 		}
 		break;
@@ -220,6 +228,10 @@ void VRFloatingOverlay::OnTimeoutPumpEvents()
 			//QApplication::exit();
 			break;
 		}
+	}
+	UpdateTextUI();
+	if (vr::VROverlay()->IsOverlayVisible(m_ulOverlayHandle)) {
+		OnSceneChanged(QList<QRectF>());
 	}
 
 }

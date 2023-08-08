@@ -47,9 +47,7 @@ void UpdateHardwareOffset() {
 
 			if (trackedDeviceClass < 3 && trackedDeviceClass > 0) {
 				inputEmulator.setWorldFromDriverTranslationOffset(unDevice, offset, false);
-
 			}
-
 		}
 	}
 }
@@ -85,7 +83,6 @@ void CheckPlayspaceMover() {
 			pmFlags &= ~PlayspaceMoverFlags::Moving;
 			pmFlags &= ~PlayspaceMoverFlags::ControllerRight;
 			buttonInputListener.pop();
-			std::cout << "Playspace Mover: Up\n" << std::flush;
 		}
 		else {
 			if (pmFlags & PlayspaceMoverFlags::DoubleButtonReset) {
@@ -95,36 +92,44 @@ void CheckPlayspaceMover() {
 					UpdateHardwareOffset();
 					pmFlags &= ~PlayspaceMoverFlags::Moving;
 					pmFlags &= ~PlayspaceMoverFlags::ControllerRight;
-					buttonInputListener.pop();
+					pmFlags |= PlayspaceMoverFlags::DoubleButtonResetting;
 					return;
 				}
 			}
-			glm::vec3 controllerPos = (pmFlags & PlayspaceMoverFlags::ControllerRight) ? rightHandPosReal : leftHandPosReal; //stop the gittering here
+			glm::vec3 controllerPos = (pmFlags & PlayspaceMoverFlags::ControllerRight) ? rightHandPosReal : leftHandPosReal;
 			glm::vec3 delta = controllerPos - pmStartControllerPos;
 			pmOffset = pmOffsetStart - delta;
 			UpdateHardwareOffset();
 		}
 		return;
 	}
+	else if (pmFlags & PlayspaceMoverFlags::DoubleButtonResetting) {
+		uint64_t buttons = GetControllerState(vr::TrackedControllerRole_LeftHand).ulButtonPressed;
+		if (buttons & pmButtonMask) return;
+		buttons = GetControllerState(vr::TrackedControllerRole_RightHand).ulButtonPressed;
+		if (buttons & pmButtonMask) return;
+		pmFlags &= ~PlayspaceMoverFlags::DoubleButtonResetting;
+		buttonInputListener.pop();
+	}
 	else if (buttonInputListener.empty()) {
 		uint64_t buttons = GetControllerState(vr::TrackedControllerRole_LeftHand).ulButtonPressed;
-		if (buttons == pmButtonMask) {
+		if (buttons & pmButtonMask) {
+			buttons = GetControllerState(vr::TrackedControllerRole_RightHand).ulButtonPressed;
+			if (buttons & pmButtonMask) return;
 			buttonInputListener.push(0);
 			pmFlags |= PlayspaceMoverFlags::Moving;
 			pmFlags &= ~PlayspaceMoverFlags::ControllerRight;
 			pmStartControllerPos = leftHandPosReal;
 			pmOffsetStart = pmOffset;
-			std::cout << "Playspace Mover: Left Down\n" << std::flush;
 			return;
 		}
 		buttons = GetControllerState(vr::TrackedControllerRole_RightHand).ulButtonPressed;
-		if (buttons == pmButtonMask) {
+		if (buttons & pmButtonMask) {
 			buttonInputListener.push(0);
 			pmFlags |= PlayspaceMoverFlags::Moving;
 			pmFlags |= PlayspaceMoverFlags::ControllerRight;
 			pmStartControllerPos = rightHandPosReal;
 			pmOffsetStart = pmOffset;
-			std::cout << "Playspace Mover: Right Down\n" << std::flush;
 			return;
 		}
 	}

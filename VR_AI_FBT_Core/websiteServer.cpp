@@ -131,7 +131,7 @@ bool AIRemoteServer::StartServer() {
 	server = new QHttpServer(this);
 
 	server->route("/", QHttpServerRequest::Method::Get, defaultHandler);
-	server->route("/config.json", configHandler);
+	server->route("/config", configHandler);
 	server->route("/poseData", onPoseData);
 	server->route("/cameraSize", onGetSize);
 	server->route("/connect", onCameraConnect);

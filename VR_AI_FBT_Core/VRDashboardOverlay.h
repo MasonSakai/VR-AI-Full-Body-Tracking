@@ -49,7 +49,8 @@ public:
 
 
 	void SetCameraState(uint8_t index, CameraState state);
-	void ReturnCameraScreenshot(uint8_t index, uint8_t* data[]);
+
+	void UpdateTrackersSeen();
 
 public slots:
 	void OnSceneChanged(const QList<QRectF>&);

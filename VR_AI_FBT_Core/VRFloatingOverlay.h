@@ -19,6 +19,11 @@
 #include <QOffscreenSurface>
 class QOpenGLFramebufferObject;
 
+struct FloatingOverlayText {
+	QString text;
+	float duration = .5f;
+};
+
 class VRFloatingOverlay : public QObject
 {
 	Q_OBJECT
@@ -39,8 +44,7 @@ public:
 	void SetWidget(QWidget* pWidget);
 
 
-	void SetCameraState(QString text);
-	void ReturnCameraScreenshot(uint8_t index, uint8_t* data[]);
+	void QueueText(QString text, float duration);
 
 public slots:
 	void OnSceneChanged(const QList<QRectF>&);
@@ -50,7 +54,7 @@ protected:
 
 private:
 
-	void UpdateCameraStateUI();
+	void UpdateTextUI();
 
 	vr::TrackedDevicePose_t m_rTrackedDevicePose[vr::k_unMaxTrackedDeviceCount];
 	QString m_strVRDriver;
@@ -71,7 +75,7 @@ private:
 
 	QTimer* m_pPumpEventsTimer;
 
-	std::queue<QString> cameraStateQueue;
+	std::queue<FloatingOverlayText> textQueue;
 
 	// the widget we're drawing into the texture
 	QWidget* m_pWidget;

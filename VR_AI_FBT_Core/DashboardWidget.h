@@ -31,6 +31,7 @@ public:
 	void SetCameraState(uint8_t index, CameraState state);
 	void ReturnCameraScreenshot(uint8_t index, uint8_t* data[]);
 
+	bool SetLabel(QString label, QString text);
 
 private slots:
 	void on_btnRecenter_clicked();
@@ -38,6 +39,13 @@ private slots:
 	void on_btnResetPM_clicked();
 	void on_cbxEnablePM_clicked(bool checked);
 	void on_btnQuit_clicked();
+
+	void on_cbxButtonOcAX_clicked(bool checked);
+	void on_cbxButtonOcBY_clicked(bool checked);
+	void on_cbxButtonOcTrig_clicked(bool checked);
+	void on_cbxButtonOcAXpm_clicked(bool checked);
+	void on_cbxButtonOcBYpm_clicked(bool checked);
+	void on_cbxButtonOcTrigpm_clicked(bool checked);
 
 private:
 	Ui::DashboardWidgetClass ui;
@@ -49,7 +57,6 @@ private:
 	QPushButton* cameraCalibrateButtons[16];
 	void CreateCameraLabel(uint8_t index);
 
-	void InitInputControls();
 	void InitTrackerDisplays();
 	void InitConfig();
 };

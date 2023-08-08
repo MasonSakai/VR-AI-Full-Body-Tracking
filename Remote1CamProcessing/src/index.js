@@ -110,7 +110,7 @@ function applyConfigChage() {
 btnApply.onclick = () => {
 	try {
 		applyConfigChage();
-		putAsync("config.json", config)
+		putAsync("config", config)
 			.then((e) => {
 				switch (e.status) {
 					case 200:
@@ -134,7 +134,7 @@ btnReset.onclick = () => {
 	try {
 		configUpdate = DefaultConfig;
 		if (applyConfigChage()) {
-			putAsync("config.json", config)
+			putAsync("config", config)
 				.then((e) => {
 					switch (e.status) {
 						case 200:
@@ -318,7 +318,7 @@ async function startAILoop() {
 async function GetConfig() {
 	var response;
 	try {
-		response = await fetch("config.json");
+		response = await fetch("config");
 	} catch (err) {
 		console.error(err);
 		nodeSocket.emit("initialized", "no-config-404");

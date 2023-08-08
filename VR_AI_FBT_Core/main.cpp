@@ -31,7 +31,7 @@ void MainLoop() {
 	uint32_t currentFrame = 0;
 
 	while (active) {
-		/*if (vr::VRCompositor() != NULL) {
+		if (vr::VRCompositor() != NULL) {
 			vr::Compositor_FrameTiming t;
 			t.m_nSize = sizeof(vr::Compositor_FrameTiming);
 			bool hasFrame = vr::VRCompositor()->GetFrameTiming(&t, 0);
@@ -42,16 +42,18 @@ void MainLoop() {
 			if ((hasFrame && currentFrame != t.m_nFrameIndex) || (hasFrame && t.m_nNumFramePresents != numFramePresents)) {
 				currentFrame = t.m_nFrameIndex;
 				numFramePresents = t.m_nNumFramePresents;
-				lastTime = currentTime;*/
+				lastTime = currentTime;
 
 				UpdateHardwarePositions();
 				UpdateRealHardwarePositions();
 
-				if (pmFlags & PlayspaceMoverFlags::Active) { 
+				if (pmFlags & PlayspaceMoverFlags::Active) {
 					//move pm to another thread to make more smooth!
 					//and figure out why it has trouble activating
 					CheckPlayspaceMover();
 				}
+
+				VRDashboardOverlay::SharedInstance()->UpdateTrackersSeen();
 
 				//Do Math
 				for (i = 0; i < 17; i++) {
@@ -89,16 +91,13 @@ void MainLoop() {
 						}
 					}
 				}
-				/*
-				// Sleep for just under 1/90th of a second, so that maybe the next frame will be available.
-				std::this_thread::sleep_for(std::chrono::microseconds(1111));
+				std::this_thread::sleep_for(std::chrono::microseconds(10000));
 			}
 			else {
 				// Still waiting on the next frame, wait less this time.
 				std::this_thread::sleep_for(std::chrono::microseconds(1111));
 			}
-		}*/
-
+		}
 	}
 }
 
@@ -177,7 +176,6 @@ int main(int argc, char* argv[])
 	HandleArgs();
 	SetConsoleCtrlHandler((PHANDLER_ROUTINE)EndProgram, true);
 
-	//temp
 #ifdef DEBUGDIRECTORY
 	BaseDirectory.append("C:\\VSProjects\\VR-AI-Full-Body-Tracking\\Remote1CamProcessing\\");
 #endif
