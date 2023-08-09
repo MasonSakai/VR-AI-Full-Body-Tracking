@@ -1,6 +1,8 @@
 # VR-AI-Full-Body-Tracking
 An AI driven, camera based Full Body tracking solution for VR systems
 
+_**CURRENTLY NOT COMPLETE, FIRST RELEASE VERY SOON**_
+
 # Simple explaination
 This program, using OpenVR Input Emulator, can create virtual trackers and using cameras placed around the room it can mimic real, vive full body trackers.
 Each camera has an associated browser page running a tensorflow pose detection model (AI that can tell where your body is), and the more cameras at different angles the better.
