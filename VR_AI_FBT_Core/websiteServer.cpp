@@ -121,10 +121,12 @@ void onGetSize(const QHttpServerRequest& req, QHttpServerResponder&& res) {
 void onCameraConnect(const QHttpServerRequest& req, QHttpServerResponder&& res) {
 	int index = req.body().toInt();
 	Camera::OnConnect(index);
+	VRFloatingOverlay::SharedInstance()->QueueText("Camera Connected", 1.5f);
 }
 void onCameraStart(const QHttpServerRequest& req, QHttpServerResponder&& res) {
 	int index = req.body().toInt();
 	Camera::OnStart(index);
+	VRFloatingOverlay::SharedInstance()->QueueText("Camera Awaiting Calibration", 1.5f);
 }
 
 bool AIRemoteServer::StartServer() {

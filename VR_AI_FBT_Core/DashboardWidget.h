@@ -10,6 +10,7 @@
 #include "PlayspaceMover.h"
 #include "vrUtil.h"
 #include "CameraManager.h"
+#include "OverlayManager.h"
 
 enum CameraState {
 	Camera_Inactive,
@@ -29,16 +30,19 @@ public:
 	~DashboardWidget();
 
 	void SetCameraState(uint8_t index, CameraState state);
-	void ReturnCameraScreenshot(uint8_t index, uint8_t* data[]);
 
 	bool SetLabel(QString label, QString text);
 
+	void DoneRecenter();
+
 private slots:
-	void on_btnRecenter_clicked();
 	void on_btnCalibrateTrackers_clicked();
+
+	void on_btnQuit_clicked();
+
 	void on_btnResetPM_clicked();
 	void on_cbxEnablePM_clicked(bool checked);
-	void on_btnQuit_clicked();
+	void on_cbxPMButtonRecenter_clicked(bool checked);
 
 	void on_cbxButtonOcAX_clicked(bool checked);
 	void on_cbxButtonOcBY_clicked(bool checked);
@@ -46,6 +50,15 @@ private slots:
 	void on_cbxButtonOcAXpm_clicked(bool checked);
 	void on_cbxButtonOcBYpm_clicked(bool checked);
 	void on_cbxButtonOcTrigpm_clicked(bool checked);
+
+	void on_cbxTrackerAnkle_clicked(bool checked);
+	void on_cbxTrackerKnee_clicked(bool checked);
+	void on_cbxTrackerHip_clicked(bool checked);
+	void on_cbxTrackerShoulder_clicked(bool checked);
+	void on_cbxTrackerElbow_clicked(bool checked);
+
+	void on_btnRecenter_clicked();
+	void on_btnShowCamera_clicked();
 
 private:
 	Ui::DashboardWidgetClass ui;
@@ -55,7 +68,10 @@ private:
 	QLabel* cameraNameLabels[16];
 	QLabel* cameraStateLabels[16];
 	QPushButton* cameraCalibrateButtons[16];
+	QLabel* lblRecenter;
 	void CreateCameraLabel(uint8_t index);
+
+	bool recentering = false;
 
 	void InitTrackerDisplays();
 	void InitConfig();

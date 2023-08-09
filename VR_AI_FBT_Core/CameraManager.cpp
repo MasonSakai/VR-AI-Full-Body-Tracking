@@ -18,7 +18,7 @@ void CalibrationThreadFunct() {
 	while (!calibrationQueue.empty()) {
 		camera = calibrationQueue.front();
 		VRDashboardOverlay::SharedInstance()->SetCameraState(camera, CameraState::Camera_Calibrating);
-		VRFloatingOverlay::SharedInstance()->QueueText(QString("Begining Calibration of camera ").append(QString::number(camera)), .75f);
+		VRFloatingOverlay::SharedInstance()->QueueText(QString("Begining Calibration of camera ").append(std::to_string(camera)), .75f);
 		std::cout << "Begining Calibration of camera " << (int)camera << std::endl;
 
 		std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -144,7 +144,7 @@ void CalibrationThreadFunct() {
 
 		VRDashboardOverlay::SharedInstance()->SetCameraState(camera, CameraState::Camera_Active);
 		std::cout << "Done Calibrating Camera " << (int)camera << std::endl << std::flush;
-		VRFloatingOverlay::SharedInstance()->QueueText(QString("Done Calibrating Camera ").append(QString::number(camera)), .75f);
+		VRFloatingOverlay::SharedInstance()->QueueText(QString("Done Calibrating Camera ").append(std::to_string(camera)), .75f);
 		calibrationQueue.pop();
 		while (!calibrationQueue.empty() && calibrationQueue.front() == camera) calibrationQueue.pop();
 	}
@@ -199,11 +199,29 @@ void OnCameraDisconnect() {
 	}
 }
 
-void OnRecenter() {
+void OnRecenter(uint8_t index) {
 	//record position and orientation of one camera
 	//recalibrate said camera
 	//use delta position and orientation to adjust the rest of the cameras
 	//can only be used to recenter
+	glm::vec3 startPos = cameras[index].position;
+	glm::quat startRot = cameras[index].rotation;
+	cameras[index].active = false;
+	CalibrateCamera(index);
+
+	while (!cameras[index].active) {}
+
+	glm::vec3 deltaPos = cameras[index].position - startPos;
+	glm::quat deltaRot = cameras[index].rotation * glm::inverse(startRot);
+	
+	for (int i = 0; i < 16; i++) {
+		if (i == index) continue;
+		if (cameras[i].active) {
+			cameras->position += deltaPos;
+			cameras->rotation *= deltaRot;
+		}
+	}
+	VRDashboardOverlay::SharedInstance()->OnRecenterComplete();
 }
 void RecalibrateVirtualControllers() {
 	std::cout << "Queuing Calib...\n";

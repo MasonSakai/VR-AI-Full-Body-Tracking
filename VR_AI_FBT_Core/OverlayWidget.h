@@ -15,6 +15,7 @@ public:
 	~OverlayWidget();
 
 	void SetLine(uint8_t index, QString text);
+	void ClearLine(uint8_t index);
 	void SetText(QString text);
 
 private:

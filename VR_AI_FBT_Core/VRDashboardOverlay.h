@@ -52,6 +52,8 @@ public:
 
 	void UpdateTrackersSeen();
 
+	void OnRecenterComplete();
+
 public slots:
 	void OnSceneChanged(const QList<QRectF>&);
 	void OnTimeoutPumpEvents();

@@ -55,8 +55,12 @@ void VRDashboardOverlay::UpdateTrackersSeen() {
 	for (int i = 5; i < 17; i++) {
 		QString name = "lbl_";
 		name.append(PoseNames[i]);
-		widget->SetLabel(name, QString::number(trackers[i].getNumberOfCams()));
+		widget->SetLabel(name, QString::fromStdString(std::to_string(trackers[i].getNumberOfCams())));
 	}
+}
+
+void VRDashboardOverlay::OnRecenterComplete() {
+	((DashboardWidget*)m_pWidget)->DoneRecenter();
 }
 
 

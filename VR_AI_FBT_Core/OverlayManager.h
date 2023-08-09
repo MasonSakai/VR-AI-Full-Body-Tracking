@@ -25,4 +25,4 @@ void DestroyOverlays();
 void OverlayOnClose();
 
 void CreateCameraOverlay(int index);
-void ShowCameraOverlay(int index);
+void ShowCameraOverlay(int index, float timeout = 15);

@@ -140,22 +140,4 @@ enum Poses : uint8_t {
 	right_ankle
 };
 
-const bool PoseTrackers[17] = {
-	false,	//       nose
-	false,	// left  eye
-	false,	// right eye
-	false,	// left  ear
-	false,	// right ear
-	false,	// left  shoulder
-	false,	// right shoulder
-	false,	// left  elbow
-	false,	// right elbow
-	false,	// left  wrist
-	false,	// right wrist
-	false,	// left  hip
-	true,	// right hip
-	false,	// left  knee
-	false,	// right knee
-	true,	// left  ankle
-	true	// right ankle
-};
+extern bool PoseTrackers[];

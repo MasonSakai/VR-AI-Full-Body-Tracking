@@ -15,6 +15,26 @@ ankleToSole, footLen, maxAnkle;
 Camera cameras[16];
 PoseTracker trackers[17];
 
+bool PoseTrackers[17] = {
+	false,	//       nose
+	false,	// left  eye
+	false,	// right eye
+	false,	// left  ear
+	false,	// right ear
+	false,	// left  shoulder
+	false,	// right shoulder
+	false,	// left  elbow
+	false,	// right elbow
+	false,	// left  wrist
+	false,	// right wrist
+	false,	// left  hip
+	true,	// right hip
+	false,	// left  knee
+	false,	// right knee
+	true,	// left  ankle
+	true	// right ankle
+};
+
 void PoseTracker::InitTrackers() {
 	for (uint8_t i = 0; i < 17; i++) {
 		trackers[i].Init(i);

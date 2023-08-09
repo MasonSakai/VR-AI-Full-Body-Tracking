@@ -16,7 +16,7 @@ const float camWidth = .1f, camColorA = .25f;
 struct CamDisplayTimeout {
 	vr::VROverlayHandle_t handle;
 	std::chrono::system_clock::time_point startTime;
-	float timeout = 15;
+	float timeout;
 };
 std::queue<CamDisplayTimeout> CameraDisplayTimeoutQueue;
 std::thread CameraDisplayTimeoutThread;
@@ -89,15 +89,16 @@ void CreateCameraOverlay(int index) {
 	VROverlay->SetOverlayWidthInMeters(cameraOverlays[index], camWidth);
 	VROverlay->HideOverlay(cameraOverlays[index]);
 }
-void ShowCameraOverlay(int index) {
+void ShowCameraOverlay(int index, float timeout) {
 	vr::HmdMatrix34_t matrix = ConvertMatrix(cameras[index].transform, cameras[index].position);
 	VROverlay->SetOverlayTransformAbsolute(cameraOverlays[index], vr::ETrackingUniverseOrigin::TrackingUniverseStanding, &matrix);
 	VROverlay->ShowOverlay(cameraOverlays[index]);
 
-	CamDisplayTimeout timeout;
-	timeout.handle = cameraOverlays[index];
-	timeout.startTime = std::chrono::system_clock::now();
-	CameraDisplayTimeoutQueue.push(timeout);
+	CamDisplayTimeout timeoutStruct;
+	timeoutStruct.handle = cameraOverlays[index];
+	timeoutStruct.startTime = std::chrono::system_clock::now();
+	timeoutStruct.timeout = timeout;
+	CameraDisplayTimeoutQueue.push(timeoutStruct);
 	if (!cameraThreadActive)
 		CameraDisplayTimeoutThread = std::thread(CameraTimeoutThread);
 }

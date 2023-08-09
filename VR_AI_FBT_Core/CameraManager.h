@@ -14,5 +14,5 @@ void RequestAddCamera();
 void OnCameraStop();
 void OnCameraDisconnect();
 
-void OnRecenter();
+void OnRecenter(uint8_t index);
 void RecalibrateVirtualControllers();
