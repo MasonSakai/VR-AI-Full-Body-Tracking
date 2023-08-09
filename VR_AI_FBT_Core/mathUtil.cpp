@@ -74,6 +74,13 @@ glm::vec3 project(glm::vec3 v1, glm::vec3 v2) {
 glm::vec2 project(glm::vec2 v1, glm::vec2 v2) {
 	return glm::dot(v1, v2) * v2 / glm::length2(v2);
 }
+glm::quat project(glm::quat q, glm::vec3 v) {
+	glm::vec3 ra(q.x, q.y, q.z);
+	glm::vec3 p = project(ra, v);
+	glm::quat twist(p.x, p.y, p.z, q.w);
+	twist = glm::normalize(twist);
+	return q * glm::conjugate(twist);
+}
 glm::vec3 reject(glm::vec3 v1, glm::vec3 v2) {
 	return v1 - project(v1, v2);
 }

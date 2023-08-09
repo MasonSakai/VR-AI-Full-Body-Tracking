@@ -203,7 +203,6 @@ void OnRecenter(uint8_t index) {
 	//record position and orientation of one camera
 	//recalibrate said camera
 	//use delta position and orientation to adjust the rest of the cameras
-	//can only be used to recenter
 	glm::vec3 startPos = cameras[index].position;
 	glm::quat startRot = cameras[index].rotation;
 	cameras[index].active = false;
@@ -212,13 +211,16 @@ void OnRecenter(uint8_t index) {
 	while (!cameras[index].active) {}
 
 	glm::vec3 deltaPos = cameras[index].position - startPos;
-	glm::quat deltaRot = cameras[index].rotation * glm::inverse(startRot);
+	glm::quat deltaRot = project(cameras[index].rotation * glm::inverse(startRot), glm::vec3(0, 1, 0));
 	
+	glm::vec3 startDeltaPos;
+
 	for (int i = 0; i < 16; i++) {
 		if (i == index) continue;
 		if (cameras[i].active) {
-			cameras->position += deltaPos;
-			cameras->rotation *= deltaRot;
+			startDeltaPos = cameras[i].position - startPos;
+			cameras[i].position = cameras[index].position + startDeltaPos * deltaRot;
+			cameras[i].rotation *= deltaRot;
 		}
 	}
 	VRDashboardOverlay::SharedInstance()->OnRecenterComplete();

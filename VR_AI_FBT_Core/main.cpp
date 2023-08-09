@@ -114,22 +114,19 @@ void endProgram() {
 	active = false;
 	calibrating = false;
 	OverlayOnClose();
-	
+
+	QJsonObject configObject = config.object();
+	configObject.insert("button", GetConfigFromButtonMask(inputButtonMask));
+	config.setObject(configObject);
+
 	if(MainThread.joinable())
 		MainThread.join();
-	if (pmFlags & PlayspaceMoverFlags::Active) {
-		pmOffset = glm::vec3();
-		DisableHardwareOffset();
-	}
+	ExitPlayspaceMover();
 
 	if (calibrating && CalibrationThread != nullptr && CalibrationThread->joinable())
 		CalibrationThread->join();
 
-	for (int i = 0; i < 17; i++) {
-		if (PoseTrackers[i]) {
-			deleteVirtualDevice(trackerIDs[i]);
-		}
-	}
+	PoseTracker::Exit();
 
 	inputEmulator.disconnect();
 	DisconnectFromVRRuntime();
@@ -180,24 +177,15 @@ int main(int argc, char* argv[])
 	BaseDirectory.append("C:\\VSProjects\\VR-AI-Full-Body-Tracking\\Remote1CamProcessing\\");
 #endif
 
-	if (!ReadConfig()) {
-		std::cout << "Could Not Load Config...\n";
-		QJsonObject json;
-		json.insert("port", 2674);
-		json.insert("windowConfigs", QJsonArray());
-		config.setObject(json);
-		WriteConfig();
-	}
+	if (!ReadConfig()) InitConfig();
 
 	StartVR();
-	if (pmFlags & PlayspaceMoverFlags::Active) {
-		EnableHardwareOffset();
-	}
+
+	InitPlayspaceMover();
 	PoseTracker::InitTrackers();
+	inputButtonMask = GetButtonMaskFromConfig(config.object()["buttons"].toObject());
 
 	GetOverlays();
-
-	GetTrackers();
 
 	//check if it works without the loop
 	MainThread = std::thread(MainLoop);

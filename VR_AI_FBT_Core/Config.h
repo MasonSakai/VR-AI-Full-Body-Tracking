@@ -13,3 +13,4 @@ void WriteFile(QString dir, QByteArray data);
 
 bool ReadConfig();
 void WriteConfig();
+void InitConfig();

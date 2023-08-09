@@ -16,7 +16,6 @@ DashboardWidget::DashboardWidget(QWidget* parent)
 	lblRecenter = findChild<QLabel*>("lblRecenter");
 	lblRecenter->setVisible(false);
 
-	InitTrackerDisplays();
 	InitConfig();
 }
 
@@ -178,6 +177,7 @@ void DashboardWidget::DoneRecenter() {
 		if (camerasWithManagers[i])
 			cameraCalibrateButtons[i]->setEnabled(buttonEnabledtmp[i]);
 	}
+	on_btnShowCamera_clicked();
 
 }
 void DashboardWidget::on_btnShowCamera_clicked() {
@@ -196,11 +196,31 @@ bool DashboardWidget::SetLabel(QString labelName, QString text) {
 	return true;
 }
 
-void DashboardWidget::InitTrackerDisplays() {
-
-}
 void DashboardWidget::InitConfig() {
+	QJsonObject pmConfig = config["PlayspaceMover"].toObject();
+	QJsonObject pmButtons = pmConfig["buttons"].toObject();
+	QJsonObject buttonConfig = config["buttons"].toObject();
+	QJsonObject trackerConfig = config["trackers"].toObject();
 
+	//Set buttons used
+	findChild<QCheckBox*>("cbxButtonOcAX")->setChecked(buttonConfig["oculusax"].toBool());
+	findChild<QCheckBox*>("cbxButtonOcAXpm")->setChecked(pmButtons["oculusax"].toBool());
+	findChild<QCheckBox*>("cbxButtonOcBY")->setChecked(buttonConfig["oculusby"].toBool());
+	findChild<QCheckBox*>("cbxButtonOcBYpm")->setChecked(pmButtons["oculusby"].toBool());
+	findChild<QCheckBox*>("cbxButtonOcTrig")->setChecked(buttonConfig["oculustrigger"].toBool());
+	findChild<QCheckBox*>("cbxButtonOcTrigpm")->setChecked(pmButtons["oculustrigger"].toBool());
+	findChild<QCheckBox*>("cbxButtonOcBum")->setChecked(buttonConfig["oculusbumper"].toBool());
+	findChild<QCheckBox*>("cbxButtonOcBumpm")->setChecked(pmButtons["oculusbumper"].toBool());
+	//set pm settings
+	findChild<QCheckBox*>("cbxEnablePM")->setChecked(pmConfig["enabled"].toBool());
+	findChild<QCheckBox*>("cbxPMButtonRecenter")->setChecked(pmConfig["doubleButtonReset"].toBool());
+	//set tracker settings
+	findChild<QCheckBox*>("cbxTrackerAnkle")->setChecked(trackerConfig["ankle"].toBool());
+	findChild<QCheckBox*>("cbxTrackerKnee")->setChecked(trackerConfig["knee"].toBool());
+	findChild<QCheckBox*>("cbxTrackerHip")->setChecked(trackerConfig["hip"].toBool());
+	findChild<QCheckBox*>("cbxTrackerShoulder")->setChecked(trackerConfig["shoulder"].toBool());
+	findChild<QCheckBox*>("cbxTrackerElbow")->setChecked(trackerConfig["elbow"].toBool());
+	
 }
 void DashboardWidget::SetCameraState(uint8_t index, CameraState state) {
 	if (!camerasWithManagers[index])

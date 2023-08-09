@@ -45,6 +45,9 @@ extern std::queue<uint8_t> buttonInputListener;
 extern uint64_t inputButtonMask;
 extern uint64_t pmButtonMask;
 
+uint64_t GetButtonMaskFromConfig(QJsonObject config);
+QJsonObject GetConfigFromButtonMask(uint64_t mask);
+
 bool findTrackers();
 
 uint32_t createTracker(const char* deviceName);

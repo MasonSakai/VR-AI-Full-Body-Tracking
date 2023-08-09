@@ -11,5 +11,28 @@
 			"autostart": false,
 			"confidenceThreshold": 0.3
 		}
-	]
+	],
+	"PlayspaceMover": {
+		"enabled": true,
+		"doubleButtonReset": true,
+		"buttons": {
+			"oculusax": false,
+			"oculusby": true,
+			"oculustrigger": false,
+			"oculusbumper": false
+		}
+	},
+	"trackers": {
+		"ankle": true,
+		"knee": false,
+		"hip": true,
+		"shoulder": false,
+		"elbow": false
+	},
+	"buttons": {
+		"oculusax": true,
+		"oculusby": true,
+		"oculustrigger": false,
+		"oculusbumper": false
+	}
 }

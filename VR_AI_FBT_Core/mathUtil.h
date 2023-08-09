@@ -22,6 +22,7 @@ glm::vec2 lerp(glm::vec2 v1, glm::vec2 v2, float t);
 //Projects v1 onto v2
 glm::vec3 project(glm::vec3 v1, glm::vec3 v2);
 glm::vec2 project(glm::vec2 v1, glm::vec2 v2);
+glm::quat project(glm::quat q, glm::vec3 v);
 glm::vec3 reject(glm::vec3 v1, glm::vec3 v2);
 glm::vec2 reject(glm::vec2 v1, glm::vec2 v2);
 

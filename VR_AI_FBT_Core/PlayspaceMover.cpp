@@ -3,6 +3,32 @@
 glm::vec3 pmStartControllerPos, pmOffset, pmOffsetStart;
 uint8_t pmFlags = PlayspaceMoverFlags::Active | PlayspaceMoverFlags::DoubleButtonReset;
 
+void InitPlayspaceMover() {
+	QJsonObject pmConfig = config.object()["PlayspaceMover"].toObject();
+	pmFlags = PlayspaceMoverFlags::None;
+	if (pmConfig["enabled"].toBool()) pmFlags |= PlayspaceMoverFlags::Active;
+	if (pmConfig["doubleButtonReset"].toBool()) pmFlags |= PlayspaceMoverFlags::DoubleButtonReset;
+	pmButtonMask = GetButtonMaskFromConfig(pmConfig["buttons"].toObject());
+
+	if (pmFlags & PlayspaceMoverFlags::Active) {
+		EnableHardwareOffset();
+	}
+}
+void ExitPlayspaceMover() {
+	QJsonObject configObj = config.object();
+	QJsonObject pmConfig = configObj["PlayspaceMover"].toObject();
+	pmConfig.insert("enabled", (bool)(pmFlags & PlayspaceMoverFlags::Active));
+	pmConfig.insert("doubleButtonReset", (bool)(pmFlags & PlayspaceMoverFlags::DoubleButtonReset));
+	pmConfig.insert("buttons", GetConfigFromButtonMask(pmButtonMask));
+	configObj.insert("PlayspaceMover", pmConfig);
+	config.setObject(configObj);
+
+	if (pmFlags & PlayspaceMoverFlags::Active) {
+		pmOffset = glm::vec3();
+		DisableHardwareOffset();
+	}
+}
+
 void EnableHardwareOffset() {
 	vr::HmdVector3d_t offset;
 	offset.v[0] = 0;

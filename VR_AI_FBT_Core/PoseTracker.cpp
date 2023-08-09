@@ -36,11 +36,42 @@ bool PoseTrackers[17] = {
 };
 
 void PoseTracker::InitTrackers() {
+	QJsonObject trackerConfig = config.object()["trackers"].toObject();
+	PoseTrackers[Poses::left_ankle] = trackerConfig["ankle"].toBool();
+	PoseTrackers[Poses::right_ankle] = PoseTrackers[Poses::left_ankle];
+	PoseTrackers[Poses::left_knee] = trackerConfig["knee"].toBool();
+	PoseTrackers[Poses::right_knee] = PoseTrackers[Poses::left_knee];
+	PoseTrackers[Poses::right_hip] = trackerConfig["hip"].toBool();
+	PoseTrackers[Poses::left_shoulder] = trackerConfig["shoulder"].toBool();
+	PoseTrackers[Poses::right_shoulder] = PoseTrackers[Poses::left_shoulder];
+	PoseTrackers[Poses::left_elbow] = trackerConfig["elbow"].toBool();
+	PoseTrackers[Poses::right_elbow] = PoseTrackers[Poses::left_elbow];
+
 	for (uint8_t i = 0; i < 17; i++) {
 		trackers[i].Init(i);
 	}
 	for (uint8_t i = 0; i < 16; i++) {
 		cameras[i].Init(i);
+	}
+
+	GetTrackers();
+}
+
+void PoseTracker::Exit() {
+	QJsonObject configObj = config.object();
+	QJsonObject trackerConfig = configObj["trackers"].toObject();
+	trackerConfig.insert("ankle", PoseTrackers[Poses::left_ankle]);
+	trackerConfig.insert("knee", PoseTrackers[Poses::left_knee]);
+	trackerConfig.insert("hip", PoseTrackers[Poses::right_hip]);
+	trackerConfig.insert("shoulder", PoseTrackers[Poses::left_shoulder]);
+	trackerConfig.insert("elbow", PoseTrackers[Poses::left_elbow]);
+	configObj.insert("trackers", trackerConfig);
+	config.setObject(configObj);
+
+	for (int i = 0; i < 17; i++) {
+		if (PoseTrackers[i]) {
+			deleteVirtualDevice(trackerIDs[i]);
+		}
 	}
 }
 

@@ -11,6 +11,7 @@
 #include "vrUtil.h"
 #include "CameraManager.h"
 #include "OverlayManager.h"
+#include "Config.h"
 
 enum CameraState {
 	Camera_Inactive,
@@ -73,7 +74,6 @@ private:
 
 	bool recentering = false;
 
-	void InitTrackerDisplays();
 	void InitConfig();
 };
 

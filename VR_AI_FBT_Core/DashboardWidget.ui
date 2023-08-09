@@ -85,46 +85,15 @@
       <rect>
        <x>0</x>
        <y>10</y>
-       <width>141</width>
-       <height>84</height>
+       <width>144</width>
+       <height>111</height>
       </rect>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0">
-       <widget class="QLabel" name="lblPMButtons">
-        <property name="toolTip">
-         <string>This is used for playspace mover, calibrating, or any other button inputs</string>
-        </property>
-        <property name="text">
-         <string>Buttons To Use</string>
-        </property>
-       </widget>
-      </item>
       <item row="2" column="0">
        <widget class="QLabel" name="lblButtonOcBY">
         <property name="text">
          <string>Oculus B/Y</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QCheckBox" name="cbxButtonOcTrigpm">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="lblButtonOcTrig">
-        <property name="text">
-         <string>Oculus Trigger</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLabel" name="lblButtonPM">
-        <property name="text">
-         <string>PM</string>
         </property>
        </widget>
       </item>
@@ -135,8 +104,77 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QCheckBox" name="cbxButtonOcAXpm">
+      <item row="4" column="0">
+       <widget class="QLabel" name="lblButtonOcBum">
+        <property name="text">
+         <string>Oculus Bumper</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="lblButtonOcTrig">
+        <property name="text">
+         <string>Oculus Trigger</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QCheckBox" name="cbxButtonOcBY">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QLabel" name="lblButtonOther">
+        <property name="text">
+         <string>Other</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLabel" name="lblButtonPM">
+        <property name="text">
+         <string>PM</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="lblPMButtons">
+        <property name="toolTip">
+         <string>This is used for playspace mover, calibrating, or any other button inputs</string>
+        </property>
+        <property name="text">
+         <string>Buttons To Use</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QCheckBox" name="cbxButtonOcTrigpm">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="2">
+       <widget class="QCheckBox" name="cbxButtonOcTrig">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QCheckBox" name="cbxButtonOcAX">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QCheckBox" name="cbxButtonOcBumpm">
         <property name="text">
          <string/>
         </property>
@@ -152,32 +190,15 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="2">
-       <widget class="QLabel" name="lblButtonOther">
-        <property name="text">
-         <string>Other</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="2">
-       <widget class="QCheckBox" name="cbxButtonOcAX">
-        <property name="text">
-         <string/>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="2">
-       <widget class="QCheckBox" name="cbxButtonOcBY">
+      <item row="4" column="2">
+       <widget class="QCheckBox" name="cbxButtonOcBum">
         <property name="text">
          <string/>
         </property>
        </widget>
       </item>
-      <item row="3" column="2">
-       <widget class="QCheckBox" name="cbxButtonOcTrig">
+      <item row="1" column="1">
+       <widget class="QCheckBox" name="cbxButtonOcAXpm">
         <property name="text">
          <string/>
         </property>

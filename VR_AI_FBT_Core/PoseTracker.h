@@ -3,6 +3,7 @@
 #include "vrUtil.h"
 #include "OverlayManager.h"
 #include "DashboardWidget.h"
+#include "Config.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -16,6 +17,7 @@ class PoseTracker {
 public:
 	static void SetPose(uint8_t camera, QJsonObject poseData);
 	static void InitTrackers();
+	static void Exit();
 
 	void Init(uint8_t trackerIndex);
 
