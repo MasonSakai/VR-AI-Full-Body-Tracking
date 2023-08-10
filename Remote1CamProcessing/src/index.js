@@ -19,6 +19,7 @@ const canvas = document.getElementsByTagName("canvas")[0];
 const btnApply = document.getElementById("btn-apply");
 const btnCancel = document.getElementById("btn-cancel");
 const btnReset = document.getElementById("btn-reset");
+const configSelect = document.getElementById("config-select");
 const lblPutState = document.getElementById("lbl-put-state");
 var lblPutStateTimeout;
 
@@ -33,15 +34,17 @@ const poseDetector = new PoseDetector(true, width);
 lblState.innerHTML = "<i>Loading...</i>";
 
 const DefaultConfig = {
-	"id": -1,
-	"cameraName": "",
-	"autostart": false,
-	"confidenceThreshold": 0.3
+	id: -1,
+	cameraName: "",
+	autostart: false,
+	confidenceThreshold: 0.3
 };
 let config = DefaultConfig;
 let configUpdate = {};
 
 var activeState = false;
+
+var numConfigs = 0;
 
 async function fetchAsync(port) {
 	let response = await fetch(port);
@@ -82,7 +85,7 @@ function setPutState(text, timeout) {
 	lblPutStateTimeout = setTimeout(hidePutState, timeout);
 }
 
-function applyConfigChage() {
+function applyConfigChange() {
 	let madeChange = false;
 	let hadError = false;
 	if ("autostart" in configUpdate) {
@@ -109,7 +112,7 @@ function applyConfigChage() {
 
 btnApply.onclick = () => {
 	try {
-		applyConfigChage();
+		applyConfigChange();
 		putAsync("config", config)
 			.then((e) => {
 				switch (e.status) {
@@ -133,7 +136,7 @@ btnApply.onclick = () => {
 btnReset.onclick = () => {
 	try {
 		configUpdate = DefaultConfig;
-		if (applyConfigChage()) {
+		if (applyConfigChange()) {
 			putAsync("config", config)
 				.then((e) => {
 					switch (e.status) {
@@ -196,6 +199,16 @@ cbxAutostart.onchange = () => {
 	configUpdate.autostart = cbxAutostart.checked;
 };
 
+configSelect.onclick = () => {
+	GetConfigs();
+}
+configSelect.onchange = () => {
+	let value = Number(configSelect.value);
+	if (value != config.id) {
+		SwitchConfig(value);
+	}
+}
+
 async function drawPose(pose) {
 	let ctx = canvas.getContext("2d");
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -210,8 +223,6 @@ async function drawPose(pose) {
 		ctx.fill();
 	});
 }
-
-
 
 function debounce(func, wait, immediate) {
 	var timeout;
@@ -314,14 +325,68 @@ async function startAILoop() {
 	}
 }
 
-
-async function GetConfig() {
+async function GetConfigs() {
 	var response;
 	try {
-		response = await fetch("config");
+		response = await fetch("config.json");
+		let data = await response.json();
+		let configs = data.windowConfigs;
+		//console.log(configs);
+		numConfigs = configs.length;
+		configSelect.innerHTML = "<option value=-1>Select:</option>\n<option value=-2>Create New</option>";
+		for (let i = 0; i < numConfigs; i++) {
+			configSelect.innerHTML += `\n<option value=${i}>${i}</option>`;
+		}
 	} catch (err) {
 		console.error(err);
-		nodeSocket.emit("initialized", "no-config-404");
+		return;
+	}
+}
+async function SwitchConfig(fetchID) {
+	var response;
+	try {
+		response = await putAsync("SwitchConfig", {
+			now: config.id,
+			to: fetchID
+		});
+	} catch (err) {
+		console.error(err);
+		return;
+	}
+	let data = await response.json();
+	//if confirmed, getConfig
+	lblState.innerHTML = "Loaded Config, reading...";
+	data.status = null;
+	config = data;
+	if (config.id >= numConfigs) {
+		for (let i = numConfigs; i <= config.id; i++) {
+			configSelect.innerHTML += `\n<option value=${i}>${i}</option>`;
+		}
+	}
+	configSelect.value = config.id;
+	let camid = await camera.getCameraIDByName(data.cameraName);
+	camSelect.value = camid;
+	//camSelect.dispatchEvent(new Event('change'));
+
+	cbxAutostart.checked = data.autostart;
+
+	if (data.autostart) {
+		lblState.innerHTML = "Autostarting...";
+		startAILoop();
+	}
+	lblState.innerHTML = "Loaded!";
+}
+async function GetConfig(fetchID) {
+	var response;
+	try {
+		if (fetchID < 0) {
+			response = await fetch("config");
+		}
+		else {
+			response = await putAsync("config", fetchID);
+		}
+	} catch (err) {
+		console.error(err);
 		return;
 	}
 
@@ -329,31 +394,34 @@ async function GetConfig() {
 	let data = await response.json();
 	//console.log(data);
 	let status = data.status;
+	data.status = null;
 	if (status != "ok") {
 		console.log(`Error: ${status}`);
 		lblState.innerHTML = `Loaded Error/Status:<br>${status}`;
-		config.id = data.id;
-		if (status == "madeConfig") {
-			config = data;
-		}
-	} else {
-		lblState.innerHTML = "Loaded Config, reading...";
-		config = data;
-		let camid = await camera.getCameraIDByName(data.cameraName);
-		camSelect.value = camid;
-		//camSelect.dispatchEvent(new Event('change'));
-
-		cbxAutostart.checked = data.autostart;
-
-		if (data.autostart) {
-			lblState.innerHTML = "Autostarting...";
-			startAILoop();
-		}
-		lblState.innerHTML = "Loaded!";
 	}
+	lblState.innerHTML = "Loaded Config, reading...";
+	config = data;
+	if (config.id >= numConfigs) {
+		for (let i = numConfigs; i <= config.id; i++) {
+			configSelect.innerHTML += `\n<option value=${i}>${i}</option>`;
+		}
+	}
+	configSelect.value = config.id;
+	let camid = await camera.getCameraIDByName(data.cameraName);
+	camSelect.value = camid;
+	//camSelect.dispatchEvent(new Event('change'));
+
+	cbxAutostart.checked = data.autostart;
+
+	if (data.autostart) {
+		lblState.innerHTML = "Autostarting...";
+		startAILoop();
+	}
+	lblState.innerHTML = "Loaded!";
 	setPutState("Connected To Server", 1000);
 	controlPanel.classList.remove("d-none");
 }
 
 lblState.innerHTML = "<i>Getting Config...</i>";
-GetConfig();
+GetConfigs();
+GetConfig(-1);

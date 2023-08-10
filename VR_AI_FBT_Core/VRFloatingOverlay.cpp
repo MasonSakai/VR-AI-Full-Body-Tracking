@@ -57,6 +57,7 @@ void VRFloatingOverlay::UpdateTextUI() {
 		((OverlayWidget*)m_pWidget)->SetText(textQueue.front().text);
 		hasDuration = true;
 		vr::VROverlay()->ShowOverlay(m_ulOverlayHandle);
+		OnSceneChanged(QList<QRectF>());
 	}
 }
 
@@ -230,9 +231,6 @@ void VRFloatingOverlay::OnTimeoutPumpEvents()
 		}
 	}
 	UpdateTextUI();
-	if (vr::VROverlay()->IsOverlayVisible(m_ulOverlayHandle)) {
-		OnSceneChanged(QList<QRectF>());
-	}
 
 }
 

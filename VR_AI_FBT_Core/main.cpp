@@ -116,7 +116,7 @@ void endProgram() {
 	OverlayOnClose();
 
 	QJsonObject configObject = config.object();
-	configObject.insert("button", GetConfigFromButtonMask(inputButtonMask));
+	configObject.insert("buttons", GetConfigFromButtonMask(inputButtonMask));
 	config.setObject(configObject);
 
 	if(MainThread.joinable())
@@ -193,5 +193,5 @@ int main(int argc, char* argv[])
 	AIRemoteServer::SharedInstance()->StartServer();
 	int i = a.exec();
 	endProgram();
-	return i;
+	return i; //why does it crash at the end?
 }

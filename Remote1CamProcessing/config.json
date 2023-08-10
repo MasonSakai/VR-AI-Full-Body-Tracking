@@ -1,38 +1,40 @@
 {
-	"port": 2674,
-	"windowConfigs": [
-		{
-			"cameraName": "USB2.0 HD UVC WebCam (13d3:5666)",
-			"autostart": false,
-			"confidenceThreshold": 0.3
-		},
-		{
-			"cameraName": "DroidCam Source 2",
-			"autostart": false,
-			"confidenceThreshold": 0.3
-		}
-	],
-	"PlayspaceMover": {
-		"enabled": true,
-		"doubleButtonReset": true,
-		"buttons": {
-			"oculusax": false,
-			"oculusby": true,
-			"oculustrigger": false,
-			"oculusbumper": false
-		}
-	},
-	"trackers": {
-		"ankle": true,
-		"knee": false,
-		"hip": true,
-		"shoulder": false,
-		"elbow": false
-	},
-	"buttons": {
-		"oculusax": true,
-		"oculusby": true,
-		"oculustrigger": false,
-		"oculusbumper": false
-	}
+    "PlayspaceMover": {
+        "buttons": {
+            "oculusax": false,
+            "oculusbumper": false,
+            "oculusby": true,
+            "oculustrigger": false
+        },
+        "doubleButtonReset": true,
+        "enabled": true
+    },
+    "ShibaMode": true,
+    "buttons": {
+        "oculusax": true,
+        "oculusbumper": false,
+        "oculusby": true,
+        "oculustrigger": false
+    },
+    "port": 2674,
+    "trackers": {
+        "ankle": true,
+        "elbow": false,
+        "hip": true,
+        "knee": false,
+        "shoulder": false
+    },
+    "trackerDampening": 0.5,
+    "windowConfigs": [
+        {
+            "autostart": false,
+            "cameraName": "USB2.0 HD UVC WebCam (13d3:5666)",
+            "confidenceThreshold": 0.3
+        },
+        {
+            "autostart": false,
+            "cameraName": "DroidCam Source 2",
+            "confidenceThreshold": 0.3
+        }
+    ]
 }

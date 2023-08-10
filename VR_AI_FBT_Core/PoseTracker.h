@@ -13,6 +13,8 @@
 #include <string>
 #include <iostream>
 
+extern float trackerDampening;
+
 class PoseTracker {
 public:
 	static void SetPose(uint8_t camera, QJsonObject poseData);
@@ -31,6 +33,8 @@ public:
 	uint8_t CalculateOrientation();
 
 	uint8_t getNumberOfCams();
+
+	void UpdatePositionDampened(glm::vec3 pos);
 	
 	glm::vec3 position;
 	glm::quat rotation;
@@ -42,6 +46,7 @@ public:
 	bool hasAmbiguousPosition = false;
 	bool hasDualPosition = false;
 	glm::vec3 amb1, amb2;
+
 private:
 	uint8_t tracker;
 
@@ -81,6 +86,7 @@ struct Camera {
 	static void SetSize(uint8_t index, uint16_t width, uint16_t height);
 	static void OnConnect(uint8_t index);
 	static void OnStart(uint8_t index);
+	static void OnDisconnect(uint8_t index);
 
 	void Init(uint8_t index);
 	void Calibrate(glm::vec3 position, glm::quat qp,

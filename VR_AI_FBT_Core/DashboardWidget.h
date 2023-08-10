@@ -6,6 +6,7 @@
 #include <qpushbutton.h>
 #include <qgridlayout.h>
 #include <qstring.h>
+#include <qslider.h>
 #include <string.h>
 #include "PlayspaceMover.h"
 #include "vrUtil.h"
@@ -61,6 +62,8 @@ private slots:
 	void on_btnRecenter_clicked();
 	void on_btnShowCamera_clicked();
 
+	void on_sldDampen_valueChanged(int value);
+
 private:
 	Ui::DashboardWidgetClass ui;
 
@@ -69,7 +72,8 @@ private:
 	QLabel* cameraNameLabels[16];
 	QLabel* cameraStateLabels[16];
 	QPushButton* cameraCalibrateButtons[16];
-	QLabel* lblRecenter;
+	QLabel* lblRecenter, * lblDampen;
+	QSlider* sldDampen;
 	void CreateCameraLabel(uint8_t index);
 
 	bool recentering = false;

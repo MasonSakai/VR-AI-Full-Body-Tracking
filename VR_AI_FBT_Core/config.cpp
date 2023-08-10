@@ -44,6 +44,7 @@ void WriteConfig() {
 void InitConfig() {
 	QJsonObject json;
 	json.insert("port", 2674);
+	json.insert("trackerDampening", .9f);
 
 	QJsonArray windowConfigs;
 	QJsonObject windowConfig;

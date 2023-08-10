@@ -16,6 +16,9 @@ DashboardWidget::DashboardWidget(QWidget* parent)
 	lblRecenter = findChild<QLabel*>("lblRecenter");
 	lblRecenter->setVisible(false);
 
+	lblDampen = findChild<QLabel*>("lblDampen");
+	sldDampen = findChild<QSlider*>("sldDampen");
+
 	InitConfig();
 }
 
@@ -84,55 +87,55 @@ void DashboardWidget::on_cbxButtonOcTrigpm_clicked(bool checked) {
 
 void DashboardWidget::on_cbxTrackerAnkle_clicked(bool checked) {
 	if (PoseTrackers[Poses::left_ankle] != checked) {
-		if (checked) trackerIDs[Poses::left_ankle] = createTracker(PoseNames[Poses::left_ankle].c_str());
+		if (checked) trackerIDs[Poses::left_ankle] = getTracker(PoseNames[Poses::left_ankle]);
 		else deleteVirtualDevice(trackerIDs[Poses::left_ankle]);
 		PoseTrackers[Poses::left_ankle] = checked;
 	}
 	if (PoseTrackers[Poses::right_ankle] != checked) {
-		if (checked) trackerIDs[Poses::right_ankle] = createTracker(PoseNames[Poses::right_ankle].c_str());
+		if (checked) trackerIDs[Poses::right_ankle] = getTracker(PoseNames[Poses::right_ankle]);
 		else deleteVirtualDevice(trackerIDs[Poses::right_ankle]);
 		PoseTrackers[Poses::right_ankle] = checked;
 	}
 }
 void DashboardWidget::on_cbxTrackerKnee_clicked(bool checked) {
 	if (PoseTrackers[Poses::left_knee] != checked) {
-		if(checked) trackerIDs[Poses::left_knee] = createTracker(PoseNames[Poses::left_knee].c_str());
+		if(checked) trackerIDs[Poses::left_knee] = getTracker(PoseNames[Poses::left_knee]);
 		else deleteVirtualDevice(trackerIDs[Poses::left_knee]);
 		PoseTrackers[Poses::left_knee] = checked;
 	}
 	if (PoseTrackers[Poses::right_knee] != checked) {
-		if (checked) trackerIDs[Poses::right_knee] = createTracker(PoseNames[Poses::right_knee].c_str());
+		if (checked) trackerIDs[Poses::right_knee] = getTracker(PoseNames[Poses::right_knee]);
 		else deleteVirtualDevice(trackerIDs[Poses::right_knee]);
 		PoseTrackers[Poses::right_knee] = checked;
 	}
 }
 void DashboardWidget::on_cbxTrackerHip_clicked(bool checked) {
 	if (PoseTrackers[Poses::right_hip] != checked) {
-		if (checked) trackerIDs[Poses::right_hip] = createTracker(PoseNames[Poses::right_hip].c_str());
+		if (checked) trackerIDs[Poses::right_hip] = getTracker(PoseNames[Poses::right_hip]);
 		else deleteVirtualDevice(trackerIDs[Poses::right_hip]);
 		PoseTrackers[Poses::right_hip] = checked;
 	}
 }
 void DashboardWidget::on_cbxTrackerShoulder_clicked(bool checked) {
 	if (PoseTrackers[Poses::left_shoulder] != checked) {
-		if (checked) trackerIDs[Poses::left_shoulder] = createTracker(PoseNames[Poses::left_shoulder].c_str());
+		if (checked) trackerIDs[Poses::left_shoulder] = getTracker(PoseNames[Poses::left_shoulder]);
 		else deleteVirtualDevice(trackerIDs[Poses::left_shoulder]);
 		PoseTrackers[Poses::left_shoulder] = checked;
 	}
 	if (PoseTrackers[Poses::right_shoulder] != checked) {
-		if (checked) trackerIDs[Poses::right_shoulder] = createTracker(PoseNames[Poses::right_shoulder].c_str());
+		if (checked) trackerIDs[Poses::right_shoulder] = getTracker(PoseNames[Poses::right_shoulder]);
 		else deleteVirtualDevice(trackerIDs[Poses::right_shoulder]);
 		PoseTrackers[Poses::right_shoulder] = checked;
 	}
 }
 void DashboardWidget::on_cbxTrackerElbow_clicked(bool checked) {
 	if (PoseTrackers[Poses::left_elbow] != checked) {
-		if (checked) trackerIDs[Poses::left_elbow] = createTracker(PoseNames[Poses::left_elbow].c_str());
+		if (checked) trackerIDs[Poses::left_elbow] = getTracker(PoseNames[Poses::left_elbow]);
 		else deleteVirtualDevice(trackerIDs[Poses::left_elbow]);
 		PoseTrackers[Poses::left_elbow] = checked;
 	}
 	if (PoseTrackers[Poses::right_elbow] != checked) {
-		if (checked) trackerIDs[Poses::right_elbow] = createTracker(PoseNames[Poses::right_elbow].c_str());
+		if (checked) trackerIDs[Poses::right_elbow] = getTracker(PoseNames[Poses::right_elbow]);
 		else deleteVirtualDevice(trackerIDs[Poses::right_elbow]);
 		PoseTrackers[Poses::right_elbow] = checked;
 	}
@@ -188,6 +191,12 @@ void DashboardWidget::on_btnShowCamera_clicked() {
 	}
 }
 
+void DashboardWidget::on_sldDampen_valueChanged(int value) {
+	trackerDampening = (float)value / 100.0f;
+	QString sldDampenStr = QString::number(value);
+	sldDampenStr.append("%");
+	lblDampen->setText(sldDampenStr);
+}
 
 bool DashboardWidget::SetLabel(QString labelName, QString text) {
 	QLabel* label = findChild<QLabel*>(labelName);
@@ -221,6 +230,10 @@ void DashboardWidget::InitConfig() {
 	findChild<QCheckBox*>("cbxTrackerShoulder")->setChecked(trackerConfig["shoulder"].toBool());
 	findChild<QCheckBox*>("cbxTrackerElbow")->setChecked(trackerConfig["elbow"].toBool());
 	
+	sldDampen->setValue(100 * config["trackerDampening"].toDouble());
+	QString sldDampenStr = QString::number(sldDampen->value());
+	sldDampenStr.append("%");
+	lblDampen->setText(sldDampenStr);
 }
 void DashboardWidget::SetCameraState(uint8_t index, CameraState state) {
 	if (!camerasWithManagers[index])

@@ -35,8 +35,10 @@ bool PoseTrackers[17] = {
 	true	// right ankle
 };
 
+float trackerDampening = .5f;
+
 void PoseTracker::InitTrackers() {
-	QJsonObject trackerConfig = config.object()["trackers"].toObject();
+	QJsonObject trackerConfig = config["trackers"].toObject();
 	PoseTrackers[Poses::left_ankle] = trackerConfig["ankle"].toBool();
 	PoseTrackers[Poses::right_ankle] = PoseTrackers[Poses::left_ankle];
 	PoseTrackers[Poses::left_knee] = trackerConfig["knee"].toBool();
@@ -46,6 +48,7 @@ void PoseTracker::InitTrackers() {
 	PoseTrackers[Poses::right_shoulder] = PoseTrackers[Poses::left_shoulder];
 	PoseTrackers[Poses::left_elbow] = trackerConfig["elbow"].toBool();
 	PoseTrackers[Poses::right_elbow] = PoseTrackers[Poses::left_elbow];
+	trackerDampening = config["trackerDampening"].toDouble(.5);
 
 	for (uint8_t i = 0; i < 17; i++) {
 		trackers[i].Init(i);
@@ -59,6 +62,7 @@ void PoseTracker::InitTrackers() {
 
 void PoseTracker::Exit() {
 	QJsonObject configObj = config.object();
+	configObj.insert("trackerDampening", trackerDampening);
 	QJsonObject trackerConfig = configObj["trackers"].toObject();
 	trackerConfig.insert("ankle", PoseTrackers[Poses::left_ankle]);
 	trackerConfig.insert("knee", PoseTrackers[Poses::left_knee]);
@@ -136,13 +140,16 @@ glm::vec3 CalculateClosest(glm::vec3 p1, glm::vec3 v1, glm::vec3 p2, glm::vec3 v
 	//have it give distance?
 }
 
-
 void PoseTracker::UpdateDirections() {
 	for (int i = 0; i < 16; i++) {
 		if (cameraFlags & (1 << i)) {
 			directions[i] = cameras[i].GetVector(points[i]);
 		}
 	}
+}
+
+void PoseTracker::UpdatePositionDampened(glm::vec3 pos) {
+	position = trackerDampening * position + (1 - trackerDampening) * pos;
 }
 
 void PoseTracker::CalculateMultiPosition() {
@@ -163,7 +170,7 @@ void PoseTracker::CalculateMultiPosition() {
 			pos += weight * closest;
 		}
 	}
-	position = pos / total;
+	UpdatePositionDampened(pos / total);
 	hasValidPosition = true;
 
 	if (tracker == Poses::right_hip) {
@@ -275,16 +282,16 @@ bool PoseTracker::CalculateSingleCameraPosition() {
 				hipRightRealPos = cameras[n].position + directions[n] * dist;
 			}
 
-			position = (hipRightRealPos + trackers[Poses::left_hip].position) * .5f;
+			UpdatePositionDampened((hipRightRealPos + trackers[Poses::left_hip].position) * .5f);
 			hasValidPosition = true;
 		}
 		break;
 	case Poses::left_wrist:
-		position = leftHandPosReal + leftHandRotReal * handToWrist;
+		UpdatePositionDampened(leftHandPosReal + leftHandRotReal * handToWrist);
 		hasValidPosition = true;
 		break;
 	case Poses::right_wrist:
-		position = rightHandPosReal + rightHandRotReal * handToWrist;
+		UpdatePositionDampened(rightHandPosReal + rightHandRotReal * handToWrist);
 		hasValidPosition = true;
 		break;
 
@@ -304,7 +311,7 @@ bool PoseTracker::CalculateSingleCameraPosition() {
 
 	default:
 		dist = glm::length(cameras[n].position - headPosReal);
-		position = cameras[n].position + directions[n] * dist;
+		UpdatePositionDampened(cameras[n].position + directions[n] * dist);
 		hasValidPosition = true;
 		break;
 	}
@@ -326,15 +333,15 @@ void PoseTracker::CalculateSingleAnkle(uint8_t n, uint8_t knee, uint8_t hip) {
 					float d1 = glm::length(amb1 - position);
 					float d2 = glm::length(amb2 - position);
 					if (d1 < d2)
-						position = amb1;
+						UpdatePositionDampened(amb1);
 					else
-						position = amb2;
+						UpdatePositionDampened(amb2);
 				}
 				else if (p1v) {
-					position = amb1;
+					UpdatePositionDampened(amb1);
 				}
 				else if (p2v) {
-					position = amb2;
+					UpdatePositionDampened(amb2);
 				}
 				hasValidPosition = true;
 			}
@@ -344,11 +351,11 @@ void PoseTracker::CalculateSingleAnkle(uint8_t n, uint8_t knee, uint8_t hip) {
 			}
 		}
 		else if (c == 1) {
-			position = amb1;
+			UpdatePositionDampened(amb1);
 			hasValidPosition = true;
 		}
 		else if (c == 0) {
-			position = (position + amb2) * .5f;
+			UpdatePositionDampened((position + amb2) * .5f);
 			hasValidPosition = true;
 			hasAmbiguousPosition = true;
 		}
@@ -393,10 +400,10 @@ void PoseTracker::CalculateSingleAnkle(uint8_t n, uint8_t knee, uint8_t hip) {
 			break;
 		case 1:
 			hasValidPosition = true;
-			if (b1) position = p1;
-			else if (b2) position = p2;
-			else if (b3) position = p3;
-			else if (b4) position = p4;
+			if (b1) UpdatePositionDampened(p1);
+			else if (b2) UpdatePositionDampened(p2);
+			else if (b3) UpdatePositionDampened(p3);
+			else if (b4) UpdatePositionDampened(p4);
 			else hasValidPosition = false;
 			break;
 		case 2:
@@ -410,11 +417,11 @@ void PoseTracker::CalculateSingleAnkle(uint8_t n, uint8_t knee, uint8_t hip) {
 
 			if (b1 && b2) {
 				trackers[knee].hasValidPosition = true;
-				trackers[knee].position = trackers[knee].amb1;
+				trackers[knee].UpdatePositionDampened(trackers[knee].amb1);
 			}
 			else if (b3 && b4) {
 				trackers[knee].hasValidPosition = true;
-				trackers[knee].position = trackers[knee].amb2;
+				trackers[knee].UpdatePositionDampened(trackers[knee].amb2);
 			}
 			hasAmbiguousPosition = true;
 			hasDualPosition = true;
@@ -460,11 +467,11 @@ void PoseTracker::CalculateSingleKnee(uint8_t n, uint8_t ankle, uint8_t hip) {
 			cameras[n].position, directions[n]);
 		switch (c) {
 		case 0:
-			position = (position + amb2) * .5f;
+			UpdatePositionDampened((position + amb2) * .5f);
 			hasValidPosition = true;
 			break;
 		case 1:
-			position = amb1;
+			UpdatePositionDampened(amb1);
 			hasValidPosition = true;
 			break;
 		case 2:
@@ -479,24 +486,24 @@ void PoseTracker::CalculateSingleKnee(uint8_t n, uint8_t ankle, uint8_t hip) {
 					float d1 = glm::length(amb1 - position);
 					float d2 = glm::length(amb2 - position);
 					if (d1 < d2)
-						position = amb1;
+						UpdatePositionDampened(amb1);
 					else
-						position = amb2;
+						UpdatePositionDampened(amb2);
 				}
 				else if (p1v) {
-					position = amb1;
+					UpdatePositionDampened(amb1);
 				}
 				else if (p2v) {
-					position = amb2;
+					UpdatePositionDampened(amb2);
 				}
 				hasValidPosition = true;
 			}
 			else {
 				//Needs better check?
 				if (glm::length2(position - amb1) < glm::length2(position - amb2))
-					position = amb1;
+					UpdatePositionDampened(amb1);
 				else
-					position = amb2;
+					UpdatePositionDampened(amb2);
 				hasValidPosition = true;
 			}
 			break;
@@ -506,20 +513,20 @@ void PoseTracker::CalculateSingleKnee(uint8_t n, uint8_t ankle, uint8_t hip) {
 		uint8_t c = CalculateOneValid(trackers[hip].position, lowerLegLen, cameras[n].position, directions[n]);
 		switch (c) {
 		case 0:
-			position = (position + amb2) * .5f;
+			UpdatePositionDampened((position + amb2) * .5f);
 			hasValidPosition = true;
 			break;
 		case 1:
-			position = amb1;
+			UpdatePositionDampened(amb1);
 			hasValidPosition = true;
 			break;
 		case 2:
 			/*//Needs better check?
 			//for the moment keeping ambiguous since the ankles should fix it's position
 			if (glm::length2(position - amb1) < glm::length2(position - amb2))
-				position = amb1;
+				UpdatePositionDampened(amb1;
 			else
-				position = amb2;
+				UpdatePositionDampened(amb2;
 			hasValidPosition = true;*/
 			break;
 		}
@@ -528,19 +535,19 @@ void PoseTracker::CalculateSingleKnee(uint8_t n, uint8_t ankle, uint8_t hip) {
 		uint8_t c = CalculateOneValid(trackers[ankle].position, lowerLegLen, cameras[n].position, directions[n]);
 		switch (c) {
 		case 0:
-			position = (position + amb2) * .5f;
+			UpdatePositionDampened((position + amb2) * .5f);
 			hasValidPosition = true;
 			break;
 		case 1:
-			position = amb1;
+			UpdatePositionDampened(amb1);
 			hasValidPosition = true;
 			break;
 		case 2:
 			//Needs better check?
 			if (glm::length2(position - amb1) < glm::length2(position - amb2))
-				position = amb1;
+				UpdatePositionDampened(amb1);
 			else
-				position = amb2;
+				UpdatePositionDampened(amb2);
 			hasValidPosition = true;
 			break;
 		}
@@ -553,19 +560,19 @@ void PoseTracker::CalculateSingleElbow(uint8_t n, uint8_t wrist, uint8_t shoulde
 			cameras[n].position, directions[n]);
 		switch (c) {
 		case 0:
-			position = (position + amb2) * .5f;
+			UpdatePositionDampened((position + amb2) * .5f);
 			hasValidPosition = true;
 			break;
 		case 1:
-			position = amb1;
+			UpdatePositionDampened(amb1);
 			hasValidPosition = true;
 			break;
 		case 2:
 			//Needs better check?
 			if (glm::length2(position - amb1) < glm::length2(position - amb2))
-				position = amb1;
+				UpdatePositionDampened(amb1);
 			else
-				position = amb2;
+				UpdatePositionDampened(amb2);
 			hasValidPosition = true;
 			break;
 		}
@@ -574,19 +581,19 @@ void PoseTracker::CalculateSingleElbow(uint8_t n, uint8_t wrist, uint8_t shoulde
 		uint8_t c = CalculateOneValid(trackers[shoulder].position, lowerLegLen, cameras[n].position, directions[n]);
 		switch (c) {
 		case 0:
-			position = (position + amb2) * .5f;
+			UpdatePositionDampened((position + amb2) * .5f);
 			hasValidPosition = true;
 			break;
 		case 1:
-			position = amb1;
+			UpdatePositionDampened(amb1);
 			hasValidPosition = true;
 			break;
 		case 2:
 			//Needs better check?
 			if (glm::length2(position - amb1) < glm::length2(position - amb2))
-				position = amb1;
+				UpdatePositionDampened(amb1);
 			else
-				position = amb2;
+				UpdatePositionDampened(amb2);
 			hasValidPosition = true;
 			break;
 		}
@@ -595,19 +602,19 @@ void PoseTracker::CalculateSingleElbow(uint8_t n, uint8_t wrist, uint8_t shoulde
 		uint8_t c = CalculateOneValid(trackers[wrist].position, lowerLegLen, cameras[n].position, directions[n]);
 		switch (c) {
 		case 0:
-			position = (position + amb2) * .5f;
+			UpdatePositionDampened((position + amb2) * .5f);
 			hasValidPosition = true;
 			break;
 		case 1:
-			position = amb1;
+			UpdatePositionDampened(amb1);
 			hasValidPosition = true;
 			break;
 		case 2:
 			//Needs better check?
 			if (glm::length2(position - amb1) < glm::length2(position - amb2))
-				position = amb1;
+				UpdatePositionDampened(amb1);
 			else
-				position = amb2;
+				UpdatePositionDampened(amb2);
 			hasValidPosition = true;
 			break;
 		}
@@ -766,6 +773,11 @@ void Camera::OnConnect(uint8_t index) {
 	cameras[index].active = false;
 	cameras[index].connected = true;
 	CreateCameraOverlay(index);
+}
+void Camera::OnDisconnect(uint8_t index) {
+	VRDashboardOverlay::SharedInstance()->SetCameraState(index, CameraState::Camera_Inactive);
+	cameras[index].active = false;
+	cameras[index].connected = false;
 }
 void Camera::OnStart(uint8_t index) {
 	VRDashboardOverlay::SharedInstance()->SetCameraState(index, CameraState::Camera_NeedsCalibration);

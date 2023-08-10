@@ -2,6 +2,8 @@
 #include <QMimeDatabase>
 #include <qapplication.h>
 
+int connectedCount = 0;
+
 AIRemoteServer* sharedServer = NULL;
 AIRemoteServer* AIRemoteServer::SharedInstance() {
 	if (!sharedServer) {
@@ -9,8 +11,6 @@ AIRemoteServer* AIRemoteServer::SharedInstance() {
 	}
 	return sharedServer;
 }
-
-int connected = 0;
 
 QHttpServerResponse defaultHandler(const QHttpServerRequest& req) {
 	QString fileName = BaseDirectory;
@@ -23,19 +23,24 @@ void configHandler(const QHttpServerRequest& req, QHttpServerResponder&& res) {
 	QByteArray data;
 	QJsonParseError jsonError;
 	QJsonDocument jsonDocument;
-	QJsonArray jsonArray;
-	QJsonObject jsonObject;
+	QJsonArray jsonArray, windowConfigs;
+	QJsonObject jsonObject, configObject;
 	switch (req.method())
 	{
 	case QHttpServerRequest::Method::Get:
 		data = req.body();
 		if(!data.isEmpty())
 			index = data.toInt();
-		if (index == -1) {
-			index = connected; //Make better
-			connected++;
-		}
 		jsonArray = config["windowConfigs"].toArray();
+		if (index == -1) {
+			index = connectedCount;
+			connectedCount++;
+			if (connectedCount >= jsonArray.count()) connectedCount = jsonArray.count() - 1; //CHANGE - DO NOT AUTOGENERATE UNLESS ASKED TO
+			if (connectedCount < 0) connectedCount = 0;
+		}
+		if (index == -2) {
+			index = jsonArray.count();
+		}
 		if (index < jsonArray.count() && jsonArray[index].isObject()) {
 			jsonObject = jsonArray[index].toObject();
 			jsonObject.insert("status", "ok");
@@ -60,7 +65,7 @@ void configHandler(const QHttpServerRequest& req, QHttpServerResponder&& res) {
 			res.sendResponse(QHttpServerResponse(jsonObject));
 		}
 		return;
-	case QHttpServerRequest::Method::Post:
+	case QHttpServerRequest::Method::Put:
 		
 		data = req.body();
 		jsonDocument = QJsonDocument::fromJson(data, &jsonError);
@@ -69,9 +74,16 @@ void configHandler(const QHttpServerRequest& req, QHttpServerResponder&& res) {
 			res.sendResponse(QHttpServerResponse(QHttpServerResponder::StatusCode::BadRequest));
 			return;
 		}
-		index = jsonDocument.object()["id"].toInt();
-		jsonDocument.object().remove("id");
-		config["windowConfigs"][index].toObject() = jsonDocument.object();
+		jsonObject = jsonDocument.object();
+		index = jsonObject["id"].toInt();
+		jsonObject.remove("id");
+		jsonObject.remove("status");
+		configObject = config.object();
+		windowConfigs = config["windowConfigs"].toArray();
+		if(windowConfigs[index].isNull()) windowConfigs.append(jsonObject);
+		else windowConfigs.insert(index, jsonObject);
+		configObject.insert("windowConfigs", windowConfigs);
+		config.setObject(configObject);
 		WriteConfig();
 		res.sendResponse(QHttpServerResponse(QHttpServerResponder::StatusCode::Ok));
 		return;
@@ -79,6 +91,54 @@ void configHandler(const QHttpServerRequest& req, QHttpServerResponder&& res) {
 		res.sendResponse(QHttpServerResponse(QHttpServerResponder::StatusCode::MethodNotAllowed));
 		return;
 	}
+}
+void configSwitchHandler(const QHttpServerRequest& req, QHttpServerResponder&& res) {
+	QJsonObject jsonObject;
+
+	QByteArray data = req.body();
+	QJsonParseError jsonError;
+	QJsonDocument jsonDocument = QJsonDocument::fromJson(data, &jsonError);
+	if (jsonError.error != QJsonParseError::NoError || !jsonDocument.isObject())
+	{
+		res.sendResponse(QHttpServerResponse(QHttpServerResponder::StatusCode::BadRequest));
+		return;
+	}
+	int startIndex = jsonDocument.object()["now"].toInt();
+	int toIndex = jsonDocument.object()["to"].toInt();
+
+	QJsonArray jsonArray = config["windowConfigs"].toArray();
+
+	if (toIndex == -2) {
+		toIndex = jsonArray.count();
+	}
+	if (toIndex < jsonArray.count() && jsonArray[toIndex].isObject()) {
+		jsonObject = jsonArray[toIndex].toObject();
+		jsonObject.insert("status", "ok");
+	}
+	else
+	{
+		jsonObject = QJsonObject();
+		if (toIndex != 0) {
+			jsonObject = jsonArray[toIndex - 1].toObject();
+			jsonArray.append(jsonObject);
+		}
+		else {
+			jsonObject.insert("autostart", false);
+			jsonObject.insert("confidenceThreshold", 0.3f);
+			jsonObject.insert("cameraName", "");
+			jsonArray.append(jsonObject);
+		}
+		jsonObject.insert("status", "madeConfig");
+	}
+	jsonObject.insert("id", toIndex);
+	res.sendResponse(QHttpServerResponse(jsonObject));
+
+	Camera::OnDisconnect(startIndex);
+	Camera::OnConnect(toIndex);
+	VRFloatingOverlay::SharedInstance()->QueueText("Camera ID Changed", 1.5f);
+}
+void configjsonHandler(const QHttpServerRequest& req, QHttpServerResponder&& res) {
+	res.sendResponse(QHttpServerResponse(config.object()));
 }
 void missingHandler(const QHttpServerRequest& req, QHttpServerResponder&& res) {
 	QString fileName = BaseDirectory;
@@ -134,6 +194,8 @@ bool AIRemoteServer::StartServer() {
 
 	server->route("/", QHttpServerRequest::Method::Get, defaultHandler);
 	server->route("/config", configHandler);
+	server->route("/config.json", configjsonHandler);
+	server->route("/SwitchConfig", configSwitchHandler);
 	server->route("/poseData", onPoseData);
 	server->route("/cameraSize", onGetSize);
 	server->route("/connect", onCameraConnect);

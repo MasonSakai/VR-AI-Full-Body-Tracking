@@ -18,11 +18,6 @@ using namespace vr;
 #include <iostream>
 
 
-//Idea, can I define functions for this class in the main program?
-//If so, I can use that to make callbacks
-//If not, interfaces (that's also a good/better idea)
-
-
 VRDashboardOverlay* s_pSharedVRController = NULL;
 
 
@@ -99,26 +94,6 @@ VRDashboardOverlay::~VRDashboardOverlay()
 }
 
 
-//-----------------------------------------------------------------------------
-// Purpose: Helper to get a string from a tracked device property and turn it
-//			into a QString
-//-----------------------------------------------------------------------------
-QString GetTrackedDeviceString(vr::IVRSystem* pHmd, vr::TrackedDeviceIndex_t unDevice, vr::TrackedDeviceProperty prop)
-{
-	char buf[128];
-	vr::TrackedPropertyError err;
-	pHmd->GetStringTrackedDeviceProperty(unDevice, prop, buf, sizeof(buf), &err);
-	if (err != vr::TrackedProp_Success)
-	{
-		return QString("Error Getting String: ") + pHmd->GetPropErrorNameFromEnum(err);
-	}
-	else
-	{
-		return buf;
-	}
-}
-
-
 bool VRDashboardOverlay::Init()
 {
 	bool bSuccess = true;
@@ -152,10 +127,6 @@ bool VRDashboardOverlay::Init()
 
 	m_pScene = new QGraphicsScene();
 	connect(m_pScene, SIGNAL(changed(const QList<QRectF>&)), this, SLOT(OnSceneChanged(const QList<QRectF>&)));
-
-	// Loading the OpenVR Runtime
-	m_strVRDriver = GetTrackedDeviceString(m_VRSystem, vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_TrackingSystemName_String);
-	m_strVRDisplay = GetTrackedDeviceString(m_VRSystem, vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_SerialNumber_String);
 
 	bSuccess = vr::VRCompositor() != NULL;
 
@@ -328,7 +299,7 @@ void VRDashboardOverlay::OnTimeoutPumpEvents()
 	}
 	if (vr::VROverlay()->IsOverlayVisible(m_ulOverlayHandle)) {
 		UpdateCameraStateUI();
-		OnSceneChanged(QList<QRectF>());
+		OnSceneChanged(QList<QRectF>());//why does it turn to black squares sometimes?
 	}
 
 	if (m_ulOverlayThumbnailHandle != vr::k_ulOverlayHandleInvalid)
@@ -359,8 +330,7 @@ void VRDashboardOverlay::SetWidget(QWidget* pWidget)
 	}
 	m_pWidget = pWidget;
 
-	m_pFbo = new QOpenGLFramebufferObject(pWidget->width(), pWidget->height(), GL_TEXTURE_2D); // Error Here
-	//Exception thrown: read access violation. QGuiApplicationPrivate::platform_integration was nullptr.
+	m_pFbo = new QOpenGLFramebufferObject(pWidget->width(), pWidget->height(), GL_TEXTURE_2D);
 
 
 	if (vr::VROverlay())

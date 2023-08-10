@@ -50,8 +50,9 @@ QJsonObject GetConfigFromButtonMask(uint64_t mask);
 
 bool findTrackers();
 
-uint32_t createTracker(const char* deviceName);
+uint32_t createTracker(std::string deviceName);
 uint32_t createTracker();
+uint32_t getTracker(std::string deviceName);
 
 void GetTrackers();
 

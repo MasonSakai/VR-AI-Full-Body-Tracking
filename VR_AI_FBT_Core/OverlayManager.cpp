@@ -75,7 +75,7 @@ void OverlayOnClose() {
 		cameraThreadActive = false;
 		CameraDisplayTimeoutThread.join();
 	}
-	//DestroyOverlays();
+	DestroyOverlays();
 }
 
 void CreateCameraOverlay(int index) {
@@ -84,7 +84,7 @@ void CreateCameraOverlay(int index) {
 		error = VROverlay->CreateOverlay((CameraKey + std::to_string(index)).c_str(), (CameraName + std::to_string(index)).c_str(), &(cameraOverlays[index]));
 		if (error != 0) std::cout << error << "\n\n" << std::flush;
 	}
-	VROverlay->SetOverlayFromFile(cameraOverlays[index], "C:\\Users\\Mason Sakai\\OneDrive\\Pictures\\wtf_4.gif");
+	VROverlay->SetOverlayFromFile(cameraOverlays[index], "CameraImage.png");
 	VROverlay->SetOverlayAlpha(cameraOverlays[index], camColorA);
 	VROverlay->SetOverlayWidthInMeters(cameraOverlays[index], camWidth);
 	VROverlay->HideOverlay(cameraOverlays[index]);

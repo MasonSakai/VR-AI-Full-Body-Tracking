@@ -65,9 +65,9 @@ bool findTrackers() {
 	//return false;
 }
 
-uint32_t createTracker(const char* deviceName) {
+uint32_t createTracker(std::string deviceName) {
 	uint32_t id = inputEmulator.getVirtualDeviceCount();
-	inputEmulator.addVirtualDevice(vrinputemulator::VirtualDeviceType::TrackedController, deviceName, false);
+	inputEmulator.addVirtualDevice(vrinputemulator::VirtualDeviceType::TrackedController, deviceName.c_str(), false);
 	inputEmulator.setVirtualDeviceProperty(id, vr::ETrackedDeviceProperty::Prop_TrackingSystemName_String, "lighthouse");
 	inputEmulator.setVirtualDeviceProperty(id, vr::ETrackedDeviceProperty::Prop_ModelNumber_String, "Vive Controller MV");
 	inputEmulator.setVirtualDeviceProperty(id, vr::ETrackedDeviceProperty::Prop_RenderModelName_String, "vr_controller_vive_1_5");
@@ -98,7 +98,16 @@ uint32_t createTracker(const char* deviceName) {
 }
 uint32_t createTracker() {
 	uint32_t id = inputEmulator.getVirtualDeviceCount();
-	return createTracker(std::to_string(id).c_str());
+	return createTracker(std::to_string(id));
+}
+
+uint32_t getTracker(std::string deviceName) {
+	for (int i = 0; i < inputEmulator.getVirtualDeviceCount(); i++) {
+		if (inputEmulator.getVirtualDeviceInfo(i).deviceSerial == deviceName) {
+			return i;
+		}
+	}
+	return createTracker(deviceName.c_str());
 }
 
 void GetTrackers() {
@@ -106,7 +115,7 @@ void GetTrackers() {
 	for (int i = 0; i < 17; i++) {
 		if (PoseTrackers[i]) {
 			try {
-				trackerIDs[i] = createTracker(PoseNames[i].c_str());
+				trackerIDs[i] = createTracker(PoseNames[i]);
 			}
 			catch (...) {
 
