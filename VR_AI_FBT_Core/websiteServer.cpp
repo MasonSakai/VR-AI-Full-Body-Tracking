@@ -18,6 +18,7 @@ QHttpServerResponse defaultHandler(const QHttpServerRequest& req) {
 	QByteArray data = ReadFile(fileName);
 	return QHttpServerResponse("text/html", data);
 }
+//double check if this is actually working...
 void configHandler(const QHttpServerRequest& req, QHttpServerResponder&& res) {
 	int index = -1;
 	QByteArray data;
@@ -35,7 +36,7 @@ void configHandler(const QHttpServerRequest& req, QHttpServerResponder&& res) {
 		if (index == -1) {
 			index = connectedCount;
 			connectedCount++;
-			if (connectedCount >= jsonArray.count()) connectedCount = jsonArray.count() - 1; //CHANGE - DO NOT AUTOGENERATE UNLESS ASKED TO
+			if (connectedCount >= jsonArray.count()) connectedCount = jsonArray.count() - 1;
 			if (connectedCount < 0) connectedCount = 0;
 		}
 		if (index == -2) {
@@ -51,14 +52,12 @@ void configHandler(const QHttpServerRequest& req, QHttpServerResponder&& res) {
 		{
 			jsonObject = QJsonObject();
 			if (index != 0) {
-				jsonObject = jsonArray[index - 1].toObject();
-				jsonArray.append(jsonObject);
+				jsonObject = jsonArray[jsonArray.count() - 1].toObject();
 			}
 			else {
 				jsonObject.insert("autostart", false);
 				jsonObject.insert("confidenceThreshold", 0.3f);
 				jsonObject.insert("cameraName", "");
-				jsonArray.append(jsonObject);
 			}
 			jsonObject.insert("status", "madeConfig");
 			jsonObject.insert("id", index);
