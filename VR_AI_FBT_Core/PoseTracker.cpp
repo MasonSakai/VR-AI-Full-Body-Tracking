@@ -937,12 +937,12 @@ void Camera::CalibrateDistances(glm::vec3 v1, glm::quat q1, glm::vec3 v2, glm::q
 	maxAnkle = footLen * .5f;
 	distancesRecorded++;
 
-	std::cout << "ankleToSole        " << ankleToSole << std::endl;
+	/*std::cout << "ankleToSole        " << ankleToSole << std::endl;
 	std::cout << "shoulderToShoulder " << shoulderToShoulder << std::endl;
 	std::cout << "hipWidth           " << hipWidth << std::endl;
 	std::cout << "shoulderToHip      " << shoulderToHip << std::endl;
 	std::cout << "upperArmLen        " << upperArmLen << std::endl;
 	std::cout << "lowerArmLen        " << lowerArmLen << std::endl;
 	std::cout << "upperLegLen        " << upperLegLen << std::endl;
-	std::cout << "lowerLegLen        " << lowerLegLen << std::endl << std::endl;
+	std::cout << "lowerLegLen        " << lowerLegLen << std::endl << std::endl;*/
 }

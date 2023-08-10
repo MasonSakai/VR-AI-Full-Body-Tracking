@@ -3,11 +3,13 @@
 QString labelBase = "lblLine";
 
 const int pxPerChar = 8,
-minCharPerLine = 25,
-maxCharPerLine = 50,
-pxPerLine = 24,
-marginWidth = 50,
-marginHeight = 20;
+minCharPerLine = 30,
+maxCharPerLine = 40,
+pxPerLine = 22,
+lineHeight = 16,
+marginWidth = 10,
+marginHeight = 10;
+const float mPerPixel = .00075f;
 
 OverlayWidget::OverlayWidget(QWidget* parent)
 	: QWidget(parent)
@@ -19,7 +21,14 @@ OverlayWidget::OverlayWidget(QWidget* parent)
 		labelName.append(std::to_string(i));
 		lblLines[i] = findChild<QLabel*>(labelName);
 		lblLines[i]->setText(labelName);
+		lblLines[i]->move(marginWidth, marginHeight + i * pxPerLine);
 	}
+
+	int height = marginHeight * 2 + lineHeight + pxPerLine * 2;
+	int width = maxCharPerLine * pxPerChar + marginWidth * 2;
+	resize(width, height);
+	vr::VROverlay()->SetOverlayWidthInMeters(OverlayHandle, mPerPixel * width);
+
 }
 
 OverlayWidget::~OverlayWidget()
@@ -54,6 +63,10 @@ void OverlayWidget::SetText(QString text) {
 		SetLine(0, text1);
 		SetLine(1, text2);
 		ClearLine(2);
+		int height = marginHeight * 2 + lineHeight + pxPerLine;
+		int width = len2 * pxPerChar + marginWidth * 2;
+		//resize(width, height);
+		//vr::VROverlay()->SetOverlayWidthInMeters(OverlayHandle, mPerPixel * width);
 		return;
 	}
 	uint32_t len3 = len / 3;
@@ -68,10 +81,19 @@ void OverlayWidget::SetText(QString text) {
 		SetLine(0, text1);
 		SetLine(1, text2);
 		SetLine(2, text3);
+		int height = marginHeight * 2 + lineHeight + 2 * pxPerLine;
+		int width = len3 * pxPerChar + marginWidth * 2;
+		//resize(width, height);
+		//vr::VROverlay()->SetOverlayWidthInMeters(OverlayHandle, mPerPixel * width);
 		return;
 	}
 
 	SetLine(0, text);
 	ClearLine(1);
 	ClearLine(2);
+
+	int height = marginHeight * 2 + lineHeight;
+	int width = len * pxPerChar + marginWidth * 2;
+	//resize(width, height);
+	//vr::VROverlay()->SetOverlayWidthInMeters(OverlayHandle, mPerPixel * width);
 }

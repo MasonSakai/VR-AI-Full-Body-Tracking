@@ -84,6 +84,10 @@ VRFloatingOverlay::VRFloatingOverlay()
 
 	std::cout << "Init\n";
 	Init();
+	if (vr::VROverlay())
+	{
+		pOverlayWidget->OverlayHandle = m_ulOverlayHandle;
+	}
 
 	std::cout << "Set Widget\n";
 	SetWidget(pOverlayWidget);
@@ -191,12 +195,16 @@ void VRFloatingOverlay::OnSceneChanged(const QList<QRectF>&)
 	if (!vr::VROverlay() || !vr::VROverlay()->IsOverlayVisible(m_ulOverlayHandle))
 		return;
 
+	//Rendering with automatic resizing doesn't work well with a fixed buffer size,
+	//but creating and deleting the buffer breaks everything
+
 	m_pOpenGLContext->makeCurrent(m_pOffscreenSurface);
+	//m_pFbo = new QOpenGLFramebufferObject(m_pWidget->width(), m_pWidget->height(), GL_TEXTURE_2D);
 	m_pFbo->bind();
 
 	QOpenGLPaintDevice device(m_pFbo->size());
 	QPainter painter(&device);
-
+	
 	m_pScene->render(&painter);
 
 	m_pFbo->release();
@@ -245,17 +253,5 @@ void VRFloatingOverlay::SetWidget(QWidget* pWidget)
 	}
 	m_pWidget = pWidget;
 
-	m_pFbo = new QOpenGLFramebufferObject(pWidget->width(), pWidget->height(), GL_TEXTURE_2D);
-
-
-	if (vr::VROverlay())
-	{
-		vr::HmdVector2_t vecWindowSize =
-		{
-			(float)pWidget->width(),
-			(float)pWidget->height()
-		};
-		vr::VROverlay()->SetOverlayMouseScale(m_ulOverlayHandle, &vecWindowSize);
-	}
-
+	m_pFbo = new QOpenGLFramebufferObject(m_pWidget->width(), m_pWidget->height(), GL_TEXTURE_2D);
 }

@@ -2,6 +2,7 @@
 
 #include <QWidget>
 #include "ui_OverlayWidget.h"
+#include "VRFloatingOverlay.h"
 #include <qlabel.h>
 #include <qstring.h>
 #include <string.h>
@@ -17,6 +18,8 @@ public:
 	void SetLine(uint8_t index, QString text);
 	void ClearLine(uint8_t index);
 	void SetText(QString text);
+
+	vr::VROverlayHandle_t OverlayHandle;
 
 private:
 	Ui::OverlayWidgetClass ui;

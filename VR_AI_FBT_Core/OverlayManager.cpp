@@ -1,5 +1,6 @@
 
 #include "OverlayManager.h"
+#include <boost/dll/runtime_symbol_info.hpp>
 
 const char* OverlayKey = "AIVRFBTOverlay";
 const char* DashboardKey = "AIVRFBTDashboard";
@@ -84,7 +85,13 @@ void CreateCameraOverlay(int index) {
 		error = VROverlay->CreateOverlay((CameraKey + std::to_string(index)).c_str(), (CameraName + std::to_string(index)).c_str(), &(cameraOverlays[index]));
 		if (error != 0) std::cout << error << "\n\n" << std::flush;
 	}
-	VROverlay->SetOverlayFromFile(cameraOverlays[index], "CameraImage.png");
+	boost::filesystem::path path = boost::dll::program_location();
+	QString pathstr = QString::fromStdString(path.string());
+	int lastSlash = pathstr.lastIndexOf('/');
+	if (lastSlash == -1) lastSlash = pathstr.lastIndexOf('\\');
+	pathstr = pathstr.left(lastSlash + 1);
+	pathstr.append("CameraImage.png");
+	VROverlay->SetOverlayFromFile(cameraOverlays[index], pathstr.toStdString().c_str());
 	VROverlay->SetOverlayAlpha(cameraOverlays[index], camColorA);
 	VROverlay->SetOverlayWidthInMeters(cameraOverlays[index], camWidth);
 	VROverlay->HideOverlay(cameraOverlays[index]);
