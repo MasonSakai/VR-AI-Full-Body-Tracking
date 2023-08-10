@@ -27,7 +27,7 @@ Calls will return:<br>
  -  all config values (above)<br>
  -  status (string)<br>
  -  id (int)
- -  
+
 _put_ will overwrite/append (whichever is applicable) the given config to the global config<br>
 This must contain the property id, which signifies where to write it<br>
 It is written exactly as is, besides id and status being removed<br>
