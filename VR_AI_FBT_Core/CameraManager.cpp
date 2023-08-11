@@ -23,7 +23,7 @@ void CalibrationThreadFunct() {
 
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 		std::cout << "Put top of controller against the camera and hold X/A\n" << std::flush;
-		VRFloatingOverlay::SharedInstance()->QueueText(QString("Put top of controller against the camera and hold X/A"), 10.0f);
+		VRFloatingOverlay::SharedInstance()->QueueText(QString("Put top of controller against the camera and hold X/A"), 5.0f);
 		while (active) {
 			uint64_t buttons = GetControllerState(vr::TrackedControllerRole_LeftHand).ulButtonPressed;
 			if (buttons & inputButtonMask) {
@@ -59,7 +59,7 @@ void CalibrationThreadFunct() {
 		std::cout << "Go where you are entirely within frame\n";
 		std::cout << "Put a controller against the ground the\n";
 		std::cout << "same way you did for the camera and hold X/A\n" << std::flush;
-		VRFloatingOverlay::SharedInstance()->QueueText(QString("Go where you are entirely within frame, Put a controller against the ground the same way you did for the camera and hold X/A"), 10.0f);
+		VRFloatingOverlay::SharedInstance()->QueueText(QString("Go where you are entirely within frame, Put a controller against the ground the same way you did for the camera and hold X/A"), 5.0f);
 		while (active) {
 			uint64_t buttons = GetControllerState(vr::TrackedControllerRole_LeftHand).ulButtonPressed;
 			if (buttons & inputButtonMask) {
@@ -97,7 +97,7 @@ void CalibrationThreadFunct() {
 		std::cout << "Stay in the same place, T-Pose, and hold X/A\n";
 		std::cout << "Preferably have your hands level and facing outwards,\n";
 		std::cout << "This will be used to calibrate your hands from your wrists\n" << std::flush;
-		VRFloatingOverlay::SharedInstance()->QueueText(QString("Stay in the same place, T-Pose, and hold X/A, preferably have your hands level and facing outwards, this will be used to calibrate your hands from your wrists"), 10.0f);
+		VRFloatingOverlay::SharedInstance()->QueueText(QString("Stay in the same place, T-Pose, and hold X/A, preferably have your hands level and facing outwards, this will be used to calibrate your hands from your wrists"), 5.0f);
 
 		while (active) {
 			uint64_t buttons = GetControllerState(vr::TrackedControllerRole_LeftHand).ulButtonPressed;
@@ -228,11 +228,11 @@ void OnRecenter(uint8_t index) {
 }
 void RecalibrateVirtualControllers() {
 	std::cout << "Queued Tracker Calibration\n";
-	VRFloatingOverlay::SharedInstance()->QueueText("Queued Tracker Calibration", 2.5f);
+	VRFloatingOverlay::SharedInstance()->QueueText("Queued Tracker Calibration", 1.5f);
 	buttonInputListener.push(2);
 	while (buttonInputListener.front() != 2) {}
 	std::cout << "Starting Tracker Calibration\n";
-	VRFloatingOverlay::SharedInstance()->QueueText("Starting Tracker Calibration", 5.0f);
+	VRFloatingOverlay::SharedInstance()->QueueText("Starting Tracker Calibration", 3.5f);
 
 	trackersOverride = true;
 
@@ -272,5 +272,5 @@ void RecalibrateVirtualControllers() {
 	trackersOverride = false;
 	buttonInputListener.pop();
 	std::cout << "Tracker Calibration Complete\n";
-	VRFloatingOverlay::SharedInstance()->QueueText("Tracker Calibration Complete", 5.0f);
+	VRFloatingOverlay::SharedInstance()->QueueText("Tracker Calibration Complete", 3.5f);
 }

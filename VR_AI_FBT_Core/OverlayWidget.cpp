@@ -9,7 +9,7 @@ pxPerLine = 22,
 lineHeight = 16,
 marginWidth = 10,
 marginHeight = 10;
-const float mPerPixel = .00075f;
+const float mPerPixel = .001f;
 
 OverlayWidget::OverlayWidget(QWidget* parent)
 	: QWidget(parent)
@@ -27,8 +27,6 @@ OverlayWidget::OverlayWidget(QWidget* parent)
 	int height = marginHeight * 2 + lineHeight + pxPerLine * 2;
 	int width = maxCharPerLine * pxPerChar + marginWidth * 2;
 	resize(width, height);
-	vr::VROverlay()->SetOverlayWidthInMeters(OverlayHandle, mPerPixel * width);
-
 }
 
 OverlayWidget::~OverlayWidget()
@@ -54,6 +52,9 @@ uint32_t GetNearestWhitespace(QString text, uint32_t start) {
 
 void OverlayWidget::SetText(QString text) {
 	uint32_t len = text.length();
+
+	//temp
+	vr::VROverlay()->SetOverlayWidthInMeters(OverlayHandle, mPerPixel * (maxCharPerLine * pxPerChar + marginWidth * 2));
 
 	uint32_t len2 = len / 2;
 	if (len2 > minCharPerLine && len2 < maxCharPerLine) {

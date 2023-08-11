@@ -17,6 +17,7 @@ using namespace vr;
 
 #include <iostream>
 
+glm::vec2 headsetOffsets(.25f, -.375f);
 
 VRFloatingOverlay* s_pSharedVRController = NULL;
 
@@ -60,7 +61,22 @@ void VRFloatingOverlay::UpdateTextUI() {
 		OnSceneChanged(QList<QRectF>());
 	}
 }
+void VRFloatingOverlay::UpdateTransform() {
+	if (!hasDuration) return;
 
+	glm::vec3 headsetForward = headRot * glm::vec3(0, 0, -1);
+	glm::vec3 headsetUp = headRot * glm::vec3(0, 1, 0);
+	glm::vec3 headsetRight = headRot * glm::vec3(1, 0, 0);
+
+	glm::vec3 posDelta = glm::vec3(0, 1, 0) * headsetOffsets.y;
+	posDelta += glm::normalize(reject(headsetForward, glm::vec3(0, 1, 0))) * headsetOffsets.x;
+
+	glm::mat4x4 matrix = glm::lookAt(glm::vec3(0, 0, 0), glm::normalize(posDelta), glm::vec3(0, 1, 0));
+
+	vr::HmdMatrix34_t transform = ConvertMatrix(matrix, headPos + posDelta);
+
+	vr::VROverlay()->SetOverlayTransformAbsolute(m_ulOverlayHandle, vr::ETrackingUniverseOrigin::TrackingUniverseStanding, &transform);
+}
 
 VRFloatingOverlay::VRFloatingOverlay()
 	: BaseClass()
@@ -145,26 +161,6 @@ bool VRFloatingOverlay::Init()
 
 	if (bSuccess)
 	{
-		vr::VROverlay()->SetOverlayWidthInMeters(m_ulOverlayHandle, .25f);
-		vr::HmdMatrix34_t transform;
-		glm::vec3 offset(0, -.125f, -.25f);
-		glm::vec3 front = -glm::normalize(offset);
-		glm::vec3 left(1, 0, 0);
-		glm::vec3 up = glm::cross(front, left);
-		transform.m[0][0] = left.x;
-		transform.m[1][0] = left.y;
-		transform.m[2][0] = left.z;
-		transform.m[0][1] = up.x;
-		transform.m[1][1] = up.y;
-		transform.m[2][1] = up.z;
-		transform.m[0][2] = front.x;
-		transform.m[1][2] = front.y;
-		transform.m[2][2] = front.z;
-		transform.m[0][3] = offset.x;
-		transform.m[1][3] = offset.y;
-		transform.m[2][3] = offset.z;
-
-		vr::VROverlay()->SetOverlayTransformTrackedDeviceRelative(m_ulOverlayHandle, vr::k_unTrackedDeviceIndex_Hmd, &transform);
 
 		m_pPumpEventsTimer = new QTimer(this);
 		connect(m_pPumpEventsTimer, SIGNAL(timeout()), this, SLOT(OnTimeoutPumpEvents()));
@@ -239,7 +235,7 @@ void VRFloatingOverlay::OnTimeoutPumpEvents()
 		}
 	}
 	UpdateTextUI();
-
+	UpdateTransform();
 }
 
 

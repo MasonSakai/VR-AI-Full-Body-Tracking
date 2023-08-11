@@ -17,6 +17,7 @@
         "oculustrigger": false
     },
     "port": 2674,
+    "trackerDampening": 0.5,
     "trackers": {
         "ankle": true,
         "elbow": false,
@@ -24,7 +25,6 @@
         "knee": false,
         "shoulder": false
     },
-    "trackerDampening": 0.5,
     "windowConfigs": [
         {
             "autostart": false,

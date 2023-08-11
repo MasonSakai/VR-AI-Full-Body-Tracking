@@ -55,6 +55,7 @@ protected:
 private:
 
 	void UpdateTextUI();
+	void UpdateTransform();
 
 	vr::TrackedDevicePose_t m_rTrackedDevicePose[vr::k_unMaxTrackedDeviceCount];
 	QString m_strVRDriver;
