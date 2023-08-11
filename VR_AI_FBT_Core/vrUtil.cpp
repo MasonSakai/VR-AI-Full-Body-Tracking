@@ -23,6 +23,10 @@ uint64_t pmButtonMask = ButtonMasks::OculusBY;
 
 uint64_t GetButtonMaskFromConfig(QJsonObject config) {
 	uint64_t flags = 0;
+	if (config["maskRaw"].toInteger()) {
+		int64_t signedFlags = config["maskRaw"].toInteger();
+		flags = *(uint64_t*)&signedFlags;
+	}
 	if (config["oculusax"].toBool()) flags |= ButtonMasks::OculusAX;
 	if (config["oculusby"].toBool()) flags |= ButtonMasks::OculusBY;
 	if (config["oculustrigger"].toBool()) flags |= ButtonMasks::OculusTrigger;
@@ -30,11 +34,13 @@ uint64_t GetButtonMaskFromConfig(QJsonObject config) {
 	return flags;
 }
 QJsonObject GetConfigFromButtonMask(uint64_t mask) {
-	 QJsonObject config;
+	QJsonObject config;
 	config.insert("oculusax", (bool)(mask & ButtonMasks::OculusAX));
 	config.insert("oculusby", (bool)(mask & ButtonMasks::OculusBY));
 	config.insert("oculustrigger", (bool)(mask & ButtonMasks::OculusTrigger));
 	config.insert("oculusbumper", (bool)(mask & ButtonMasks::OculusBumper));
+	int64_t signedMask = *(int64_t*)&mask;
+	config.insert("maskRaw", signedMask);
 	return config;
 }
 

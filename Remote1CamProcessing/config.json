@@ -1,6 +1,7 @@
 {
     "PlayspaceMover": {
         "buttons": {
+            "maskRaw": 2,
             "oculusax": false,
             "oculusbumper": false,
             "oculusby": true,
@@ -11,6 +12,7 @@
     },
     "ShibaMode": true,
     "buttons": {
+        "maskRaw": 130,
         "oculusax": true,
         "oculusbumper": false,
         "oculusby": true,

@@ -62,6 +62,7 @@ void InitConfig() {
 	pmButtons.insert("oculusby", true);
 	pmButtons.insert("oculustrigger", false);
 	pmButtons.insert("oculusbumper", false);
+	pmButtons.insert("maskRaw", 0);
 	pmConfig.insert("buttons", pmButtons);
 	json.insert("PlayspaceMover", pmConfig);
 
@@ -78,6 +79,7 @@ void InitConfig() {
 	buttons.insert("oculusby", true);
 	buttons.insert("oculustrigger", false);
 	buttons.insert("oculusbumper", false);
+	buttons.insert("maskRaw", 0);
 	json.insert("buttons", buttons);
 
 	config.setObject(json);

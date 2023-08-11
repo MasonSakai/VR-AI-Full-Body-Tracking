@@ -177,6 +177,7 @@ int main(int argc, char* argv[])
 	BaseDirectory.append("C:\\VSProjects\\VR-AI-Full-Body-Tracking\\Remote1CamProcessing\\");
 #endif
 
+
 	if (!ReadConfig()) InitConfig();
 
 	StartVR();
