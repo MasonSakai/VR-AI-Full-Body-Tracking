@@ -19,15 +19,17 @@ _get_ can be provided an index:<br>
  -  -2 - generates a new config with id `windowconfigs.count()`<br>
  -  -1 - gets an auto-generated id based on the amount of -1 calls before it, maxing at the highest defined config (default if not given)<br>
  -  index within defined configs - gets the associated config<br>
- -  index > defined configs - generates new config and allows that id<br>
+ -  index > defined configs - generates new config and allows that id
+ 
 Generated configs are made from the last defined config, but aren't written to the global config<br>
- -  If no configs are defined, one with the properties listed above will be created<br>
+ -  If no configs are defined, one with the properties listed above will be created
+ 
 All -2 calls will return the same id<br>
 Calls will return:<br>
  -  all config values (above)<br>
  -  status (string)<br>
  -  id (int)
- -  
+
 _put_ will overwrite/append (whichever is applicable) the given config to the global config<br>
 This must contain the property id, which signifies where to write it<br>
 It is written exactly as is, besides id and status being removed<br>
@@ -37,9 +39,11 @@ If the id is above the defined configs, there is no check to see how far, it is 
 recommended _put_<br>
 give:<br>
  -  to (int)<br>
- -  start (int)<br>
-returns:<br>
- -  same as **config** _get_ with id _to_<br>
+ -  start (int)
+ 
+returns:
+ -  same as **config** _get_ with id _to_
+ 
 _start_ should be the current id<br>
 _to_ is the desired id, no checks are performed for overlaps<br>
 backend details:<br>
@@ -53,7 +57,7 @@ Must be called before **start**<br>
 Should be called before **onPoseData**<br>
 Does not _need_ to be called until the camera starts<br>
 give:<br>
- -  id (int)<br>
+ -  id (int)
 
 **start**<br>
 recommended _put_<br>
@@ -76,11 +80,13 @@ Gives pose data<br>
 Output of AI, filtered out by _confidenceThreshold_ (config)<br>
 give:<br>
  -  id (int)<br>
- -  pose (dict of pose data)<br>
+ -  pose (dict of pose data)
+
 pose data:<br>
  -  x (float)<br>
  -  y (float)<br>
- -  score (float)<br>
+ -  score (float)
+
 valid pose names are:<br>
  -  nose<br>
  -  left_eye<br>
