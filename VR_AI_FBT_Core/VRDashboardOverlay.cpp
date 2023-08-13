@@ -298,8 +298,22 @@ void VRDashboardOverlay::OnTimeoutPumpEvents()
 		}
 	}
 	if (vr::VROverlay()->IsOverlayVisible(m_ulOverlayHandle)) {
-		UpdateCameraStateUI();
-		OnSceneChanged(QList<QRectF>());//why does it turn to black squares sometimes?
+		if (vr::VRCompositor() != NULL) {
+			vr::Compositor_FrameTiming t;
+			t.m_nSize = sizeof(vr::Compositor_FrameTiming);
+			bool hasFrame = vr::VRCompositor()->GetFrameTiming(&t, 0);
+			// If the frame has changed we update, if a frame was redisplayed we update.
+			if ((hasFrame && currentFrame != t.m_nFrameIndex) || (hasFrame && t.m_nNumFramePresents != numFramePresents)) {
+				currentFrame = t.m_nFrameIndex;
+				numFramePresents = t.m_nNumFramePresents;
+				UpdateCameraStateUI();
+				OnSceneChanged(QList<QRectF>());//why does it turn to black squares sometimes?
+			}
+		}
+		else {
+			UpdateCameraStateUI();
+			OnSceneChanged(QList<QRectF>());//why does it turn to black squares sometimes?
+		}
 	}
 
 	if (m_ulOverlayThumbnailHandle != vr::k_ulOverlayHandleInvalid)

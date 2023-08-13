@@ -149,7 +149,11 @@ void PoseTracker::UpdateDirections() {
 }
 
 void PoseTracker::UpdatePositionDampened(glm::vec3 pos) {
-	position = trackerDampening * position + (1 - trackerDampening) * pos;
+	bool b = glm::any(glm::isnan(pos));
+	if (b) {
+		std::cout << "tracker " << PoseNames[tracker] << " got nan position!\n";
+	}
+	else position = trackerDampening * position + (1 - trackerDampening) * pos;
 }
 
 void PoseTracker::CalculateMultiPosition() {

@@ -92,4 +92,7 @@ private:
 	QPointF m_ptLastMouse;
 	Qt::MouseButtons m_lastMouseButtons;
 	bool m_bManualMouseHandling;
+
+	int numFramePresents = 0;
+	uint32_t currentFrame = 0;
 };

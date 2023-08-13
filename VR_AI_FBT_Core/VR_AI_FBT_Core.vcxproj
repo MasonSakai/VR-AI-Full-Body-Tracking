@@ -55,7 +55,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
   </PropertyGroup>
@@ -70,9 +70,9 @@
       <AdditionalDependencies>libvrinputemulator.lib;openvr_api.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetDir)$(TargetName).exe" "Z:\_Shared\$(TargetName).exe"
-copy /Y "$(TargetDir)$(TargetName).ilk" "Z:\_Shared\$(TargetName).ilk"
-copy /Y "$(TargetDir)$(TargetName).pdb" "Z:\_Shared\$(TargetName).pdb"</Command>
+      <Command>copy /Y "$(TargetDir)$(TargetName).exe" "Y:\_Shared\$(TargetName).exe"
+copy /Y "$(TargetDir)$(TargetName).ilk" "Y:\_Shared\$(TargetName).ilk"
+copy /Y "$(TargetDir)$(TargetName).pdb" "Y:\_Shared\$(TargetName).pdb"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copying to shared drive...</Message>
