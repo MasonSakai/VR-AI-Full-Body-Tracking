@@ -235,21 +235,8 @@ void VRFloatingOverlay::OnTimeoutPumpEvents()
 		}
 	}
 
-	if (vr::VRCompositor() != NULL) {
-		vr::Compositor_FrameTiming t;
-		t.m_nSize = sizeof(vr::Compositor_FrameTiming);
-		bool hasFrame = vr::VRCompositor()->GetFrameTiming(&t, 0);
-		// If the frame has changed we update, if a frame was redisplayed we update.
-		if ((hasFrame && currentFrame != t.m_nFrameIndex) || (hasFrame && t.m_nNumFramePresents != numFramePresents)) {
-			currentFrame = t.m_nFrameIndex;
-			numFramePresents = t.m_nNumFramePresents;
-			UpdateTextUI();
-			UpdateTransform();
-		}
-	}
-	else if (vr::VROverlay()->IsOverlayVisible(m_ulOverlayHandle)) {
-			{
-		UpdateTextUI();
+	UpdateTextUI();//recreate the UI on queue to allow different sizes?
+	if (vr::VROverlay()->IsOverlayVisible(m_ulOverlayHandle)) {
 		UpdateTransform();
 	}
 }

@@ -64,6 +64,8 @@ private slots:
 
 	void on_sldDampen_valueChanged(int value);
 
+	void on_cbxUseHipForward_clicked(bool checked);
+
 private:
 	Ui::DashboardWidgetClass ui;
 

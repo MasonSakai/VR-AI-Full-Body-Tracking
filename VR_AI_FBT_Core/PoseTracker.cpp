@@ -14,6 +14,7 @@ ankleToSole, footLen, maxAnkle;
 
 Camera cameras[16];
 PoseTracker trackers[17];
+bool footFollowHip = true;
 
 bool PoseTrackers[17] = {
 	false,	//       nose
@@ -49,6 +50,7 @@ void PoseTracker::InitTrackers() {
 	PoseTrackers[Poses::left_elbow] = trackerConfig["elbow"].toBool();
 	PoseTrackers[Poses::right_elbow] = PoseTrackers[Poses::left_elbow];
 	trackerDampening = config["trackerDampening"].toDouble(.5);
+	footFollowHip = config["useHipForward"].toBool(true);
 
 	for (uint8_t i = 0; i < 17; i++) {
 		trackers[i].Init(i);
@@ -59,7 +61,6 @@ void PoseTracker::InitTrackers() {
 
 	GetTrackers();
 }
-
 void PoseTracker::Exit() {
 	QJsonObject configObj = config.object();
 	configObj.insert("trackerDampening", trackerDampening);
@@ -70,6 +71,7 @@ void PoseTracker::Exit() {
 	trackerConfig.insert("shoulder", PoseTrackers[Poses::left_shoulder]);
 	trackerConfig.insert("elbow", PoseTrackers[Poses::left_elbow]);
 	configObj.insert("trackers", trackerConfig);
+	configObj.insert("useHipForward", footFollowHip);
 	config.setObject(configObj);
 
 	for (int i = 0; i < 17; i++) {
@@ -78,6 +80,10 @@ void PoseTracker::Exit() {
 		}
 	}
 }
+void PoseTracker::SetUseHipForward(bool useHipForward) {
+	footFollowHip = useHipForward;
+}
+
 
 void PoseTracker::SetPose(uint8_t camera, QJsonObject poseData) {
 	QJsonObject json;
@@ -151,6 +157,7 @@ void PoseTracker::UpdateDirections() {
 void PoseTracker::UpdatePositionDampened(glm::vec3 pos) {
 	bool b = glm::any(glm::isnan(pos));
 	if (b) {
+		//check on size packets with gopro
 		std::cout << "tracker " << PoseNames[tracker] << " got nan position!\n";
 	}
 	else position = trackerDampening * position + (1 - trackerDampening) * pos;
@@ -675,9 +682,7 @@ void PoseTracker::CalculateOrientationAnkle(uint8_t knee, uint8_t hip) {
 	//when off floor, use plane between hip, knee, and foot for orientation
 	//when on floor, have setting to switch between that and current (using hip forward)
 
-	bool footFollowHip = true;
-
-	float height = position.y;// -ankleToSole;
+	float height = position.y;
 	float delh = height - maxAnkle;
 	float dot = glm::dot(glm::normalize(trackers[knee].position - position), glm::vec3(0, 1, 0));
 	if (height <= maxAnkle && dot > .95f) {
@@ -704,6 +709,36 @@ void PoseTracker::CalculateOrientationAnkle(uint8_t knee, uint8_t hip) {
 		rotation = glm::quatLookAt(forward, up);
 	}
 }
+void PoseTracker::CalculateOrientationKnee(uint8_t ankle, uint8_t hip) {
+	//use floor(level) when on or below
+	//put toes on when near (<60/70 deg)
+	//use knee when above
+
+	//when off floor, use plane between hip, knee, and foot for orientation
+	//when on floor, have setting to switch between that and current (using hip forward)
+
+
+	float height = trackers[ankle].position.y;
+	float dot = glm::dot(glm::normalize(position - trackers[ankle].position), glm::vec3(0, 1, 0));
+	if (height <= maxAnkle && dot > .95f) {
+		//if dot between up and knee is too small, do same as else statement
+		if (footFollowHip) {
+			rotation = glm::quatLookAt(glm::vec3(0, -1, 0),
+				reject(trackers[right_hip].rotation * glm::vec3(1, 0, 0), glm::vec3(0, 1, 0)));
+		}
+		else {
+			glm::vec3 up(0, 1, 0);
+			glm::vec3 forward = GetFootForward(ankle, tracker, hip);
+			forward = glm::normalize(reject(forward, up));
+			rotation = glm::quatLookAt(-up, forward);
+		}
+	}
+	else {
+		glm::vec3 up = GetFootForward(ankle, tracker, hip);
+		glm::vec3 forward = glm::normalize(trackers[ankle].position - position);
+		rotation = glm::quatLookAt(forward, up);
+	}
+}
 
 uint8_t PoseTracker::CalculateOrientation() {
 	switch (tracker) {
@@ -723,10 +758,6 @@ uint8_t PoseTracker::CalculateOrientation() {
 		break;
 
 		//Hip
-	case Poses::left_hip:
-		rotation = glm::quatLookAt(glm::normalize(trackers[Poses::right_hip].position - position),
-			glm::normalize(trackers[Poses::left_shoulder].position - position));
-		break;
 	case Poses::right_hip:
 		rotation = glm::quatLookAt(glm::normalize(trackers[Poses::left_hip].position - position),
 			glm::normalize(trackers[Poses::right_shoulder].position - position));
@@ -743,11 +774,11 @@ uint8_t PoseTracker::CalculateOrientation() {
 		break;
 	case Poses::left_knee:
 		rotation = glm::quatLookAt(glm::normalize(trackers[Poses::left_ankle].position - position),
-			-glm::normalize(trackers[Poses::left_hip].position - position));
+			GetFootForward(Poses::left_ankle, Poses::left_knee, Poses::left_hip));
 		break;
 	case Poses::right_knee:
 		rotation = glm::quatLookAt(glm::normalize(trackers[Poses::right_ankle].position - position),
-			-glm::normalize(trackers[Poses::right_hip].position - position)); //Maybe flip sign based on headset/hip
+			GetFootForward(Poses::right_ankle, Poses::right_knee, Poses::right_hip));
 		break;
 
 

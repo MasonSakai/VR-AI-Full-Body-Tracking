@@ -20,6 +20,7 @@ public:
 	static void SetPose(uint8_t camera, QJsonObject poseData);
 	static void InitTrackers();
 	static void Exit();
+	static void SetUseHipForward(bool useHipForward);
 
 	void Init(uint8_t trackerIndex);
 
@@ -46,7 +47,6 @@ public:
 	bool hasAmbiguousPosition = false;
 	bool hasDualPosition = false;
 	glm::vec3 amb1, amb2;
-
 private:
 	uint8_t tracker;
 
@@ -68,6 +68,7 @@ private:
 	void CalculateSingleElbow(uint8_t n, uint8_t wrist, uint8_t shoulder);
 
 	void CalculateOrientationAnkle(uint8_t knee, uint8_t hip);
+	void CalculateOrientationKnee(uint8_t ankle, uint8_t hip);
 
 	static glm::vec3 GetFootForward(uint8_t foot, uint8_t knee, uint8_t hip);
 };

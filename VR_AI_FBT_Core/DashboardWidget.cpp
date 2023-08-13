@@ -141,6 +141,10 @@ void DashboardWidget::on_cbxTrackerElbow_clicked(bool checked) {
 	}
 }
 
+void DashboardWidget::on_cbxUseHipForward_clicked(bool checked) {
+	PoseTracker::SetUseHipForward(checked);
+}
+
 bool buttonEnabledtmp[16];
 void DashboardWidget::on_btnRecenter_clicked() {
 	lblRecenter->setVisible(true);
@@ -229,6 +233,7 @@ void DashboardWidget::InitConfig() {
 	findChild<QCheckBox*>("cbxTrackerHip")->setChecked(trackerConfig["hip"].toBool());
 	findChild<QCheckBox*>("cbxTrackerShoulder")->setChecked(trackerConfig["shoulder"].toBool());
 	findChild<QCheckBox*>("cbxTrackerElbow")->setChecked(trackerConfig["elbow"].toBool());
+	findChild<QCheckBox*>("cbxUseHipForward")->setChecked(trackerConfig["useHipForward"].toBool(true));
 	
 	sldDampen->setValue(100 * config["trackerDampening"].toDouble());
 	QString sldDampenStr = QString::number(sldDampen->value());
