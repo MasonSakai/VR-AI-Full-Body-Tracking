@@ -79,8 +79,8 @@ void configHandler(const QHttpServerRequest& req, QHttpServerResponder&& res) {
 		jsonObject.remove("status");
 		configObject = config.object();
 		windowConfigs = config["windowConfigs"].toArray();
-		if(windowConfigs[index].isNull()) windowConfigs.append(jsonObject);
-		else windowConfigs.insert(index, jsonObject);
+		if(windowConfigs[index].isObject()) windowConfigs.insert(index, jsonObject);
+		//else windowConfigs.append(jsonObject);
 		configObject.insert("windowConfigs", windowConfigs);
 		config.setObject(configObject);
 		WriteConfig();
@@ -119,13 +119,13 @@ void configSwitchHandler(const QHttpServerRequest& req, QHttpServerResponder&& r
 		jsonObject = QJsonObject();
 		if (toIndex != 0) {
 			jsonObject = jsonArray[toIndex - 1].toObject();
-			jsonArray.append(jsonObject);
+			//jsonArray.append(jsonObject);
 		}
 		else {
 			jsonObject.insert("autostart", false);
 			jsonObject.insert("confidenceThreshold", 0.3f);
 			jsonObject.insert("cameraName", "");
-			jsonArray.append(jsonObject);
+			//jsonArray.append(jsonObject);
 		}
 		jsonObject.insert("status", "madeConfig");
 	}
