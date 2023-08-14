@@ -311,8 +311,9 @@ void VRDashboardOverlay::OnTimeoutPumpEvents()
 			}
 		}
 		else {
+			std::cout << "No Compositor!\n";
 			UpdateCameraStateUI();
-			OnSceneChanged(QList<QRectF>());//why does it turn to black squares sometimes?
+			OnSceneChanged(QList<QRectF>());
 		}
 	}
 
