@@ -1,7 +1,6 @@
 # VR-AI-Full-Body-Tracking
 An AI driven, camera based Full Body tracking solution for VR systems
 
-# Simple explaination
 This program, using OpenVR Input Emulator, can create virtual trackers and using cameras placed around the room it can mimic real, vive full body trackers.<br>
 Each camera has an associated browser page running a tensorflow pose detection model (AI that can tell where your body is), and the more cameras at different angles the better.<br>
 This program features basic Playspace Mover functionality! I need to refine it (and on some systems it only half works?), but it has it and is configurable through the UI.
@@ -20,6 +19,28 @@ I don't have any real installer<br>
 Just unzip the zip file wherever you want (though it needs to be able to write to config.json)<br>
 It **requires** OpenVR Input Emulator, you will likely need this patch for this program to work <br>
 https://github.com/Louka3000/OpenVR-InputEmulator-Fixed/releases/tag/v0.1-pimax
+
+# Use
+As mentioned, each active camera needs a different browser window<br>
+These can be accessed at 127.0.0.1:_portNumber_ if run on the local device, otherwise you need the local IP of the computer running the VR<br>
+The port number by default is 2674, but this can be changed in the config.json file<br>
+If you're running on another computer, you need to set the flag _Insecure origins treated as secure_ to true with the target URL in your browser (chrome://flags/ on chrome, similar for others)<br>
+It needs camera permisions and once you set the camera you need to press apply before starting (and I don't recommend changing while it's running)<br>
+If you need to add more cameras, at the moment this is only done through the config.json file<br>
+Once a camera is running, it must be calibrated from VR<br>
+You will be given instructions both within VR and in the console
+
+I would also not recommend recentering after calibrating cameras, or calibrating a new camera after recentering if others are active<br>
+If you need to, after recalibrating there should be a system to recenter the cameras by recalibrating one of them, but if this doesn't work you must calibrate them all<br>
+And adding a camera after recentering without recalibrating the others will cause issues until the others are recalibrated<br>
+tldr; Just don't recenter
+
+If the trackers dont appear in the middle of the steamvr playspace to begin with, they must be calibrated in the trackers tab<br>
+They will follow the position and orientation of your hands, and once they're in a reachable spot press and hold your interact button<br>
+You will then move your controller to their position and release the button<br>
+This should calibrate them, and it may take time to figure out where you need to be relative to the controllers to center them better<br>
+_It is also easier to do this **before** calibrating any cameras_<br>
+If they're rotated and aren't really following your controllers, restart steamvr, I can't do much about that
 
 # Camera Count and Placement
 The program has been set up to allow at max 16 cameras, though this could easily be increased in code<br>
