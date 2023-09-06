@@ -1,18 +1,25 @@
 # VR-AI-Full-Body-Tracking
 An AI driven, camera based Full Body tracking solution for VR systems
 
-This is free, besides the cost of cameras, which are fairly cheap (you can use your phone, and naturally the computer's webcam)<br>
-This program, using OpenVR Input Emulator, can create virtual trackers and using cameras placed around the room it can mimic real, vive full body trackers.<br>
-Each camera has an associated browser page running a tensorflow pose detection model (AI that can tell where your body is), and the more cameras at different angles the better.<br>
-Works on any camera if it can be recognized by the browser as a webcam. GoPros seem weird, but there are workarounds. <br>
-This program features basic Playspace Mover functionality! I need to refine it (and on some systems it only half works?), but it has it and is configurable through the UI.<br>
-Supports up to 12 point tracking (including the headset and hands, meaning 9 additional trackers), though shoulder tracking is... incomplete and may be replaced with a chest tracker; and knees are a bit redundant unless the IK is not good enough for you (or there is no IK)
+This is free, besides the cost of cameras, which are fairly cheap (you can use your phone, and naturally the computer's webcam)
+
+This program, using OpenVR Input Emulator, can create virtual trackers and using cameras placed around the room it can mimic real, vive full body trackers.
+
+Each camera has an associated browser page running a tensorflow pose detection model (AI that can tell where your body is), and the more cameras at different angles the better.
+
+Works on any camera if it can be recognized by the browser as a webcam. GoPros seem weird, but there are workarounds.
+
+This program features _basic Playspace Mover functionality!_ I need to refine it (and on some systems it only half works?), but it has it and is configurable through the UI.
+
+__Supports up to 12 point tracking__ (including the headset and hands, meaning 9 additional trackers), though shoulder tracking is... incomplete and may be replaced with a chest tracker; and knees are a bit redundant unless the IK is not good enough for you (or there is no IK)
+
+Not only works for VRChat, but has also been tested in _Source Film Maker_ with a VR plugin! Also should work for any headset or other system as long as it uses SteamVR/OpenVR
 
 # Notes
 This program practically requires **at least** two cameras, and requires decent placement. Details below.<br>
 The AI does not capture 3D position or orientation. That is all done by the program and is prone to issues or inaccuracies.<br>
   Hip tracking side-to-side is not great, as the AI can't capture this movement very well (sorry, no wiggles). Hip tracking is fine otherwise<br>
-This may be slow on some hardware, especially since the AI is entirely CPU based and running in a browser<br>
+This may be slow on some hardware, especially since the AI is entirely CPU based and running in a browser (if someone can get this on a better system, network details are in the Remote1CamProcessing's readme)<br>
   If the markers on the camera are weirdly or inconsistently offset from the person in frame (noticed using GoPro for example), using OBS Virtual Camera with a solid background layer can make sure it keeps a consistent size (I can't do much about this, it's just part of how the AI initializes)<br>
 This has only been tested on windows with chrome, and with Qt may _only_ work on windows<br>
 The program (at the time of writing this) is only mildly tested and may be prone to issues. At the moment I don't have access to a headset so I can't do much without feedback.<br>
