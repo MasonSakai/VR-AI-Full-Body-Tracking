@@ -6,7 +6,7 @@ This program, using OpenVR Input Emulator, can create virtual trackers and using
 Each camera has an associated browser page running a tensorflow pose detection model (AI that can tell where your body is), and the more cameras at different angles the better.<br>
 Works on any camera if it can be recognized by the browser as a webcam. GoPros seem weird, but there are workarounds. <br>
 This program features basic Playspace Mover functionality! I need to refine it (and on some systems it only half works?), but it has it and is configurable through the UI.<br>
-Supports up to 12 point tracking (including the headset and hands, meaning 9 additional trackers), though shoulder tracking is... incomplete and may be replaced with a chest tracker 
+Supports up to 12 point tracking (including the headset and hands, meaning 9 additional trackers), though shoulder tracking is... incomplete and may be replaced with a chest tracker; and knees are a bit redundant unless the IK is not good enough for you (or there is no IK)
 
 # Notes
 This program practically requires **at least** two cameras, and requires decent placement. Details below.<br>
