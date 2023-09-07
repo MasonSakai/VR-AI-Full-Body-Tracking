@@ -56,7 +56,7 @@ private slots:
 	void on_cbxTrackerAnkle_clicked(bool checked);
 	void on_cbxTrackerKnee_clicked(bool checked);
 	void on_cbxTrackerHip_clicked(bool checked);
-	void on_cbxTrackerShoulder_clicked(bool checked);
+	void on_cbxTrackerChest_clicked(bool checked);
 	void on_cbxTrackerElbow_clicked(bool checked);
 
 	void on_btnRecenter_clicked();

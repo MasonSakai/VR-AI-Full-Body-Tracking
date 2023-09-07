@@ -116,12 +116,7 @@ void DashboardWidget::on_cbxTrackerHip_clicked(bool checked) {
 		PoseTrackers[Poses::right_hip] = checked;
 	}
 }
-void DashboardWidget::on_cbxTrackerShoulder_clicked(bool checked) {
-	if (PoseTrackers[Poses::left_shoulder] != checked) {
-		if (checked) trackerIDs[Poses::left_shoulder] = getTracker(PoseNames[Poses::left_shoulder]);
-		else deleteVirtualDevice(trackerIDs[Poses::left_shoulder]);
-		PoseTrackers[Poses::left_shoulder] = checked;
-	}
+void DashboardWidget::on_cbxTrackerChest_clicked(bool checked) {
 	if (PoseTrackers[Poses::right_shoulder] != checked) {
 		if (checked) trackerIDs[Poses::right_shoulder] = getTracker(PoseNames[Poses::right_shoulder]);
 		else deleteVirtualDevice(trackerIDs[Poses::right_shoulder]);
@@ -231,7 +226,7 @@ void DashboardWidget::InitConfig() {
 	findChild<QCheckBox*>("cbxTrackerAnkle")->setChecked(trackerConfig["ankle"].toBool());
 	findChild<QCheckBox*>("cbxTrackerKnee")->setChecked(trackerConfig["knee"].toBool());
 	findChild<QCheckBox*>("cbxTrackerHip")->setChecked(trackerConfig["hip"].toBool());
-	findChild<QCheckBox*>("cbxTrackerShoulder")->setChecked(trackerConfig["shoulder"].toBool());
+	findChild<QCheckBox*>("cbxTrackerChest")->setChecked(trackerConfig["chest"].toBool());
 	findChild<QCheckBox*>("cbxTrackerElbow")->setChecked(trackerConfig["elbow"].toBool());
 	findChild<QCheckBox*>("cbxUseHipForward")->setChecked(trackerConfig["useHipForward"].toBool(true));
 	

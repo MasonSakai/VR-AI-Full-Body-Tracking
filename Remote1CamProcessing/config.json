@@ -25,7 +25,7 @@
         "elbow": false,
         "hip": true,
         "knee": false,
-        "shoulder": false
+        "chest": false
     },
     "windowConfigs": [
         {

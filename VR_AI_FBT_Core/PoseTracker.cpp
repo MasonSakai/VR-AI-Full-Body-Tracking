@@ -45,8 +45,7 @@ void PoseTracker::InitTrackers() {
 	PoseTrackers[Poses::left_knee] = trackerConfig["knee"].toBool();
 	PoseTrackers[Poses::right_knee] = PoseTrackers[Poses::left_knee];
 	PoseTrackers[Poses::right_hip] = trackerConfig["hip"].toBool();
-	PoseTrackers[Poses::left_shoulder] = trackerConfig["shoulder"].toBool();
-	PoseTrackers[Poses::right_shoulder] = PoseTrackers[Poses::left_shoulder];
+	PoseTrackers[Poses::right_shoulder] = trackerConfig["chest"].toBool();
 	PoseTrackers[Poses::left_elbow] = trackerConfig["elbow"].toBool();
 	PoseTrackers[Poses::right_elbow] = PoseTrackers[Poses::left_elbow];
 	trackerDampening = config["trackerDampening"].toDouble(.5);
@@ -68,7 +67,7 @@ void PoseTracker::Exit() {
 	trackerConfig.insert("ankle", PoseTrackers[Poses::left_ankle]);
 	trackerConfig.insert("knee", PoseTrackers[Poses::left_knee]);
 	trackerConfig.insert("hip", PoseTrackers[Poses::right_hip]);
-	trackerConfig.insert("shoulder", PoseTrackers[Poses::left_shoulder]);
+	trackerConfig.insert("chest", PoseTrackers[Poses::right_shoulder]);
 	trackerConfig.insert("elbow", PoseTrackers[Poses::left_elbow]);
 	configObj.insert("trackers", trackerConfig);
 	configObj.insert("useHipForward", footFollowHip);
@@ -186,9 +185,20 @@ void PoseTracker::CalculateMultiPosition() {
 
 	if (tracker == Poses::right_hip) {
 		hipPosValid = true;
-		hipRightRealPos = position;
+		realPos = position;
 		if (trackers[Poses::left_hip].hasValidPosition) {
-			position = (hipRightRealPos + trackers[Poses::left_hip].position) * .5f;
+			position = (realPos + trackers[Poses::left_hip].position) * .5f;
+		}
+		else
+		{
+			hasValidPosition = false;
+		}
+	}
+	else if (tracker == Poses::right_shoulder) {
+		hipPosValid = true;
+		realPos = position;
+		if (trackers[Poses::left_shoulder].hasValidPosition) {
+			position = (realPos + trackers[Poses::left_shoulder].position) * .5f;
 		}
 		else
 		{
@@ -290,10 +300,20 @@ bool PoseTracker::CalculateSingleCameraPosition() {
 		if (trackers[Poses::left_hip].hasValidPosition) {
 			if (!hipPosValid) {
 				dist = glm::length(cameras[n].position - trackers[Poses::left_hip].position);
-				hipRightRealPos = cameras[n].position + directions[n] * dist;
+				realPos = cameras[n].position + directions[n] * dist;
 			}
 
-			UpdatePositionDampened((hipRightRealPos + trackers[Poses::left_hip].position) * .5f);
+			UpdatePositionDampened((realPos + trackers[Poses::left_hip].position) * .5f);
+			hasValidPosition = true;
+		}
+		break;
+	case Poses::right_shoulder:
+		if (trackers[Poses::left_shoulder].hasValidPosition) {
+			if (!hipPosValid) {
+				dist = glm::length(cameras[n].position - trackers[Poses::left_shoulder].position);
+				realPos = cameras[n].position + directions[n] * dist;
+			}
+			UpdatePositionDampened((realPos + trackers[Poses::left_hip].position) * .5f);
 			hasValidPosition = true;
 		}
 		break;
@@ -334,10 +354,11 @@ void PoseTracker::CalculateSingleAnkle(uint8_t n, uint8_t knee, uint8_t hip) {
 		uint8_t c = CalculateOneValid(trackers[knee].position, lowerLegLen, cameras[n].position, directions[n]);
 		if (c == 2) {
 			if (trackers[Poses::left_hip].hasValidPosition && trackers[Poses::right_hip].hasValidPosition) {
+				glm::vec3 hipPos = (hip == Poses::right_hip && trackers[hip].hipPosValid) ? trackers[hip].realPos : trackers[hip].position;
 				glm::vec3 c1 = glm::cross(amb1 - trackers[knee].position,
-					trackers[hip].position - trackers[knee].position);
+					hipPos - trackers[knee].position);
 				glm::vec3 c2 = glm::cross(amb2 - trackers[knee].position,
-					trackers[hip].position - trackers[knee].position);
+					hipPos - trackers[knee].position);
 				bool p1v = glm::dot(c1, trackers[Poses::right_hip].position - trackers[Poses::left_hip].position) > 0;
 				bool p2v = glm::dot(c2, trackers[Poses::right_hip].position - trackers[Poses::left_hip].position) > 0;
 				if (p1v == p2v) {
@@ -487,10 +508,11 @@ void PoseTracker::CalculateSingleKnee(uint8_t n, uint8_t ankle, uint8_t hip) {
 			break;
 		case 2:
 			if (trackers[Poses::left_hip].hasValidPosition && trackers[Poses::right_hip].hasValidPosition) {
+				glm::vec3 hipPos = (hip == Poses::right_hip && trackers[hip].hipPosValid) ? trackers[hip].realPos : trackers[hip].position;
 				glm::vec3 c1 = glm::cross(trackers[ankle].position - amb1,
-					trackers[hip].position - amb1);
+					hipPos - amb1);
 				glm::vec3 c2 = glm::cross(trackers[ankle].position - amb2,
-					trackers[hip].position - amb2);
+					hipPos - amb2);
 				bool p1v = glm::dot(c1, trackers[Poses::right_hip].position - trackers[Poses::left_hip].position) > 0;
 				bool p2v = glm::dot(c2, trackers[Poses::right_hip].position - trackers[Poses::left_hip].position) > 0;
 				if (p1v == p2v) {
@@ -566,7 +588,8 @@ void PoseTracker::CalculateSingleKnee(uint8_t n, uint8_t ankle, uint8_t hip) {
 }
 void PoseTracker::CalculateSingleElbow(uint8_t n, uint8_t wrist, uint8_t shoulder) {
 	if (trackers[shoulder].hasValidPosition && trackers[wrist].hasValidPosition) {
-		uint8_t c = CalculateTwoValid(trackers[shoulder].position, upperLegLen,
+		glm::vec3 shoulderPos = (shoulder == Poses::right_shoulder && trackers[shoulder].hipPosValid) ? trackers[shoulder].realPos : trackers[shoulder].position;
+		uint8_t c = CalculateTwoValid(shoulderPos, upperLegLen,
 			trackers[wrist].position, lowerLegLen,
 			cameras[n].position, directions[n]);
 		switch (c) {
@@ -589,7 +612,8 @@ void PoseTracker::CalculateSingleElbow(uint8_t n, uint8_t wrist, uint8_t shoulde
 		}
 	}
 	else if (trackers[shoulder].hasValidPosition) {
-		uint8_t c = CalculateOneValid(trackers[shoulder].position, lowerLegLen, cameras[n].position, directions[n]);
+		glm::vec3 shoulderPos = (shoulder == Poses::right_shoulder && trackers[shoulder].hipPosValid) ? trackers[shoulder].realPos : trackers[shoulder].position;
+		uint8_t c = CalculateOneValid(shoulderPos, lowerLegLen, cameras[n].position, directions[n]);
 		switch (c) {
 		case 0:
 			UpdatePositionDampened((position + amb2) * .5f);
@@ -759,7 +783,7 @@ uint8_t PoseTracker::CalculateOrientation() {
 
 		//Hip
 	case Poses::right_hip:
-		rotation = glm::quatLookAt(glm::normalize(trackers[Poses::left_hip].position - position),
+		rotation = glm::quatLookAt(glm::normalize(realPos - trackers[Poses::left_hip].position),
 			glm::normalize(trackers[Poses::right_shoulder].position - position));
 		break;
 
@@ -781,14 +805,10 @@ uint8_t PoseTracker::CalculateOrientation() {
 			GetFootForward(Poses::right_ankle, Poses::right_knee, Poses::right_hip));
 		break;
 
-
-	case Poses::left_shoulder:
-		rotation = glm::quatLookAt(glm::normalize(trackers[Poses::left_hip].position - position),
-			glm::normalize(trackers[Poses::right_shoulder].position - position));
-		break;
+		//Chest
 	case Poses::right_shoulder:
-		rotation = glm::quatLookAt(glm::normalize(trackers[Poses::right_hip].position - position),
-			glm::normalize(trackers[Poses::left_shoulder].position - position));
+		rotation = glm::quatLookAt(glm::normalize(realPos - trackers[Poses::left_shoulder].position),
+			glm::normalize(trackers[Poses::right_hip].position - position));
 		break;
 
 	default:

@@ -40,7 +40,7 @@ public:
 	glm::vec3 position;
 	glm::quat rotation;
 
-	glm::vec3 hipRightRealPos;
+	glm::vec3 realPos;
 	bool hipPosValid = false;
 
 	bool hasValidPosition = false;
