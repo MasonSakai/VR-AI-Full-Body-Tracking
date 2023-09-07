@@ -11,7 +11,9 @@ Works on any camera if it can be recognized by the browser as a webcam. GoPros s
 
 This program features _basic Playspace Mover functionality!_ I need to refine it (and on some systems it only half works?), but it has it and is configurable through the UI.
 
-__Supports up to 12 point tracking__ (including the headset and hands, meaning 9 additional trackers), though shoulder tracking is... incomplete and may be replaced with a chest tracker; and knees are a bit redundant unless the IK is not good enough for you (or there is no IK)
+__Supports up to 12 point tracking__ (including the headset and hands, meaning 9 additional trackers); knees are a bit redundant unless the IK is not good enough for you (or there is no IK)
+
+Can be made to room scale with a few well placed cameras, helps if they're wide FOV
 
 Not only works for VRChat, but has also been tested in _Source Film Maker_ with a VR plugin! Also should work for any headset or other system as long as it uses SteamVR/OpenVR
 
