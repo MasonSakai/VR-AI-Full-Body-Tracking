@@ -109,6 +109,26 @@ upperLegLen, lowerLegLen; //add shoulder to head
 extern Camera cameras[];
 extern PoseTracker trackers[];
 
+const std::string TrackerNames[17] = {
+	"N/A ns",
+	"N/A ley",
+	"N/A rey",
+	"N/A ler",
+	"Head",
+	"N/A ls",
+	"Chest",
+	"Left Elbow",
+	"Right Elbow",
+	"Left Wrist",
+	"Right Wrist",
+	"N/A lh",
+	"Hip",
+	"Left Knee",
+	"Right Knee",
+	"Left Ankle",
+	"Right Ankle"
+};
+
 const std::string PoseNames[17] = {
 	"nose",
 	"left_eye",

@@ -51,7 +51,7 @@ bool findTrackers() {
 		//vr::DriverPose_t pose = inputEmulator.getVirtualDevicePose(i);
 		//std::cout << "Found Tracker " << inputEmulator.getVirtualDeviceInfo(i).deviceSerial << "\n" << std::flush;
 		for (int j = 0; j < 17; j++) {
-			if (inputEmulator.getVirtualDeviceInfo(i).deviceSerial == PoseNames[j]) {
+			if (inputEmulator.getVirtualDeviceInfo(i).deviceSerial == TrackerNames[j]) {
 				trackerIDs[j] = i;
 				//std::cout << "    Matched\n" << std::flush;
 				break;
@@ -121,7 +121,7 @@ void GetTrackers() {
 	for (int i = 0; i < 17; i++) {
 		if (PoseTrackers[i]) {
 			try {
-				trackerIDs[i] = createTracker(PoseNames[i]);
+				trackerIDs[i] = createTracker(TrackerNames[i]);
 			}
 			catch (...) {
 

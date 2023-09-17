@@ -87,50 +87,50 @@ void DashboardWidget::on_cbxButtonOcTrigpm_clicked(bool checked) {
 
 void DashboardWidget::on_cbxTrackerAnkle_clicked(bool checked) {
 	if (PoseTrackers[Poses::left_ankle] != checked) {
-		if (checked) trackerIDs[Poses::left_ankle] = getTracker(PoseNames[Poses::left_ankle]);
+		if (checked) trackerIDs[Poses::left_ankle] = getTracker(TrackerNames[Poses::left_ankle]);
 		else deleteVirtualDevice(trackerIDs[Poses::left_ankle]);
 		PoseTrackers[Poses::left_ankle] = checked;
 	}
 	if (PoseTrackers[Poses::right_ankle] != checked) {
-		if (checked) trackerIDs[Poses::right_ankle] = getTracker(PoseNames[Poses::right_ankle]);
+		if (checked) trackerIDs[Poses::right_ankle] = getTracker(TrackerNames[Poses::right_ankle]);
 		else deleteVirtualDevice(trackerIDs[Poses::right_ankle]);
 		PoseTrackers[Poses::right_ankle] = checked;
 	}
 }
 void DashboardWidget::on_cbxTrackerKnee_clicked(bool checked) {
 	if (PoseTrackers[Poses::left_knee] != checked) {
-		if(checked) trackerIDs[Poses::left_knee] = getTracker(PoseNames[Poses::left_knee]);
+		if(checked) trackerIDs[Poses::left_knee] = getTracker(TrackerNames[Poses::left_knee]);
 		else deleteVirtualDevice(trackerIDs[Poses::left_knee]);
 		PoseTrackers[Poses::left_knee] = checked;
 	}
 	if (PoseTrackers[Poses::right_knee] != checked) {
-		if (checked) trackerIDs[Poses::right_knee] = getTracker(PoseNames[Poses::right_knee]);
+		if (checked) trackerIDs[Poses::right_knee] = getTracker(TrackerNames[Poses::right_knee]);
 		else deleteVirtualDevice(trackerIDs[Poses::right_knee]);
 		PoseTrackers[Poses::right_knee] = checked;
 	}
 }
 void DashboardWidget::on_cbxTrackerHip_clicked(bool checked) {
 	if (PoseTrackers[Poses::right_hip] != checked) {
-		if (checked) trackerIDs[Poses::right_hip] = getTracker(PoseNames[Poses::right_hip]);
+		if (checked) trackerIDs[Poses::right_hip] = getTracker(TrackerNames[Poses::right_hip]);
 		else deleteVirtualDevice(trackerIDs[Poses::right_hip]);
 		PoseTrackers[Poses::right_hip] = checked;
 	}
 }
 void DashboardWidget::on_cbxTrackerChest_clicked(bool checked) {
 	if (PoseTrackers[Poses::right_shoulder] != checked) {
-		if (checked) trackerIDs[Poses::right_shoulder] = getTracker(PoseNames[Poses::right_shoulder]);
+		if (checked) trackerIDs[Poses::right_shoulder] = getTracker(TrackerNames[Poses::right_shoulder]);
 		else deleteVirtualDevice(trackerIDs[Poses::right_shoulder]);
 		PoseTrackers[Poses::right_shoulder] = checked;
 	}
 }
 void DashboardWidget::on_cbxTrackerElbow_clicked(bool checked) {
 	if (PoseTrackers[Poses::left_elbow] != checked) {
-		if (checked) trackerIDs[Poses::left_elbow] = getTracker(PoseNames[Poses::left_elbow]);
+		if (checked) trackerIDs[Poses::left_elbow] = getTracker(TrackerNames[Poses::left_elbow]);
 		else deleteVirtualDevice(trackerIDs[Poses::left_elbow]);
 		PoseTrackers[Poses::left_elbow] = checked;
 	}
 	if (PoseTrackers[Poses::right_elbow] != checked) {
-		if (checked) trackerIDs[Poses::right_elbow] = getTracker(PoseNames[Poses::right_elbow]);
+		if (checked) trackerIDs[Poses::right_elbow] = getTracker(TrackerNames[Poses::right_elbow]);
 		else deleteVirtualDevice(trackerIDs[Poses::right_elbow]);
 		PoseTrackers[Poses::right_elbow] = checked;
 	}
