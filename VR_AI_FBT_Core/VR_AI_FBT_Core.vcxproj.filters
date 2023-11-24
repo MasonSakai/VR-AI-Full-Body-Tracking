@@ -128,4 +128,7 @@
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="ToDo Notes.txt" />
+  </ItemGroup>
 </Project>

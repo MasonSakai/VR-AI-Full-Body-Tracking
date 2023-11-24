@@ -1,0 +1,5 @@
+https://store.steampowered.com/app/2370570/Standable_Full_Body_Estimation/
+Use this type of indication for calibration?
+
+Make a button detection button
+Press the UI button, wait for no input, then take the next controller button pressed
