@@ -3,3 +3,5 @@ Use this type of indication for calibration?
 
 Make a button detection button
 Press the UI button, wait for no input, then take the next controller button pressed
+
+Make it a proper driver/addon!
