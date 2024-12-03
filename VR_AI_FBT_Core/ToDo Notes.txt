@@ -5,3 +5,10 @@ Make a button detection button
 Press the UI button, wait for no input, then take the next controller button pressed
 
 Make it a proper driver/addon!
+
+double check camera pixel to ray calculations (RBE2002, week6-visual-cues-2)
+
+Stored configuration and position data (so they should only need to be recentered)
+Add a recenter, then select which camera to use (or invert the logic, so default is recenter unless the camera isn't calibrated)
+
+Make it work with existing trackers?
