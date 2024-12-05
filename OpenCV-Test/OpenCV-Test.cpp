@@ -3,6 +3,7 @@
 #include <opencv2/highgui.hpp>
 #include <iostream>
 #include "CameraEnum.h"
+#include "TFLoad.h"
 
 using namespace cv;
 using namespace std;
@@ -12,6 +13,8 @@ const vector<int> params = { CAP_PROP_FRAME_WIDTH, 640, CAP_PROP_FRAME_HEIGHT, 4
 int main(int argc, char** argv)
 {
     GetCams();
+
+    GetModel();
 
     VideoCapture cap;
 
@@ -40,6 +43,9 @@ int main(int argc, char** argv)
         }
         // show live and wait for a key with timeout long enough to show images
         imshow("Live", frame);
+        RunModel(frame);
+        if (waitKey() >= 0)
+            break;
         if (pollKey() >= 0)
             break;
     }

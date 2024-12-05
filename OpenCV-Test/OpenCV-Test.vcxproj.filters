@@ -21,9 +21,15 @@
     <ClCompile Include="CameraEnum.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TFLoad.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CameraEnum.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TFLoad.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

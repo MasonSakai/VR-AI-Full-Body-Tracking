@@ -141,9 +141,11 @@
   <ItemGroup>
     <ClCompile Include="CameraEnum.cpp" />
     <ClCompile Include="OpenCV-Test.cpp" />
+    <ClCompile Include="TFLoad.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CameraEnum.h" />
+    <ClInclude Include="TFLoad.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
