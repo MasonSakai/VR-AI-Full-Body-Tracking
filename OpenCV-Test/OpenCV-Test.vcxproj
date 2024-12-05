@@ -139,7 +139,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CameraEnum.cpp" />
     <ClCompile Include="OpenCV-Test.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CameraEnum.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

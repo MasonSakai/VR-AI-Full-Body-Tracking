@@ -2,25 +2,33 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
 #include <iostream>
+#include "CameraEnum.h"
 
 using namespace cv;
 using namespace std;
 
+const vector<int> params = { CAP_PROP_FRAME_WIDTH, 640, CAP_PROP_FRAME_HEIGHT, 480, CAP_PROP_FPS, 90 };
+
 int main(int argc, char** argv)
 {
+    GetCams();
+
     VideoCapture cap;
 
-    cap.open(0);
+    cap.open(0, CAP_ANY, params);
 
     if (!cap.isOpened()) {
         cerr << "ERROR! Unable to open camera\n";
         return -1;
     }
 
+    cout << "Backend: " << cap.get(CAP_PROP_BACKEND) << ", " << cap.getBackendName() << endl;
+    cout << "FPS: " << cap.get(CAP_PROP_FPS) << endl;
+
     Mat frame;
     //--- GRAB AND WRITE LOOP
     cout << "Start grabbing" << endl
-        << "Press any key to terminate" << endl;
+         << "Press any key to terminate" << endl;
     for (;;)
     {
         // wait for a new frame from camera and store it into 'frame'
@@ -32,7 +40,7 @@ int main(int argc, char** argv)
         }
         // show live and wait for a key with timeout long enough to show images
         imshow("Live", frame);
-        if (waitKey(5) >= 0)
+        if (pollKey() >= 0)
             break;
     }
     // the camera will be deinitialized automatically in VideoCapture destructor
