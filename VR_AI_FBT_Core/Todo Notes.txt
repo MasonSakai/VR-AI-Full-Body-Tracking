@@ -12,3 +12,7 @@ Stored configuration and position data (so they should only need to be recentere
 Add a recenter, then select which camera to use (or invert the logic, so default is recenter unless the camera isn't calibrated)
 
 Make it work with existing trackers?
+
+
+Name propositions:
+  Iris Full Body Tracking
